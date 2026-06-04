@@ -1073,6 +1073,38 @@
       transition: transform 0.2s ease;
       cursor: zoom-in;
     }
+    /* Slide de link externo */
+    .lb-link-slide {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 24px; padding: 40px;
+      background: var(--surface);
+      text-align: center;
+    }
+    .lb-link-icon { font-size: 3rem; opacity: 0.4; }
+    .lb-link-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .lb-link-url {
+      font-size: 0.65rem; color: var(--muted);
+      letter-spacing: 0.05em; word-break: break-all;
+      max-width: 400px;
+    }
+    .lb-link-open {
+      background: var(--lime); color: var(--bg);
+      border: none; padding: 14px 36px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.95rem; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 10px;
+      transition: background 0.15s;
+    }
+    .lb-link-open:hover { background: var(--white); }
     .lb-slide img.zoomed { cursor: grab; }
     .lb-slide img.zoomed:active { cursor: grabbing; }
     .lb-no-video {
@@ -2014,6 +2046,10 @@
       const slides = [];
       if (p.videoUrl) slides.push({ type: 'video', src: p.videoUrl });
       (p.gallery || []).forEach(src => slides.push({ type: 'image', src }));
+      // Link externo como último slide (se não for # e não houver vídeo)
+      if (!p.videoUrl && p.link && p.link !== '#' && !p.link.startsWith('#')) {
+        slides.push({ type: 'link', src: p.link, title: p.title || '' });
+      }
       return slides;
     }
 
@@ -2030,7 +2066,11 @@
       const showArrows = __slides.length > 1;
       lbWrap.innerHTML = `
         <div class="lb-carousel">
-          ${__slides.map((s, i) => `<div class="lb-slide${i===0?' active':''}">${s.type==='video' ? videoEmbedHTML(s.src) : `<img src="${s.src}" alt=""/>`}</div>`).join('')}
+          ${__slides.map((s, i) => {
+            if (s.type === 'video') return `<div class="lb-slide${i===0?' active':''}">${videoEmbedHTML(s.src)}</div>`;
+            if (s.type === 'link')  return `<div class="lb-slide${i===0?' active':''}"><div class="lb-link-slide"><div class="lb-link-icon">↗</div><div class="lb-link-label">Ver projeto completo</div><div class="lb-link-url">${s.src}</div><a href="${s.src}" target="_blank" rel="noopener" class="lb-link-open">ABRIR LINK ↗</a></div></div>`;
+            return `<div class="lb-slide${i===0?' active':''}"><img src="${s.src}" alt=""/></div>`;
+          }).join('')}
           ${showArrows ? `<button class="lb-arrow lb-arrow-prev">&#8592;</button><button class="lb-arrow lb-arrow-next">&#8594;</button>` : ''}
           ${showArrows ? `<div class="lb-counter">1 / ${__slides.length}</div>` : ''}
           ${showArrows ? `<div class="lb-dots">${__slides.map((_,i) => `<div class="lb-dot${i===0?' active':''}"></div>`).join('')}</div>` : ''}
@@ -2047,7 +2087,7 @@
     function goSlide(dir) { goToSlide((__slideIdx + dir + __slides.length) % __slides.length); }
 
     function setWrapAspect(slide) {
-      if (!slide || slide.type === 'video') {
+      if (!slide || slide.type === 'video' || slide.type === 'link') {
         lbWrap.style.paddingTop = '56.25%'; // 16:9
       } else {
         const applyRatio = (naturalW, naturalH) => {
@@ -2223,10 +2263,8 @@
           if (e.target.closest('a')) return;
           const p     = __projects.more[i] || {};
           const title = p.title || item.querySelector('h3')?.textContent || '';
-          if (p.videoUrl || (p.gallery && p.gallery.length)) {
+          if (p.videoUrl || (p.gallery && p.gallery.length) || (p.link && p.link !== '#')) {
             openLightbox(title, '', p);
-          } else if (p.link && p.link !== '#') {
-            window.open(p.link, '_blank');
           }
         };
       });
