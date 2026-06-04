@@ -979,11 +979,15 @@
       position: relative;
       width: 90vw;
       max-width: 1080px;
+      max-height: 95vh;
+      overflow: hidden;
       background: var(--surface);
       border: 1px solid var(--border);
       transform: translateY(40px);
       opacity: 0;
       transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+      display: flex;
+      flex-direction: column;
     }
     #lightbox.visible .lb-box {
       transform: translateY(0);
@@ -1995,16 +1999,19 @@
       if (!slide || slide.type === 'video') {
         lbWrap.style.paddingTop = '56.25%'; // 16:9
       } else {
-        // Carrega a imagem para obter as dimensões reais
-        const img = new Image();
-        img.onload = () => {
-          const ratio = img.naturalHeight / img.naturalWidth;
-          // Limita: mínimo 40% (2.5:1 landscape), máximo 120% (~4:3 portrait)
-          const pct = Math.min(Math.max(ratio * 100, 40), 120);
+        const applyRatio = (naturalW, naturalH) => {
+          const ratio = naturalH / naturalW;
+          const wrapW  = lbWrap.offsetWidth || window.innerWidth * 0.9;
+          // Máximo: 80% da altura da janela
+          const maxH   = window.innerHeight * 0.80;
+          const maxPct = (maxH / wrapW) * 100;
+          const pct    = Math.min(ratio * 100, maxPct);
           lbWrap.style.paddingTop = pct + '%';
         };
+        const img = new Image();
+        img.onload = () => applyRatio(img.naturalWidth, img.naturalHeight);
         img.src = slide.src;
-        lbWrap.style.paddingTop = '75%'; // fallback enquanto carrega
+        applyRatio(4, 3); // fallback enquanto carrega
       }
     }
 
