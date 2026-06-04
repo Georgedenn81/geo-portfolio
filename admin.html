@@ -1077,13 +1077,19 @@ async function oneClickPublish() {
       `<script id="__geo_admin_data__" type="application/json">${dataJson}<\/script>`
     );
 
-    if (updatedHtml === currentHtml) throw new Error('Ponto de injeção não encontrado no portfolio.html');
+    if (updatedHtml === currentHtml) {
+      // Debug: mostra o que encontrou no HTML
+      const hasTag = currentHtml.includes('__geo_admin_data__');
+      throw new Error(`Ponto de injeção não encontrado. Tag existe: ${hasTag}. Tamanho HTML: ${currentHtml.length} chars`);
+    }
 
     // 3. Commita o HTML atualizado
     statusEl.textContent = 'Salvando alterações no GitHub...';
-    // Encode UTF-8 corretamente para base64
+    // Encode UTF-8 para base64 sem stack overflow
     const encBytes = new TextEncoder().encode(updatedHtml);
-    const newContent = btoa(String.fromCharCode(...encBytes));
+    let binary = '';
+    for (let i = 0; i < encBytes.length; i++) binary += String.fromCharCode(encBytes[i]);
+    const newContent = btoa(binary);
     const commitRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       method: 'PUT',
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
