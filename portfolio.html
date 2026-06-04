@@ -1619,9 +1619,18 @@
     const skillsSection = document.getElementById('skills');
     if (skillsSection) skillObs.observe(skillsSection);
 
-    // ── Aplica dados do admin (embutidos diretamente no HTML pelo painel) ──
+    // ── Aplica dados do admin ──
     function loadPortfolioData() {
       try {
+        // 1. URL hash (preview ao vivo do admin)
+        const hash = window.location.hash;
+        if (hash.startsWith('#geo=')) {
+          const d = JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))));
+          history.replaceState(null, '', window.location.pathname);
+          applyAdminData(d);
+          return;
+        }
+        // 2. Dados embutidos no HTML (após PUBLICAR AGORA)
         const raw = document.getElementById('__geo_admin_data__').textContent.trim();
         if (raw && raw !== 'null') {
           applyAdminData(JSON.parse(raw));

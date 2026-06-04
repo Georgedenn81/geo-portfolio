@@ -1,0 +1,97 @@
+{
+  "hero": {
+    "statusText": "● AVAILABLE NOW",
+    "available": true,
+    "location": "BASED IN SÃO PAULO",
+    "intro": "I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES."
+  },
+  "stats": [
+    {
+      "n": "40+",
+      "l": "Projects Shipped"
+    },
+    {
+      "n": "20+",
+      "l": "Years Experience"
+    }
+  ],
+  "projects": {
+    "featured": [
+      {
+        "num": "Nº 001 // FEATURED",
+        "title": "OAKLEY",
+        "desc": "REAL-TIME SAAS ANALYTICS DASHBOARD SERVING 120K+ USERS. CUSTOM WIDGETS, RBAC, STRIPE BILLING.",
+        "tags": "REACT, TYPESCRIPT, STRIPE",
+        "link": "#",
+        "mediaType": "video",
+        "mediaSrc": "https://vimeo.com/1198237423"
+      },
+      {
+        "num": "Nº 002 // DESIGN SYSTEM",
+        "title": "LAYERUI\nCOMPONENTS",
+        "desc": "80+ ACCESSIBLE, THEMEABLE COMPONENTS BUILT FOR PRODUCTION-SCALE DESIGN SYSTEMS.",
+        "tags": "NEXT.JS, STORYBOOK",
+        "link": "#",
+        "mediaType": "none",
+        "mediaSrc": ""
+      }
+    ],
+    "more": [
+      {
+        "num": "Nº 003",
+        "title": "BRAND IDENTITY — NOVA STUDIO",
+        "tags": "BRANDING, FIGMA, MOTION",
+        "link": "#"
+      },
+      {
+        "num": "Nº 004",
+        "title": "E-COMMERCE REDESIGN — URBANWEAR",
+        "tags": "UX/UI, SHOPIFY, REACT",
+        "link": "#"
+      },
+      {
+        "num": "Nº 005",
+        "title": "AI CAMPAIGN — GENERATIVE ADS SYSTEM",
+        "tags": "AI, AUTOMATION, ART DIRECTION",
+        "link": "#"
+      },
+      {
+        "num": "Nº 006",
+        "title": "MOBILE APP — FINTECH DASHBOARD",
+        "tags": "REACT NATIVE, FIGMA, TYPESCRIPT",
+        "link": "#"
+      }
+    ]
+  },
+  "skills": [
+    {
+      "name": "React / TS",
+      "pct": 95
+    },
+    {
+      "name": "Figma",
+      "pct": 90
+    },
+    {
+      "name": "Node.js",
+      "pct": 85
+    },
+    {
+      "name": "Motion",
+      "pct": 82
+    },
+    {
+      "name": "React Native",
+      "pct": 78
+    },
+    {
+      "name": "DevOps",
+      "pct": 70
+    }
+  ],
+  "contact": {
+    "phone": "+55 11 9 7638 6601",
+    "website": "https://georgedenison.com",
+    "location": "BASED IN SÃO PAULO · GMT-3"
+  }
+}
