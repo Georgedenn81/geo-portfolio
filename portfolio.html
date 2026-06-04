@@ -20,7 +20,9 @@
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
-    .bento-card img, .lb-slide img, .project-item img { pointer-events: none; }
+    .bento-card img, .project-item img { pointer-events: none; }
+    /* Lightbox: re-habilita pointer events para zoom/pan funcionar */
+    .lb-slide img { pointer-events: all; cursor: zoom-in; }
 
     html { scroll-behavior: smooth; }
 
@@ -2129,10 +2131,12 @@
       if (__zoom <= 1) { __panX = 0; __panY = 0; applyZoom(); }
     });
 
-    // Pan when zoomed
+    // Pan quando ampliado — mouse e touch
     lbWrap.addEventListener('mousedown', e => {
-      if (e.target.tagName !== 'IMG' || __zoom <= 1) return;
-      __isPanning = true; __panStart = { x: e.clientX - __panX, y: e.clientY - __panY };
+      if (__zoom <= 1) return;
+      __isPanning = true;
+      __panStart = { x: e.clientX - __panX, y: e.clientY - __panY };
+      lbWrap.style.cursor = 'grabbing';
       e.preventDefault();
     });
     window.addEventListener('mousemove', e => {
@@ -2141,7 +2145,24 @@
       __panY = e.clientY - __panStart.y;
       applyZoom();
     });
-    window.addEventListener('mouseup', () => { __isPanning = false; });
+    window.addEventListener('mouseup', () => {
+      __isPanning = false;
+      lbWrap.style.cursor = '';
+    });
+    // Touch pan
+    lbWrap.addEventListener('touchstart', e => {
+      if (__zoom <= 1 || e.touches.length !== 1) return;
+      __isPanning = true;
+      __panStart = { x: e.touches[0].clientX - __panX, y: e.touches[0].clientY - __panY };
+    }, { passive: true });
+    lbWrap.addEventListener('touchmove', e => {
+      if (!__isPanning || e.touches.length !== 1) return;
+      __panX = e.touches[0].clientX - __panStart.x;
+      __panY = e.touches[0].clientY - __panStart.y;
+      applyZoom();
+      e.preventDefault();
+    }, { passive: false });
+    lbWrap.addEventListener('touchend', () => { __isPanning = false; });
 
     function showZoomControls(show) {
       lbZoomBar.classList.toggle('visible', show);
