@@ -191,7 +191,6 @@
       <span id="save-status" class="saved">● SALVO</span>
       <button id="save-btn" class="btn-save">SALVAR</button>
       <button id="preview-btn" class="btn-preview">PREVIEW ↗</button>
-      <button id="publish-btn" class="btn-publish">↑ PUBLICAR</button>
       <button id="logout-btn" class="btn-logout">SAIR</button>
     </div>
   </header>
@@ -342,22 +341,6 @@
   <iframe id="preview-frame" src="" title="Preview do portfólio"></iframe>
 </div>
 
-<!-- ── PUBLISH MODAL ── -->
-<div id="publish-modal">
-  <div class="publish-box">
-    <h2>↑ PUBLICAR NO <span>VERCEL</span></h2>
-    <ol class="publish-steps">
-      <li>Clique em <strong style="color:var(--white)">BAIXAR portfolio-data.json</strong> abaixo — o arquivo será gerado com todas as suas alterações.</li>
-      <li>Mova o arquivo baixado para dentro da pasta <code>portfolio/</code> no seu computador (substituindo se já existir).</li>
-      <li>No terminal, dentro da pasta <code>portfolio/</code>, rode:<br/><br/><code>vercel --prod</code></li>
-      <li>Pronto — em alguns segundos o site estará atualizado para todos.</li>
-    </ol>
-    <div class="publish-box-actions">
-      <button class="btn-download" id="download-json-btn">↓ BAIXAR portfolio-data.json</button>
-      <button class="btn-close-modal" id="close-modal-btn">FECHAR</button>
-    </div>
-  </div>
-</div>
 
 <script>
 const DEFAULT_PASS = 'geo@2025';
