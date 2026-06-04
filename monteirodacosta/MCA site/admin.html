@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — Monteiro da Costa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:    #B5935A;
+      --gold-lt: #CCA96E;
+      --navy:    #1A2B4A;
+      --navy-dk: #0E1C30;
+      --cream:   #EFE9D8;
+      --off:     #FAF9F6;
+      --bg:      #F2F0EC;
+      --bg2:     #ECEAE5;
+      --text:    #1A2B4A;
+      --soft:    #4D5A72;
+      --dim:     #8C96A8;
+      --border:  rgba(26,43,74,0.10);
+      --red:     #C0392B;
+      --green:   #27AE60;
+      --radius:  4px;
+      --ease:    cubic-bezier(0.22,1,0.36,1);
+      --f:       'Barlow', system-ui, sans-serif;
+    }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      font-family: var(--f);
+      font-size: 15px;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { text-decoration:none; color:inherit; }
+    button { font-family:inherit; cursor:pointer; }
+    input, textarea, select {
+      font-family: inherit;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 9px 12px;
+      background: #fff;
+      color: var(--text);
+      width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+      outline: none;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(181,147,90,.12);
+    }
+    textarea { resize: vertical; min-height: 80px; line-height: 1.6; }
+    label {
+      display: block;
+      font-size: .72rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--soft);
+      margin-bottom: 6px;
+    }
+    .field { display:flex; flex-direction:column; gap:4px; }
+    .field-hint {
+      font-size: .68rem;
+      color: var(--dim);
+      line-height: 1.5;
+    }
+
+    /* ── Login Screen ────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--navy-dk);
+    }
+    .login-box {
+      background: var(--off);
+      border-radius: 8px;
+      padding: 48px 40px;
+      width: 360px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .login-brand { display:flex; flex-direction:column; gap:3px; margin-bottom:8px; }
+    .login-brand-name {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+    .login-brand-tag {
+      font-size: .55rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .login-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--navy);
+      letter-spacing: -.01em;
+    }
+    .login-err {
+      display: none;
+      font-size: .75rem;
+      color: var(--red);
+      padding: 8px 12px;
+      background: rgba(192,57,43,.08);
+      border-radius: var(--radius);
+      border: 1px solid rgba(192,57,43,.15);
+    }
+
+    /* ── Admin Shell ──────────────────────────────────── */
+    #admin-shell { display:none; min-height:100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0; bottom: 0;
+      width: 220px;
+      background: var(--navy-dk);
+      display: flex;
+      flex-direction: column;
+      z-index: 50;
+    }
+    .sidebar-brand {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .sidebar-brand-name {
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(250,249,246,.8);
+    }
+    .sidebar-brand-tag {
+      font-size: .52rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-top: 2px;
+    }
+    .sidebar-nav {
+      flex: 1;
+      padding: 14px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .s-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 18px;
+      font-size: .73rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      color: rgba(250,249,246,.38);
+      cursor: pointer;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      border-radius: 0;
+      transition: color .2s, background .2s;
+    }
+    .s-link svg { flex-shrink:0; opacity:.6; }
+    .s-link:hover { color:rgba(250,249,246,.7); background:rgba(255,255,255,.04); }
+    .s-link.active { color:var(--gold-lt); background:rgba(181,147,90,.08); }
+    .s-link.active svg { opacity:1; }
+
+    .sidebar-foot {
+      padding: 16px 18px;
+      border-top: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .s-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .06em;
+      color: rgba(250,249,246,.35);
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      transition: color .2s;
+    }
+    .s-action:hover { color: rgba(250,249,246,.7); }
+
+    /* Main area */
+    .main {
+      margin-left: 220px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(242,240,236,.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 36px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .topbar-title {
+      font-size: .78rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--navy);
+    }
+    .topbar-actions { display:flex; gap:8px; align-items:center; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 18px;
+      border-radius: var(--radius);
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border: none;
+      transition: background .2s, color .2s, transform .25s var(--ease);
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--gold); color: #fff; }
+    .btn-primary:hover { background: var(--gold-lt); }
+    .btn-outline { background: transparent; color: var(--soft); border: 1px solid var(--border); }
+    .btn-outline:hover { border-color: var(--navy); color: var(--navy); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(192,57,43,.2); }
+    .btn-danger:hover { background: rgba(192,57,43,.06); }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      z-index: 999;
+      padding: 12px 20px;
+      border-radius: var(--radius);
+      background: var(--navy);
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 500;
+      letter-spacing: .04em;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .35s var(--ease), transform .35s var(--ease);
+      pointer-events: none;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    /* Erro proeminente — banner no topo */
+    #err-banner {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: #C0392B;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 18px 28px;
+      font-size: .88rem;
+      font-weight: 500;
+      line-height: 1.45;
+      transform: translateY(-100%);
+      transition: transform .35s var(--ease);
+      box-shadow: 0 4px 24px rgba(0,0,0,.25);
+    }
+    #err-banner.show { transform: translateY(0); }
+    #err-banner svg { flex-shrink: 0; }
+    #err-banner-msg { flex: 1; }
+    #err-banner-close {
+      background: rgba(255,255,255,.18);
+      border: none;
+      color: #fff;
+      border-radius: var(--radius);
+      padding: 5px 12px;
+      font-size: .72rem;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+    #err-banner-close:hover { background: rgba(255,255,255,.28); }
+
+    /* Content panels */
+    .content { flex:1; padding: 36px; }
+    .panel { display:none; }
+    .panel.active { display:block; }
+
+    /* Panel card */
+    .p-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+      margin-bottom: 16px;
+    }
+    .p-card-title {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .row-2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+
+    /* Image upload */
+    .img-upload {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .img-preview {
+      width: 80px; height: 80px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      object-fit: cover;
+      display: none;
+    }
+    .img-preview.show { display:block; }
+    .img-placeholder {
+      width: 80px; height: 80px;
+      border-radius: var(--radius);
+      border: 1px dashed var(--dim);
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+    }
+    .img-placeholder.hide { display:none; }
+    .img-controls { display:flex; flex-direction:column; gap:6px; }
+    .img-file-input { display:none; }
+    .img-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg);
+      font-size: .68rem;
+      font-weight: 500;
+      color: var(--soft);
+      cursor: pointer;
+      transition: border-color .2s, color .2s;
+    }
+    .img-btn:hover { border-color:var(--gold); color:var(--gold); }
+    .img-remove {
+      font-size: .64rem;
+      color: var(--red);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      text-align: left;
+      opacity: .7;
+      transition: opacity .2s;
+    }
+    .img-remove:hover { opacity:1; }
+
+    /* Crop / framing UI */
+    .crop-wrap {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .crop-circle {
+      width: 240px; height: 240px;
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: var(--bg2);
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+      box-shadow:
+        0 16px 56px rgba(181,147,90,.28),
+        0 0 0 1px rgba(181,147,90,.18);
+      touch-action: none;
+    }
+    .crop-circle.dragging { cursor: grabbing; }
+    .crop-circle img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      transform: translate(0, 0) scale(1);
+      transform-origin: 50% 50%;
+      pointer-events: none;
+      display: none;
+    }
+    .crop-circle img.show { display: block; }
+    .crop-empty {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .72rem; color: var(--dim);
+      letter-spacing: .04em;
+      text-align: center; padding: 24px;
+    }
+    .crop-empty.hide { display: none; }
+    .crop-controls {
+      display: flex; flex-direction: column; gap: 14px;
+      padding-top: 6px;
+    }
+    .crop-controls input[type="range"] {
+      width: 100%;
+      padding: 0;
+      border: none;
+      accent-color: var(--gold);
+      background: transparent;
+    }
+
+    /* Slide editor */
+    .slide-editor {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .slide-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .slide-editor-label {
+      font-size: .65rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--soft);
+    }
+    .slide-editor-body {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Area editor */
+    .area-editor {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .area-editor-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      gap: 10px;
+    }
+    .area-editor-head-left { display:flex; align-items:center; gap:10px; flex:1; min-width:0; }
+    .area-editor-title {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--navy);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .feat-badge {
+      font-size: .55rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      background: rgba(181,147,90,.12);
+      padding: 2px 7px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .area-editor-body {
+      display: none;
+      padding: 16px;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .area-editor-body.open { display:flex; }
+    .chevron {
+      color: var(--dim);
+      transition: transform .25s;
+      flex-shrink: 0;
+    }
+    .chevron.open { transform: rotate(180deg); }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+      background: transparent;
+      font-size: .72rem;
+      font-weight: 500;
+      color: var(--soft);
+      cursor: pointer;
+      width: 100%;
+      justify-content: center;
+      transition: border-color .2s, color .2s;
+    }
+    .add-btn:hover { border-color:var(--gold); color:var(--gold); }
+
+    /* Checkbox toggle */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .toggle-row label {
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: .8rem;
+      font-weight: 400;
+      color: var(--text);
+      margin: 0;
+      cursor: pointer;
+    }
+    input[type="checkbox"] {
+      width: 16px; height: 16px;
+      cursor: pointer;
+      accent-color: var(--gold);
+    }
+
+    /* Pill toggle switch */
+    .pill-toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 20px 22px;
+      border-radius: var(--radius);
+      border: 2px solid var(--border);
+      background: var(--bg2);
+      transition: border-color .25s, background .25s;
+    }
+    .pill-toggle-wrap.on {
+      border-color: rgba(181,147,90,.45);
+      background: rgba(181,147,90,.06);
+    }
+    .pill-toggle-info { display:flex; flex-direction:column; gap:3px; }
+    .pill-toggle-title {
+      font-size: .88rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .pill-toggle-sub {
+      font-size: .75rem;
+      color: var(--dim);
+    }
+    .pill-toggle {
+      position: relative;
+      width: 48px; height: 26px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .pill-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .pill-track {
+      position: absolute; inset: 0;
+      background: var(--border);
+      border-radius: 13px;
+      transition: background .25s;
+    }
+    .pill-toggle input:checked + .pill-track { background: var(--gold); }
+    .pill-thumb {
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transition: transform .25s var(--ease);
+    }
+    .pill-toggle input:checked ~ .pill-thumb { transform: translateX(22px); }
+    .pill-status {
+      font-size: .7rem;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .pill-status.off { color: var(--dim); }
+    .pill-status.on  { color: var(--gold); }
+
+    /* Responsive */
+    @media (max-width:800px) {
+      .sidebar { width:180px; }
+      .main { margin-left:180px; }
+      .row-2, .row-3 { grid-template-columns:1fr; }
+    }
+    @media (max-width:600px) {
+      .sidebar { display:none; }
+      .main { margin-left:0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Login Screen ──────────────────────────────────────────── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-brand">
+      <span class="login-brand-name">Monteiro da Costa</span>
+      <span class="login-brand-tag">Painel Administrativo</span>
+    </div>
+    <h2 class="login-title">Acesso restrito</h2>
+    <div id="login-err" class="login-err">Senha incorreta. Tente novamente.</div>
+    <div class="field">
+      <label for="pw-input">Senha</label>
+      <input type="password" id="pw-input" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn btn-primary" id="login-btn" style="width:100%; justify-content:center;">
+      Entrar
+    </button>
+    <p style="font-size:.68rem; color:var(--dim); text-align:center;">
+      Senha padrão: <code style="background:var(--bg); padding:2px 6px; border-radius:3px;">mdc2025</code>
+    </p>
+  </div>
+</div>
+
+<!-- ── Admin Shell ────────────────────────────────────────────── -->
+<div id="admin-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">MDC Admin</div>
+      <div class="sidebar-brand-tag">Painel de Conteúdo</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="s-link active" data-panel="banner">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+        Banner / Slides
+      </button>
+      <button class="s-link" data-panel="sobre">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Sobre
+      </button>
+      <button class="s-link" data-panel="areas">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Áreas de Atuação
+      </button>
+      <button class="s-link" data-panel="profissional">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Profissional
+      </button>
+      <button class="s-link" data-panel="contato">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        Contato & Redes
+      </button>
+      <button class="s-link" data-panel="instagram">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+        Instagram
+      </button>
+      <button class="s-link" data-panel="config">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 19.07l1.41-1.41M20 12h-2M6 12H4M19.07 19.07l-1.41-1.41M4.93 4.93l1.41 1.41M12 4V2M12 20v2"/></svg>
+        Configurações
+      </button>
+    </nav>
+    <div class="sidebar-foot">
+      <a href="./index.html" target="_top" class="s-action">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Ver site
+      </a>
+      <button class="s-action" id="logout-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="topbar-title">Banner / Slides</span>
+      <div class="topbar-actions">
+        <a class="btn btn-outline" href="./index.html" target="_top" style="text-decoration:none;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          Preview
+        </a>
+        <button class="btn btn-primary" id="save-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Salvar
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── Panel: Banner ──────────────────────────────── -->
+      <div class="panel active" id="panel-banner">
+        <div class="p-card">
+          <div class="p-card-title">Slides do Banner</div>
+          <p style="font-size:.8rem; color:var(--soft); margin-top:-8px; line-height:1.6;">
+            Cada slide aparece no banner principal do site. O primeiro slide é exibido por padrão. Adicione mais slides para criar um carrossel.
+          </p>
+          <div id="slides-editor"></div>
+          <button class="add-btn" id="add-slide-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar slide
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Panel: Sobre ───────────────────────────────── -->
+      <div class="panel" id="panel-sobre">
+        <div class="p-card">
+          <div class="p-card-title">Foto do Escritório / Profissional</div>
+          <div class="img-upload">
+            <img class="img-preview" id="photo-preview" alt="Foto">
+            <div class="img-placeholder" id="photo-placeholder">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div class="img-controls">
+              <label class="img-btn" for="photo-file-input">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Enviar foto
+              </label>
+              <input type="file" id="photo-file-input" class="img-file-input" accept="image/*">
+              <button class="img-remove" id="photo-remove">✕ Remover foto</button>
+              <span class="field-hint">JPG ou PNG · Máx. 2 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card" id="crop-card">
+          <div class="p-card-title">Enquadramento</div>
+          <p style="font-size:.8rem; color:var(--soft); margin-top:-8px; line-height:1.6;">
+            Arraste a foto dentro do círculo para reposicionar, e use o controle de zoom para aproximar ou afastar. O resultado aparece exatamente assim no site.
+          </p>
+          <div class="crop-wrap">
+            <div class="crop-circle" id="crop-circle">
+              <img id="crop-img" alt="Pré-visualização">
+              <div class="crop-empty" id="crop-empty">Envie uma foto para enquadrar</div>
+            </div>
+            <div class="crop-controls">
+              <div class="field">
+                <label>Zoom</label>
+                <input type="range" id="crop-zoom" min="50" max="300" step="1" value="100" style="width:100%;">
+                <span class="field-hint" id="crop-zoom-val">100%</span>
+              </div>
+              <button class="img-btn" id="crop-reset" type="button" style="align-self:flex-start;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+                Restaurar enquadramento
+              </button>
+              <span class="field-hint">O painel salva automaticamente. Para reverter, clique em "Restaurar enquadramento".</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card">
+          <div class="p-card-title">Título da Seção</div>
+          <div class="field">
+            <label>Título exibido no site</label>
+            <input type="text" id="t-sobre" placeholder="Sobre">
+            <span class="field-hint">Aparece em caixa alta acima do conteúdo da seção.</span>
+          </div>
+        </div>
+
+        <div class="p-card">
+          <div class="p-card-title">Texto da Seção Sobre</div>
+          <div class="field">
+            <label>Texto principal (destaque)</label>
+            <textarea id="s-lede" rows="3" placeholder="Texto em destaque (pode usar HTML básico como &lt;strong&gt;)"></textarea>
+            <span class="field-hint">Suporta &lt;strong&gt; para negritos.</span>
+          </div>
+          <div class="field">
+            <label>Texto complementar</label>
+            <textarea id="s-body" rows="3"></textarea>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label>Nome na foto (hover)</label>
+              <input type="text" id="s-photo-name">
+            </div>
+            <div class="field">
+              <label>Cargo / OAB na foto</label>
+              <input type="text" id="s-photo-role">
+            </div>
+          </div>
+          <div class="field">
+            <label>Endereço (exibido na seção)</label>
+            <input type="text" id="s-address">
+          </div>
+          <div class="field">
+            <label>E-mail (exibido na seção)</label>
+            <input type="email" id="s-email">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panel: Áreas ───────────────────────────────── -->
+      <div class="panel" id="panel-areas">
+        <div class="p-card">
+          <div class="p-card-title">Título da Seção</div>
+          <div class="field">
+            <label>Título exibido no site</label>
+            <input type="text" id="t-areas" placeholder="Áreas de Atuação">
+            <span class="field-hint">Aparece em caixa alta acima do grid de áreas.</span>
+          </div>
+        </div>
+
+        <div class="p-card">
+          <div class="p-card-title">Áreas de Atuação</div>
+          <p style="font-size:.8rem; color:var(--soft); margin-top:-8px; line-height:1.6;">
+            Marque como <strong>Destaque</strong> as 2 áreas principais — elas aparecem em cards grandes acima do grid.
+          </p>
+          <div id="areas-editor"></div>
+          <button class="add-btn" id="add-area-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Adicionar área
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Panel: Profissional ────────────────────────── -->
+      <div class="panel" id="panel-profissional">
+        <div class="p-card">
+          <div class="p-card-title">Dados Profissionais</div>
+          <div class="row-2">
+            <div class="field">
+              <label>Nome completo</label>
+              <input type="text" id="p-name">
+            </div>
+            <div class="field">
+              <label>Cargo / Credenciais (subtítulo)</label>
+              <input type="text" id="p-role">
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label>Anos de experiência (número)</label>
+              <input type="text" id="p-years" placeholder="Ex: 15+">
+            </div>
+            <div class="field">
+              <label>Credenciais (separadas por vírgula)</label>
+              <input type="text" id="p-credentials" placeholder="Ex: OAB/SP, MG">
+            </div>
+          </div>
+          <div class="field">
+            <label>Biografia (parágrafo 1)</label>
+            <textarea id="p-bio" rows="4"></textarea>
+          </div>
+          <div class="field">
+            <label>Biografia (parágrafo 2)</label>
+            <textarea id="p-bio2" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panel: Contato ─────────────────────────────── -->
+      <div class="panel" id="panel-contato">
+        <div class="p-card">
+          <div class="p-card-title">Contato</div>
+          <div class="row-2">
+            <div class="field">
+              <label>E-mail</label>
+              <input type="email" id="c-email">
+            </div>
+            <div class="field">
+              <label>Telefone (exibição)</label>
+              <input type="text" id="c-phone" placeholder="(11) 9 0000-0000">
+            </div>
+          </div>
+          <div class="field">
+            <label>WhatsApp (apenas números, com DDD e código do país)</label>
+            <input type="text" id="c-whatsapp" placeholder="5511912345678">
+          </div>
+          <div class="field">
+            <label>Endereço completo (rodapé)</label>
+            <input type="text" id="c-address">
+          </div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-title">Redes Sociais</div>
+          <div class="row-2">
+            <div class="field">
+              <label>Instagram (URL completa)</label>
+              <input type="url" id="c-instagram" placeholder="https://instagram.com/...">
+            </div>
+            <div class="field">
+              <label>LinkedIn (URL completa)</label>
+              <input type="url" id="c-linkedin" placeholder="https://linkedin.com/in/...">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panel: Instagram ──────────────────────────────── -->
+      <div class="panel" id="panel-instagram">
+        <div class="p-card">
+          <div class="p-card-title">Visibilidade no Site</div>
+          <div class="pill-toggle-wrap" id="ig-toggle-wrap">
+            <div class="pill-toggle-info">
+              <span class="pill-toggle-title">Seção Instagram</span>
+              <span class="pill-toggle-sub">Controla se a seção de Reels aparece no site para os visitantes</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span class="pill-status off" id="ig-status-label">Desligado</span>
+              <label class="pill-toggle">
+                <input type="checkbox" id="ig-visible-toggle">
+                <span class="pill-track"></span>
+                <span class="pill-thumb"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-title">Sincronização de Reels</div>
+          <div class="field">
+            <label>Behold Feed ID</label>
+            <input type="text" id="ig-behold-id" placeholder="Ex: AbCdEf123456">
+            <span class="field-hint">
+              Crie uma conta gratuita em <strong>behold.so</strong>, conecte seu Instagram e cole aqui o Feed ID gerado. O site vai exibir seus Reels automaticamente e em tempo real.
+            </span>
+          </div>
+          <div style="margin-top:8px; padding:16px; background:var(--bg2); border-radius:var(--radius); font-size:.8rem; color:var(--soft); line-height:1.7;">
+            <strong style="display:block; margin-bottom:6px; color:var(--navy);">Como configurar:</strong>
+            1. Acesse <strong>behold.so</strong> e crie uma conta gratuita<br>
+            2. Conecte sua conta do Instagram<br>
+            3. Crie um Feed e copie o <em>Feed ID</em><br>
+            4. Cole o ID acima e clique em Salvar
+          </div>
+          <button class="save-btn" id="ig-save-btn" style="margin-top:16px;">Salvar configuração do Instagram</button>
+          <div class="save-status" id="ig-save-status"></div>
+        </div>
+        <div class="p-card">
+          <div class="p-card-title">Pré-visualização</div>
+          <div id="ig-preview-area" style="min-height:120px; display:flex; align-items:center; justify-content:center; background:var(--bg2); border-radius:var(--radius); padding:24px; color:var(--dim); font-size:.82rem; text-align:center; line-height:1.6;">
+            Configure o Feed ID acima para ver uma prévia dos seus Reels aqui.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Panel: Config ──────────────────────────────── -->
+      <div class="panel" id="panel-config">
+        <div class="p-card">
+          <div class="p-card-title">Logo do Escritório</div>
+          <div class="img-upload">
+            <img class="img-preview" id="logo-preview" alt="Logo" style="width:120px; height:60px; object-fit:contain; background:var(--bg2);">
+            <div class="img-placeholder" id="logo-placeholder" style="width:120px; height:60px; border-radius:var(--radius);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="img-controls">
+              <label class="img-btn" for="logo-file-input">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Enviar logo
+              </label>
+              <input type="file" id="logo-file-input" class="img-file-input" accept="image/*">
+              <button class="img-remove" id="logo-remove">✕ Remover logo</button>
+              <span class="field-hint">SVG, PNG ou JPG · Fundo transparente recomendado</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card">
+          <div class="p-card-title">Segurança</div>
+          <div class="row-2">
+            <div class="field">
+              <label>Nova senha de acesso</label>
+              <input type="password" id="cfg-pw-new" placeholder="Nova senha">
+            </div>
+            <div class="field">
+              <label>Confirmar nova senha</label>
+              <input type="password" id="cfg-pw-confirm" placeholder="Repetir senha">
+            </div>
+          </div>
+          <button class="btn btn-outline" id="change-pw-btn" style="align-self:flex-start; margin-top:-6px;">
+            Atualizar senha
+          </button>
+          <span class="field-hint">Deixe em branco para manter a senha atual.</span>
+        </div>
+
+        <div class="p-card">
+          <div class="p-card-title">Dados do Site</div>
+          <div class="row-2">
+            <div class="field">
+              <label>Título da aba (browser)</label>
+              <input type="text" id="cfg-title" placeholder="Monteiro da Costa Advogados">
+            </div>
+            <div class="field">
+              <label>Descrição (SEO)</label>
+              <input type="text" id="cfg-desc">
+            </div>
+          </div>
+        </div>
+
+        <div class="p-card" style="border-color:rgba(192,57,43,.15);">
+          <div class="p-card-title" style="color:var(--red);">Zona de Perigo</div>
+          <p style="font-size:.82rem; color:var(--soft);">Apaga <strong>todo</strong> o conteúdo salvo e restaura os valores padrão.</p>
+          <button class="btn btn-danger" id="reset-btn" style="align-self:flex-start;">
+            Restaurar padrões
+          </button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /admin-shell -->
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<div id="err-banner">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+  <span id="err-banner-msg"></span>
+  <button id="err-banner-close">Fechar</button>
+</div>
+
+<script>
+/* ── Data ─────────────────────────────────────────────────── */
+const DEFAULT_PW = 'mdc2025';
+const ICON_OPTIONS = ['book','briefcase','contract','home','users','inherit','bag','health','scale','building','counsel'];
+const ICON_LABELS  = {
+  book:'Livro (Educação)', briefcase:'Pasta (Trabalho)', contract:'Documento',
+  home:'Casa (Imóvel)', users:'Pessoas (Família)', inherit:'Herança/Sucessão',
+  bag:'Bolsa (Consumidor)', health:'Saúde (Coração)', scale:'Balança (Justiça)',
+  building:'Prédio (Empresarial)', counsel:'Assessoria',
+};
+
+const DEFAULT = {
+  slides:[{
+    eyebrow:'Advocacia · São Paulo, SP',
+    title:'Ética,\nRelacionamento\ne Excelência.',
+    subtitle:'Soluções jurídicas precisas com comprometimento, proximidade e dedicação singular a cada caso.',
+    cta:'Fale Conosco', ctaHref:'#contato',
+    ctaSecondary:'Ver áreas de atuação', ctaSecondaryHref:'#areas',
+    image:'',
+  }],
+  sobre:{
+    lede:'Fundado e conduzido pela <strong>Dra. Renata Monteiro da Costa</strong>, o escritório atua há mais de 15 anos com rigor técnico, ética e comprometimento.',
+    body:'Com sede no Itaim Bibi — coração financeiro de São Paulo —, o escritório oferece atendimento personalizado, combinando excelência jurídica com a proximidade que cada caso merece.',
+    address:'Av. Eng. Luis Carlos Berrini, 550 — 4º andar · Itaim Bibi · São Paulo, SP',
+    email:'contato@monteirodacostaadv.com.br',
+    photoName:'Renata Monteiro da Costa',
+    photoRole:'Fundadora · OAB/SP',
+  },
+  areas:[
+    {title:'Direito Educacional',desc:'Assessoria a instituições de ensino, alunos e mantenedoras.',icon:'book',featured:true},
+    {title:'Direito Trabalhista',desc:'Defesa de empregadores e empregados em negociações e litígios.',icon:'briefcase',featured:true},
+    {title:'Direito Contratual',desc:'Elaboração, revisão e análise de contratos.',icon:'contract',featured:false},
+    {title:'Direito Imobiliário',desc:'Compra, venda, locação e regularização de imóveis.',icon:'home',featured:false},
+    {title:'Direito de Família',desc:'Divórcio, guarda, alimentos e filiação.',icon:'users',featured:false},
+    {title:'Direito Sucessório',desc:'Inventário, testamentos e partilha de bens.',icon:'inherit',featured:false},
+    {title:'Direito do Consumidor',desc:'Defesa de direitos em relações de consumo.',icon:'bag',featured:false},
+    {title:'Direito à Saúde',desc:'Planos de saúde, tratamentos e responsabilidade médica.',icon:'health',featured:false},
+    {title:'Direito Civil',desc:'Reparação de danos, obrigações e responsabilidade civil.',icon:'scale',featured:false},
+    {title:'Direito Empresarial',desc:'Constituição, contratos e reestruturação societária.',icon:'building',featured:false},
+    {title:'Assessoria Jurídica',desc:'Consultoria preventiva e estratégica contínua.',icon:'counsel',featured:false},
+  ],
+  profissional:{
+    name:'Renata Monteiro da Costa', role:'Fundadora · OAB/SP', years:'15+',
+    bio:'Advogada fundadora do escritório, Renata Monteiro da Costa construiu sua carreira sobre pilares de excelência técnica e relacionamento próximo com seus clientes.',
+    bio2:'Sua prática abrange desde a consultoria preventiva até o contencioso judicial, sempre orientada pelo comprometimento com resultados concretos e éticos.',
+    credentials:'OAB/SP',
+  },
+  contato:{
+    email:'contato@monteirodacostaadv.com.br', phone:'(11) 9 8275-2430',
+    whatsapp:'5511982752430', instagram:'#', linkedin:'#',
+    address:'Av. Eng. Luis Carlos Berrini, 550 — 4º andar · Itaim Bibi · São Paulo',
+  },
+  config:{ title:'Monteiro da Costa Advogados — São Paulo', desc:'Ética, Relacionamento e Excelência. Escritório de advocacia em São Paulo.' },
+  titles:{ sobre:'Sobre', areas:'Áreas de Atuação' },
+};
+
+let D; // current working data
+const CROP_STATE_KEY = 'mdc_photo_transform';
+let cropState = { x: 0, y: 0, scale: 1 };
+
+function loadData() {
+  try {
+    const raw = localStorage.getItem('mdc_content');
+    D = raw ? JSON.parse(raw) : JSON.parse(JSON.stringify(DEFAULT));
+  } catch(e) { D = JSON.parse(JSON.stringify(DEFAULT)); }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('mdc_content', JSON.stringify(D));
+    showToast('Conteúdo salvo com sucesso.');
+    return true;
+  } catch(e) {
+    const isQuota = e && (e.name === 'QuotaExceededError' || e.code === 22 || /quota/i.test(e.message || ''));
+    if (isQuota) {
+      showError('Armazenamento do navegador cheio. Reduza imagens grandes (banners e foto) ou remova algumas, e tente salvar novamente.');
+    } else {
+      showError('Não foi possível salvar: ' + (e.message || e));
+    }
+    return false;
+  }
+}
+
+/* ── Toast ────────────────────────────────────────────────── */
+let toastTimer;
+function showToast(msg, isErr=false) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isErr ? '#C0392B' : 'var(--navy)';
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+let errTimer;
+function showError(msg) {
+  const banner = document.getElementById('err-banner');
+  document.getElementById('err-banner-msg').textContent = msg;
+  banner.classList.add('show');
+  clearTimeout(errTimer);
+  errTimer = setTimeout(() => banner.classList.remove('show'), 8000);
+}
+document.getElementById('err-banner-close').addEventListener('click', () => {
+  document.getElementById('err-banner').classList.remove('show');
+  clearTimeout(errTimer);
+});
+
+/* ── Login ────────────────────────────────────────────────── */
+function getPW() { return localStorage.getItem('mdc_pw') || DEFAULT_PW; }
+
+function doLogin() {
+  const val = document.getElementById('pw-input').value;
+  if (val === getPW()) {
+    localStorage.setItem('mdc_admin','true');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('admin-shell').style.display  = 'flex';
+    initAdmin();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+document.getElementById('login-btn').addEventListener('click', doLogin);
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+// Auto-login if already authenticated
+if (localStorage.getItem('mdc_admin') === 'true') {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-shell').style.display  = 'flex';
+  initAdmin();
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  localStorage.removeItem('mdc_admin');
+  location.reload();
+});
+
+/* ── Sidebar navigation ───────────────────────────────────── */
+const panelTitles = {
+  banner:'Banner / Slides', sobre:'Sobre', areas:'Áreas de Atuação',
+  profissional:'Profissional', contato:'Contato & Redes',
+  instagram:'Instagram / Reels', config:'Configurações',
+};
+
+document.querySelectorAll('.s-link[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.s-link').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+    document.getElementById('topbar-title').textContent = panelTitles[btn.dataset.panel];
+  });
+});
+
+/* ── Image compression via Canvas ────────────────────────── */
+function compressImage(file, maxW, maxH, quality) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxW || h > maxH) {
+        const r = Math.min(maxW / w, maxH / h);
+        w = Math.round(w * r);
+        h = Math.round(h * r);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      const isPng = file.type === 'image/png';
+      if (!isPng) {
+        // Preenche fundo branco para JPEG (não suporta transparência)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+      }
+      ctx.drawImage(img, 0, 0, w, h);
+      // PNG preserva transparência; outros formatos usam JPEG
+      resolve(isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('load')); };
+    img.src = url;
+  });
+}
+
+/* ── Image upload helper ──────────────────────────────────── */
+function setupImgUpload(inputId, previewId, placeholderId, storageKey, onLoad, maxW=1400, maxH=1800) {
+  const inp  = document.getElementById(inputId);
+  const prev = document.getElementById(previewId);
+  const ph   = document.getElementById(placeholderId);
+
+  // Load existing
+  const existing = localStorage.getItem(storageKey);
+  if (existing) {
+    prev.src = existing; prev.classList.add('show'); ph.classList.add('hide');
+  }
+
+  inp.addEventListener('change', async () => {
+    const file = inp.files[0];
+    if (!file) return;
+    const maxBytes = 30 * 1024 * 1024;
+    if (file.size > maxBytes) {
+      const mb = (file.size / 1024 / 1024).toFixed(1);
+      showError(`Arquivo muito grande: ${mb} MB. O limite é 30 MB. Reduza o tamanho da imagem e tente novamente.`);
+      inp.value = '';
+      return;
+    }
+    showToast('Processando imagem…');
+    try {
+      const data = await compressImage(file, maxW, maxH, 0.85);
+      try {
+        localStorage.setItem(storageKey, data);
+      } catch(q) {
+        showError('Armazenamento do navegador cheio. Remova outras imagens salvas e tente novamente.');
+        return;
+      }
+      prev.src = data; prev.classList.add('show'); ph.classList.add('hide');
+      if (onLoad) onLoad(data);
+      showToast('Imagem salva com sucesso.');
+    } catch(e) {
+      showError('Não foi possível processar a imagem. Verifique se o arquivo é JPG, PNG ou WEBP e tente novamente.');
+    } finally {
+      inp.value = '';
+    }
+  });
+}
+
+function setupImgRemove(btnId, previewId, placeholderId, storageKey) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    localStorage.removeItem(storageKey);
+    const prev = document.getElementById(previewId);
+    const ph   = document.getElementById(placeholderId);
+    prev.src = ''; prev.classList.remove('show'); ph.classList.remove('hide');
+    showToast('Imagem removida.');
+  });
+}
+
+/* ── Slides editor ────────────────────────────────────────── */
+function renderSlidesEditor() {
+  const wrap = document.getElementById('slides-editor');
+  wrap.innerHTML = '';
+  (D.slides||[]).forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'slide-editor';
+    el.innerHTML = `
+      <div class="slide-editor-header">
+        <span class="slide-editor-label">Slide ${i+1}${i===0?' — Principal':''}</span>
+        ${D.slides.length > 1 ? `<button class="btn btn-danger" style="padding:5px 12px;font-size:.62rem;" data-del="${i}">Remover</button>` : ''}
+      </div>
+      <div class="slide-editor-body">
+        <div class="field">
+          <label>Label / Eyebrow</label>
+          <input type="text" class="sl-eyebrow" data-i="${i}" value="${s.eyebrow||''}">
+        </div>
+        <div class="field">
+          <label>Título (use Enter para quebrar linha)</label>
+          <textarea class="sl-title" data-i="${i}" rows="3">${s.title||''}</textarea>
+          <span class="field-hint">Este texto aparece em fonte light e grande. Use Enter para quebrar linhas.</span>
+        </div>
+        <div class="field">
+          <label>Subtítulo / Descrição</label>
+          <textarea class="sl-sub" data-i="${i}" rows="2">${s.subtitle||''}</textarea>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Botão CTA — texto</label>
+            <input type="text" class="sl-cta" data-i="${i}" value="${s.cta||''}">
+          </div>
+          <div class="field">
+            <label>Botão CTA — link</label>
+            <input type="text" class="sl-ctahref" data-i="${i}" value="${s.ctaHref||'#contato'}">
+          </div>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Link secundário — texto</label>
+            <input type="text" class="sl-cta2" data-i="${i}" value="${s.ctaSecondary||''}">
+          </div>
+          <div class="field">
+            <label>Link secundário — destino</label>
+            <input type="text" class="sl-cta2href" data-i="${i}" value="${s.ctaSecondaryHref||'#areas'}">
+          </div>
+        </div>
+        <div class="field">
+          <label>Imagem de fundo / lateral (opcional)</label>
+          <div class="img-upload" style="margin-top:4px;">
+            ${s.image ? `<img src="${s.image}" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border);" class="sl-img-preview">` : `<div style="width:80px;height:80px;border-radius:var(--radius);border:1px dashed var(--dim);display:flex;align-items:center;justify-content:center;color:var(--dim);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>`}
+            <div class="img-controls">
+              <label class="img-btn" for="sl-img-file-${i}">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Enviar imagem
+              </label>
+              <input type="file" id="sl-img-file-${i}" class="img-file-input" accept="image/*" data-i="${i}">
+              ${s.image ? `<button class="img-remove sl-img-remove" data-i="${i}">✕ Remover imagem</button>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    wrap.appendChild(el);
+  });
+
+  // Bind inputs
+  wrap.querySelectorAll('[data-i]').forEach(el => {
+    const i = parseInt(el.dataset.i);
+    const key = el.className.replace('sl-','').split(' ')[0];
+    const fieldMap = {
+      eyebrow:'eyebrow', title:'title', sub:'subtitle',
+      cta:'cta', ctahref:'ctaHref', cta2:'ctaSecondary', cta2href:'ctaSecondaryHref',
+    };
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      el.addEventListener('input', () => { if(fieldMap[key]) D.slides[i][fieldMap[key]] = el.value; });
+      // Auto-save on blur so the user doesn't have to click Save
+      el.addEventListener('blur', () => { if(fieldMap[key]) saveData(); });
+    }
+  });
+
+  // Delete slide
+  wrap.querySelectorAll('[data-del]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      D.slides.splice(parseInt(btn.dataset.del), 1);
+      renderSlidesEditor();
+      saveData();
+    });
+  });
+
+  // Slide image upload
+  wrap.querySelectorAll('.img-file-input[data-i]').forEach(inp => {
+    inp.addEventListener('change', async () => {
+      const i = parseInt(inp.dataset.i);
+      const file = inp.files[0];
+      if (!file) return;
+      if (file.size > 30 * 1024 * 1024) {
+        const mb = (file.size / 1024 / 1024).toFixed(1);
+        showError(`Arquivo muito grande: ${mb} MB. O limite é 30 MB.`);
+        inp.value = '';
+        return;
+      }
+      showToast('Processando imagem do slide…');
+      try {
+        // Banners precisam ser largos (1600px) mas compactados para caber no localStorage
+        const data = await compressImage(file, 1600, 1000, 0.78);
+        D.slides[i].image = data;
+        renderSlidesEditor();
+        // Persiste imediatamente
+        if (saveData()) showToast('Imagem do slide salva.');
+      } catch(e) {
+        showError('Não foi possível processar a imagem. Tente outro arquivo.');
+      } finally {
+        inp.value = '';
+      }
+    });
+  });
+  wrap.querySelectorAll('.sl-img-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      D.slides[parseInt(btn.dataset.i)].image = '';
+      renderSlidesEditor();
+      saveData();
+    });
+  });
+}
+
+document.getElementById('add-slide-btn').addEventListener('click', () => {
+  D.slides.push({eyebrow:'',title:'',subtitle:'',cta:'Fale Conosco',ctaHref:'#contato',ctaSecondary:'',ctaSecondaryHref:'#areas',image:''});
+  renderSlidesEditor();
+  saveData();
+});
+
+/* ── Areas editor ─────────────────────────────────────────── */
+function renderAreasEditor() {
+  const wrap = document.getElementById('areas-editor');
+  wrap.innerHTML = '';
+  (D.areas||[]).forEach((a, i) => {
+    const el = document.createElement('div');
+    el.className = 'area-editor';
+    const iconOpts = ICON_OPTIONS.map(k => `<option value="${k}"${k===a.icon?' selected':''}>${ICON_LABELS[k]}</option>`).join('');
+    el.innerHTML = `
+      <div class="area-editor-head" data-i="${i}">
+        <div class="area-editor-head-left">
+          <span class="area-editor-title">${a.title || 'Área sem título'}</span>
+          ${a.featured ? '<span class="feat-badge">Destaque</span>' : ''}
+        </div>
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="area-editor-body" data-body="${i}">
+        <div class="field">
+          <label>Título da área</label>
+          <input type="text" class="ae-title" data-i="${i}" value="${a.title||''}">
+        </div>
+        <div class="field">
+          <label>Descrição curta</label>
+          <textarea class="ae-desc" data-i="${i}" rows="2">${a.desc||''}</textarea>
+        </div>
+        <div class="row-2">
+          <div class="field">
+            <label>Ícone</label>
+            <select class="ae-icon" data-i="${i}">${iconOpts}</select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;padding-top:20px;">
+            <div class="toggle-row">
+              <input type="checkbox" id="ae-feat-${i}" class="ae-feat" data-i="${i}" ${a.featured?'checked':''}>
+              <label for="ae-feat-${i}">Exibir como destaque (card grande)</label>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-danger" style="align-self:flex-start;padding:6px 14px;font-size:.62rem;" data-del-area="${i}">Remover área</button>
+      </div>`;
+    wrap.appendChild(el);
+  });
+
+  // Accordion toggle
+  wrap.querySelectorAll('.area-editor-head').forEach(head => {
+    head.addEventListener('click', () => {
+      const i   = head.dataset.i;
+      const body   = wrap.querySelector(`[data-body="${i}"]`);
+      const chev   = head.querySelector('.chevron');
+      const isOpen = body.classList.contains('open');
+      wrap.querySelectorAll('.area-editor-body').forEach(b => b.classList.remove('open'));
+      wrap.querySelectorAll('.chevron').forEach(c => c.classList.remove('open'));
+      if (!isOpen) { body.classList.add('open'); chev.classList.add('open'); }
+    });
+  });
+
+  // Bind inputs
+  wrap.querySelectorAll('.ae-title').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const i = parseInt(inp.dataset.i);
+      D.areas[i].title = inp.value;
+      wrap.querySelectorAll('.area-editor-head')[i].querySelector('.area-editor-title').textContent = inp.value || 'Área sem título';
+    });
+    inp.addEventListener('blur', () => saveData());
+  });
+  wrap.querySelectorAll('.ae-desc').forEach(inp => {
+    inp.addEventListener('input', () => { D.areas[parseInt(inp.dataset.i)].desc = inp.value; });
+    inp.addEventListener('blur', () => saveData());
+  });
+  wrap.querySelectorAll('.ae-icon').forEach(sel => {
+    sel.addEventListener('change', () => { D.areas[parseInt(sel.dataset.i)].icon = sel.value; saveData(); });
+  });
+  wrap.querySelectorAll('.ae-feat').forEach(cb => {
+    cb.addEventListener('change', () => {
+      const i = parseInt(cb.dataset.i);
+      D.areas[i].featured = cb.checked;
+      const badge = wrap.querySelectorAll('.area-editor-head')[i].querySelector('.feat-badge');
+      if (cb.checked && !badge) {
+        const b = document.createElement('span');
+        b.className = 'feat-badge'; b.textContent = 'Destaque';
+        wrap.querySelectorAll('.area-editor-head-left')[i].appendChild(b);
+      } else if (!cb.checked && badge) { badge.remove(); }
+      saveData();
+    });
+  });
+  wrap.querySelectorAll('[data-del-area]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      D.areas.splice(parseInt(btn.dataset.delArea), 1);
+      renderAreasEditor();
+      saveData();
+    });
+  });
+}
+
+document.getElementById('add-area-btn').addEventListener('click', () => {
+  D.areas.push({title:'',desc:'',icon:'counsel',featured:false});
+  renderAreasEditor();
+  saveData();
+  // open the new one
+  setTimeout(() => {
+    const heads = document.querySelectorAll('.area-editor-head');
+    heads[heads.length-1].click();
+  }, 50);
+});
+
+/* ── Populate form fields ─────────────────────────────────── */
+function populateForms() {
+  const s = D.sobre      || {};
+  const p = D.profissional || {};
+  const c = D.contato    || {};
+  const cfg = D.config   || {};
+
+  const tt = D.titles || {};
+
+  // Títulos de seção
+  document.getElementById('t-sobre').value = tt.sobre || DEFAULT.titles.sobre;
+  document.getElementById('t-areas').value = tt.areas || DEFAULT.titles.areas;
+
+  // Sobre
+  document.getElementById('s-lede').value       = s.lede       || '';
+  document.getElementById('s-body').value       = s.body       || '';
+  document.getElementById('s-photo-name').value = s.photoName  || '';
+  document.getElementById('s-photo-role').value = s.photoRole  || '';
+  document.getElementById('s-address').value    = s.address    || '';
+  document.getElementById('s-email').value      = s.email      || '';
+
+  // Profissional
+  document.getElementById('p-name').value        = p.name        || '';
+  document.getElementById('p-role').value        = p.role        || '';
+  document.getElementById('p-years').value       = p.years       || '';
+  document.getElementById('p-credentials').value = p.credentials || '';
+  document.getElementById('p-bio').value         = p.bio         || '';
+  document.getElementById('p-bio2').value        = p.bio2        || '';
+
+  // Contato
+  document.getElementById('c-email').value     = c.email     || '';
+  document.getElementById('c-phone').value     = c.phone     || '';
+  document.getElementById('c-whatsapp').value  = c.whatsapp  || '';
+  document.getElementById('c-address').value   = c.address   || '';
+  document.getElementById('c-instagram').value = c.instagram || '';
+  document.getElementById('c-linkedin').value  = c.linkedin  || '';
+
+  // Config
+  document.getElementById('cfg-title').value = cfg.title || '';
+  document.getElementById('cfg-desc').value  = cfg.desc  || '';
+}
+
+/* ── Collect form data into D ─────────────────────────────── */
+function collectForms() {
+  D.titles = {
+    sobre: document.getElementById('t-sobre').value || DEFAULT.titles.sobre,
+    areas: document.getElementById('t-areas').value || DEFAULT.titles.areas,
+  };
+  D.sobre = {
+    lede:      document.getElementById('s-lede').value,
+    body:      document.getElementById('s-body').value,
+    photoName: document.getElementById('s-photo-name').value,
+    photoRole: document.getElementById('s-photo-role').value,
+    address:   document.getElementById('s-address').value,
+    email:     document.getElementById('s-email').value,
+  };
+  D.profissional = {
+    name:        document.getElementById('p-name').value,
+    role:        document.getElementById('p-role').value,
+    years:       document.getElementById('p-years').value,
+    credentials: document.getElementById('p-credentials').value,
+    bio:         document.getElementById('p-bio').value,
+    bio2:        document.getElementById('p-bio2').value,
+  };
+  D.contato = {
+    email:     document.getElementById('c-email').value,
+    phone:     document.getElementById('c-phone').value,
+    whatsapp:  document.getElementById('c-whatsapp').value,
+    address:   document.getElementById('c-address').value,
+    instagram: document.getElementById('c-instagram').value,
+    linkedin:  document.getElementById('c-linkedin').value,
+  };
+  D.config = {
+    title: document.getElementById('cfg-title').value,
+    desc:  document.getElementById('cfg-desc').value,
+  };
+}
+
+/* ── Save ─────────────────────────────────────────────────── */
+document.getElementById('save-btn').addEventListener('click', () => {
+  collectForms();
+  saveData();
+});
+
+/* ── Password change ──────────────────────────────────────── */
+document.getElementById('change-pw-btn').addEventListener('click', () => {
+  const n1 = document.getElementById('cfg-pw-new').value;
+  const n2 = document.getElementById('cfg-pw-confirm').value;
+  if (!n1) { showToast('Informe a nova senha.', true); return; }
+  if (n1 !== n2) { showToast('As senhas não coincidem.', true); return; }
+  localStorage.setItem('mdc_pw', n1);
+  document.getElementById('cfg-pw-new').value    = '';
+  document.getElementById('cfg-pw-confirm').value = '';
+  showToast('Senha atualizada com sucesso.');
+});
+
+/* ── Reset ────────────────────────────────────────────────── */
+document.getElementById('reset-btn').addEventListener('click', () => {
+  if (!confirm('Tem certeza? Todo o conteúdo personalizado será apagado.')) return;
+  localStorage.removeItem('mdc_content');
+  localStorage.removeItem('mdc_logo');
+  localStorage.removeItem('mdc_photo');
+  localStorage.removeItem('mdc_behold_id');
+  D = JSON.parse(JSON.stringify(DEFAULT));
+  populateForms();
+  renderSlidesEditor();
+  renderAreasEditor();
+  showToast('Conteúdo restaurado para os valores padrão.');
+});
+
+/* ── Init ─────────────────────────────────────────────────── */
+/* ── Instagram / Behold ───────────────────────────────────── */
+function initInstagram() {
+  const input   = document.getElementById('ig-behold-id');
+  const status  = document.getElementById('ig-save-status');
+  const preview = document.getElementById('ig-preview-area');
+  const toggle  = document.getElementById('ig-visible-toggle');
+  const wrap    = document.getElementById('ig-toggle-wrap');
+  const label   = document.getElementById('ig-status-label');
+
+  // Load toggle state (default: off)
+  const isVisible = localStorage.getItem('mdc_ig_visible') === 'true';
+  toggle.checked = isVisible;
+  updateToggleUI(isVisible);
+
+  toggle.addEventListener('change', () => {
+    const val = toggle.checked;
+    localStorage.setItem('mdc_ig_visible', val);
+    updateToggleUI(val);
+    showToast(val ? 'Seção Instagram ativada no site.' : 'Seção Instagram desativada no site.');
+  });
+
+  function updateToggleUI(on) {
+    wrap.classList.toggle('on', on);
+    label.textContent = on ? 'Ligado' : 'Desligado';
+    label.className = 'pill-status ' + (on ? 'on' : 'off');
+  }
+
+  // Load feed ID
+  const saved = localStorage.getItem('mdc_behold_id') || '';
+  if (input) input.value = saved;
+  if (saved && preview) renderBeholdPreview(saved, preview);
+
+  document.getElementById('ig-save-btn').addEventListener('click', () => {
+    const val = (input.value || '').trim();
+    if (val) {
+      localStorage.setItem('mdc_behold_id', val);
+      renderBeholdPreview(val, preview);
+    } else {
+      localStorage.removeItem('mdc_behold_id');
+      if (preview) preview.innerHTML = 'Configure o Feed ID acima para ver uma prévia dos seus Reels aqui.';
+    }
+    status.textContent = 'Salvo!';
+    status.style.color = 'var(--green)';
+    setTimeout(() => { status.textContent = ''; }, 2500);
+  });
+
+  if (location.hash === '#instagram') {
+    document.querySelector('[data-panel="instagram"]')?.click();
+  }
+}
+
+/* ── Crop / framing ──────────────────────────────────────── */
+function loadCropState() {
+  try {
+    const raw = localStorage.getItem(CROP_STATE_KEY);
+    if (raw) cropState = Object.assign({ x: 0, y: 0, scale: 1 }, JSON.parse(raw));
+    else cropState = { x: 0, y: 0, scale: 1 };
+  } catch(e) { cropState = { x: 0, y: 0, scale: 1 }; }
+}
+
+function saveCropState() {
+  localStorage.setItem(CROP_STATE_KEY, JSON.stringify(cropState));
+}
+
+function applyCropState() {
+  const img = document.getElementById('crop-img');
+  if (!img) return;
+  img.style.transform = `translate(${cropState.x}%, ${cropState.y}%) scale(${cropState.scale})`;
+  const z = document.getElementById('crop-zoom');
+  if (z) z.value = Math.round(cropState.scale * 100);
+  const zv = document.getElementById('crop-zoom-val');
+  if (zv) zv.textContent = Math.round(cropState.scale * 100) + '%';
+}
+
+function initCrop(src) {
+  const img    = document.getElementById('crop-img');
+  const empty  = document.getElementById('crop-empty');
+  const circle = document.getElementById('crop-circle');
+  const zoom   = document.getElementById('crop-zoom');
+  const reset  = document.getElementById('crop-reset');
+  if (!img || !circle) return;
+
+  loadCropState();
+
+  if (src) {
+    img.src = src;
+    img.onload = () => {
+      img.classList.add('show');
+      empty.classList.add('hide');
+      applyCropState();
+    };
+    if (img.complete && img.naturalWidth > 0) {
+      img.classList.add('show');
+      empty.classList.add('hide');
+      applyCropState();
+    }
+  } else {
+    img.classList.remove('show');
+    empty.classList.remove('hide');
+  }
+
+  // Drag handler — convert drag delta to % of circle size
+  if (!circle.dataset.cropBound) {
+    circle.dataset.cropBound = '1';
+    let dragging = false, startX = 0, startY = 0, startCX = 0, startCY = 0;
+
+    const onDown = (e) => {
+      if (!img.classList.contains('show')) return;
+      dragging = true;
+      circle.classList.add('dragging');
+      const pt = e.touches ? e.touches[0] : e;
+      startX = pt.clientX; startY = pt.clientY;
+      startCX = cropState.x; startCY = cropState.y;
+      e.preventDefault();
+    };
+    const onMove = (e) => {
+      if (!dragging) return;
+      const pt = e.touches ? e.touches[0] : e;
+      const rect = circle.getBoundingClientRect();
+      const dxPct = ((pt.clientX - startX) / rect.width) * 100;
+      const dyPct = ((pt.clientY - startY) / rect.height) * 100;
+      cropState.x = Math.max(-80, Math.min(80, startCX + dxPct));
+      cropState.y = Math.max(-80, Math.min(80, startCY + dyPct));
+      applyCropState();
+    };
+    const onUp = () => {
+      if (!dragging) return;
+      dragging = false;
+      circle.classList.remove('dragging');
+      saveCropState();
+    };
+
+    circle.addEventListener('mousedown', onDown);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    circle.addEventListener('touchstart', onDown, { passive: false });
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
+  }
+
+  if (zoom && !zoom.dataset.cropBound) {
+    zoom.dataset.cropBound = '1';
+    zoom.addEventListener('input', () => {
+      cropState.scale = parseInt(zoom.value, 10) / 100;
+      applyCropState();
+    });
+    zoom.addEventListener('change', saveCropState);
+  }
+
+  if (reset && !reset.dataset.cropBound) {
+    reset.dataset.cropBound = '1';
+    reset.addEventListener('click', () => {
+      cropState = { x: 0, y: 0, scale: 1 };
+      applyCropState();
+      saveCropState();
+      showToast('Enquadramento restaurado.');
+    });
+  }
+}
+
+function renderBeholdPreview(feedId, container) {
+  container.innerHTML = `<behold-widget feed-id="${feedId}" style="width:100%"></behold-widget>`;
+  if (!document.querySelector('script[src*="behold.so"]')) {
+    const s = document.createElement('script');
+    s.src = 'https://w.behold.so/widget.js';
+    s.type = 'module';
+    document.head.appendChild(s);
+  }
+}
+
+function initAdmin() {
+  loadData();
+  populateForms();
+  renderSlidesEditor();
+  renderAreasEditor();
+
+  // Auto-save static panel fields on blur (so user doesn't have to click Save every time)
+  const staticIds = [
+    't-sobre','t-areas',
+    's-lede','s-body','s-photo-name','s-photo-role','s-address','s-email',
+    'p-name','p-role','p-years','p-credentials','p-bio','p-bio2',
+    'c-email','c-phone','c-whatsapp','c-address','c-instagram','c-linkedin',
+    'cfg-title','cfg-desc',
+  ];
+  staticIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el || el.dataset.autosaveBound) return;
+    el.dataset.autosaveBound = '1';
+    el.addEventListener('blur', () => { collectForms(); saveData(); });
+  });
+
+  setupImgUpload('photo-file-input', 'photo-preview', 'photo-placeholder', 'mdc_photo', (data) => initCrop(data));
+  setupImgRemove('photo-remove', 'photo-preview', 'photo-placeholder', 'mdc_photo');
+
+  // Initialize crop with existing photo (or default fallback)
+  initCrop(localStorage.getItem('mdc_photo') || './img/foto-renata.jpg');
+
+  setupImgUpload('logo-file-input', 'logo-preview', 'logo-placeholder', 'mdc_logo');
+  setupImgRemove('logo-remove', 'logo-preview', 'logo-placeholder', 'mdc_logo');
+
+  initInstagram();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador — Jurídico Escolar</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0d1117;
+    --ink2: #2a3340;
+    --ink3: #5a6478;
+    --paper: #f9f6f1;
+    --cream: #f0ebe2;
+    --gold: #c8964a;
+    --gold-light: #e8c27a;
+    --red: #c0392b;
+    --green: #1a5c3a;
+    --blue: #1a3a5c;
+    --border: rgba(13,17,23,0.12);
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .app-header {
+    background: var(--ink);
+    color: white;
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    gap: 20px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .app-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+  .app-header h1 span { color: var(--gold-light); }
+  .app-header p {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+    margin-top: 4px;
+  }
+  .badge {
+    margin-left: auto;
+    background: var(--gold);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 95px);
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--cream);
+    border-right: 1px solid var(--border);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink3);
+    padding: 4px 8px 8px;
+    margin-top: 8px;
+  }
+  .theme-btn {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .theme-btn:hover { border-color: var(--gold); background: #fffdf8; }
+  .theme-btn.active {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: white;
+  }
+  .theme-btn .t-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .theme-btn.active .t-icon { background: rgba(255,255,255,0.15); }
+  .theme-btn:not(.active) .t-icon { background: var(--cream); }
+  .t-name { font-size: 13px; font-weight: 500; line-height: 1.3; }
+  .t-count { font-size: 11px; color: var(--ink3); margin-top: 1px; }
+  .theme-btn.active .t-count { color: rgba(255,255,255,0.6); }
+
+  /* MAIN */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 20px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    background: white;
+  }
+  .controls label { font-size: 13px; font-weight: 500; color: var(--ink2); }
+  .controls select, .controls input {
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    background: white;
+    color: var(--ink);
+    outline: none;
+    transition: border 0.15s;
+  }
+  .controls select:focus, .controls input:focus { border-color: var(--gold); }
+  .controls input { flex: 1; min-width: 200px; }
+  .gen-btn {
+    background: var(--ink);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    white-space: nowrap;
+  }
+  .gen-btn:hover { background: var(--gold); color: var(--ink); }
+  .gen-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .gen-btn svg { width: 15px; height: 15px; }
+
+  /* PLAN SECTION */
+  .plan-section {
+    padding: 28px 32px;
+    border-bottom: 1px solid var(--border);
+    background: #fffdf8;
+  }
+  .plan-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    color: var(--ink2);
+  }
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  .week-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    cursor: pointer;
+    transition: all 0.18s;
+  }
+  .week-card:hover { border-color: var(--gold); box-shadow: 0 2px 8px rgba(200,150,74,0.15); }
+  .week-card.selected { border-color: var(--ink); background: var(--ink); color: white; }
+  .week-num {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink3);
+    margin-bottom: 4px;
+  }
+  .week-card.selected .week-num { color: rgba(255,255,255,0.6); }
+  .week-theme { font-size: 13px; font-weight: 500; line-height: 1.4; }
+  .week-posts {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--ink3);
+  }
+  .week-card.selected .week-posts { color: rgba(255,255,255,0.5); }
+  .post-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gold);
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+  .week-card.selected .post-dot { background: var(--gold-light); }
+
+  /* CONTENT AREA */
+  .content-area {
+    flex: 1;
+    padding: 28px 32px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* POST CARD */
+  .post-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+  }
+  .post-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .post-header {
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .post-day-badge {
+    background: var(--ink);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .post-format-badge {
+    font-size: 11px;
+    color: var(--ink3);
+    border: 1px solid var(--border);
+    padding: 3px 9px;
+    border-radius: 20px;
+  }
+  .post-source-badge {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--green);
+    background: rgba(26,92,58,0.08);
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .post-body { padding: 20px; }
+  .post-hook {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+  .post-content {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--ink2);
+    white-space: pre-wrap;
+  }
+  .post-content.generating {
+    color: var(--ink3);
+    font-style: italic;
+  }
+  .post-tags {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    background: var(--cream);
+    color: var(--ink3);
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .post-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fafaf8;
+  }
+  .source-link {
+    font-size: 12px;
+    color: var(--ink3);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .source-link a {
+    color: var(--blue);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .source-link a:hover { text-decoration: underline; }
+  .copy-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--ink2);
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .copy-btn:hover { border-color: var(--gold); color: var(--ink); }
+  .copy-btn.copied { border-color: var(--green); color: var(--green); }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block;
+    width: 14px; height: 14px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--ink3);
+  }
+  .empty-state .big { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; line-height: 1.6; max-width: 340px; margin: 0 auto; }
+
+  /* NOTA */
+  .nota-strip {
+    background: rgba(26,92,58,0.07);
+    border: 1px solid rgba(26,92,58,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div>
+    <h1>Jurídico <span>Escolar</span></h1>
+    <p>Gerador de conteúdo para Instagram · Advogada Renata</p>
+  </div>
+  <div class="badge">Instagram · 2x/semana</div>
+</div>
+
+<div class="layout">
+
+  <!-- SIDEBAR TEMAS -->
+  <aside class="sidebar">
+    <div class="sidebar-label">Temas</div>
+
+    <button class="theme-btn active" onclick="setTema('inadimplencia', this)">
+      <div class="t-icon">💸</div>
+      <div>
+        <div class="t-name">Inadimplência Escolar</div>
+        <div class="t-count">Lei 9.870/99 · STJ · CDC</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('bullying', this)">
+      <div class="t-icon">🛡️</div>
+      <div>
+        <div class="t-name">Bullying e Cyberbullying</div>
+        <div class="t-count">Lei 14.811/24 · Código Penal</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('lgpd', this)">
+      <div class="t-icon">🔒</div>
+      <div>
+        <div class="t-name">LGPD nas Escolas</div>
+        <div class="t-count">Lei 13.709/18 · ANPD · ECA</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('contrato', this)">
+      <div class="t-icon">📋</div>
+      <div>
+        <div class="t-name">Contrato Educacional</div>
+        <div class="t-count">CDC · CC · Lei 9.870/99</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('acidente', this)">
+      <div class="t-icon">⚠️</div>
+      <div>
+        <div class="t-name">Acidente Escolar</div>
+        <div class="t-count">Art. 932 CC · CDC · STJ</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('responsabilidade', this)">
+      <div class="t-icon">⚖️</div>
+      <div>
+        <div class="t-name">Responsabilidade Civil</div>
+        <div class="t-count">CC · CDC · Jurisprudência</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('professores', this)">
+      <div class="t-icon">👩‍🏫</div>
+      <div>
+        <div class="t-name">Direitos dos Professores</div>
+        <div class="t-count">CLT · Banco de horas · NR</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('cdc', this)">
+      <div class="t-icon">🛒</div>
+      <div>
+        <div class="t-name">CDC e Consumidor</div>
+        <div class="t-count">Lei 8.078/90 · Procon · STJ</div>
+      </div>
+    </button>
+
+    <button class="theme-btn" onclick="setTema('eca', this)">
+      <div class="t-icon">👶</div>
+      <div>
+        <div class="t-name">ECA</div>
+        <div class="t-count">Lei 8.069/90 · Conselho Tutelar</div>
+      </div>
+    </button>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- CONTROLS -->
+    <div class="controls">
+      <label>Semana:</label>
+      <select id="sel-semana">
+        <option value="1">Semana 1</option>
+        <option value="2">Semana 2</option>
+        <option value="3">Semana 3</option>
+        <option value="4">Semana 4</option>
+      </select>
+      <label>Formato:</label>
+      <select id="sel-formato">
+        <option value="carrossel">Carrossel</option>
+        <option value="reels">Reels (script)</option>
+        <option value="feed">Post de Feed</option>
+        <option value="stories">Stories</option>
+      </select>
+      <input type="text" id="inp-angulo" placeholder="Ângulo específico (opcional) — ex: 'foco em escolas pequenas'">
+      <button class="gen-btn" id="btn-gerar" onclick="gerarPost()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        Gerar post
+      </button>
+    </div>
+
+    <!-- PLANO SEMANAS -->
+    <div class="plan-section">
+      <div class="plan-title">Plano editorial — 4 semanas</div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-area" id="content-area">
+      <div class="empty-state">
+        <div class="big">✏️</div>
+        <p>Selecione um tema na barra lateral, escolha o formato e clique em <strong>Gerar post</strong> para criar conteúdo verificado sobre Jurídico Escolar.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://api.anthropic.com/v1/messages';
+
+const temaAtual = { id: 'inadimplencia' };
+
+const PLANO = [
+  {
+    semana: 1, tema: 'Inadimplência + Bullying',
+    posts: [
+      { dia: 'Post 1 (Seg)', titulo: 'O que a escola pode e não pode fazer com aluno inadimplente', formato: 'Carrossel', tema: 'inadimplencia' },
+      { dia: 'Post 2 (Qui)', titulo: 'Lei 14.811/24: bullying virou crime no Brasil', formato: 'Feed', tema: 'bullying' },
+    ]
+  },
+  {
+    semana: 2, tema: 'LGPD + Contrato',
+    posts: [
+      { dia: 'Post 3 (Seg)', titulo: 'LGPD na escola: 5 erros que podem gerar multa', formato: 'Carrossel', tema: 'lgpd' },
+      { dia: 'Post 4 (Qui)', titulo: 'Contrato de matrícula: cláusulas que não têm validade', formato: 'Reels', tema: 'contrato' },
+    ]
+  },
+  {
+    semana: 3, tema: 'Acidente + Responsabilidade',
+    posts: [
+      { dia: 'Post 5 (Seg)', titulo: 'Aluno se machucou na escola: quem responde?', formato: 'Carrossel', tema: 'acidente' },
+      { dia: 'Post 6 (Qui)', titulo: 'STJ fixou indenização de R$ 1 milhão por morte em excursão escolar', formato: 'Feed', tema: 'responsabilidade' },
+    ]
+  },
+  {
+    semana: 4, tema: 'Professores + CDC + ECA',
+    posts: [
+      { dia: 'Post 7 (Seg)', titulo: 'Banco de horas do professor: o que a CLT permite?', formato: 'Carrossel', tema: 'professores' },
+      { dia: 'Post 8 (Qui)', titulo: 'Escola é prestadora de serviço: o CDC se aplica?', formato: 'Feed', tema: 'cdc' },
+    ]
+  }
+];
+
+const CONTEXTOS = {
+  inadimplencia: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- Lei 9.870/1999, art. 6º: é PROIBIDO suspender provas, reter documentos ou aplicar penalidades pedagógicas por inadimplência.
+- Art. 6º, §1º, Lei 9.870/99: o desligamento do aluno por inadimplência só pode ocorrer ao final do ano letivo.
+- STJ, jurisprudência pacificada: humilhação de aluno por condição financeira gera dano moral in re ipsa (presume-se do próprio fato).
+- TJ-AM (2025): escola condenada a pagar R$ 8.000 de dano moral por reter notas de aluno inadimplente.
+- Pesquisa com 4.000 escolas: inadimplência caiu de 22,63% (2023) para 20,36% (2024).
+- STJ reconhece legitimidade do MP para ACP em defesa de pais e alunos (REsp 120.143).
+- Fonte: legale.com.br/blog/inadimplencia-escolar-limites-legais-da-cobranca e diarioescola.com.br`,
+    tags: ['#JurídicoEscolar', '#Inadimplência', '#EscolaPrivada', '#DireitoEducacional', '#Lei9870']
+  },
+  bullying: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- Lei 14.811/2024 (publicada em 12/01/2024): criminalizou bullying e cyberbullying no Brasil, incluindo novo art. 146-A no Código Penal.
+- Bullying: pena de multa (casos graves podem incluir lesão corporal).
+- Cyberbullying via internet/redes sociais/apps/jogos online: pena de reclusão de 2 a 4 anos + multa.
+- A lei também tornou crime hediondo o induzimento a suicídio por meio digital.
+- TJ-SC (abril/2024): condenou ente público por omissão da escola diante de episódios de bullying noticiados à instituição — falha no dever de vigilância.
+- Recomendação técnica: notificação formal e escrita à escola antes de ação indenizatória.
+- A lei exige protocolos de proteção com capacitação do corpo docente.
+- Fonte: migalhas.com.br, jusbrasil.com.br, educacaointegral.org.br`,
+    tags: ['#JurídicoEscolar', '#Bullying', '#Cyberbullying', '#Lei14811', '#EscolaSegura']
+  },
+  lgpd: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- LGPD (Lei 13.709/2018), vigente desde setembro/2020: aplica-se integralmente às escolas.
+- Art. 14, §1º, LGPD: tratamento de dados de crianças exige consentimento específico e destacado de ao menos um dos pais ou responsável legal.
+- A escola é "controladora de dados" nos termos do art. 5º, VI, LGPD.
+- Art. 41 LGPD: escolas devem nomear Encarregado de Dados (DPO). A ANPD pode dispensar empresas de pequeno porte (regulamentação em curso).
+- Sanções da ANPD: advertência, multa de até 2% do faturamento, suspensão parcial do banco de dados.
+- ANPD publicou Guia Orientativo para Tratamento de dados em contexto acadêmico.
+- Biometria em portaria e aplicativos de comunicação são exemplos de coleta de dados que exigem conformidade.
+- Fonte: migalhas.com.br/depeso/341105, oabcampinas.org.br, isaac.com.br/blog/lgpd-nas-escolas`,
+    tags: ['#LGPD', '#JurídicoEscolar', '#ProtecaoDeDados', '#EscolaPrivada', '#ANPD']
+  },
+  contrato: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- O contrato de prestação de serviços educacionais é regulado pela Lei 9.870/99 e pelo CDC (Lei 8.078/90).
+- STJ, jurisprudência: acordo entre consumidor e escola feito em juízo não afasta multa aplicada pelo Procon (REsp 1.164.146).
+- STJ: escolas não podem cobrar integralmente por horas-aula não ministradas (REsp com Ministro Salomão).
+- CDC art. 51: cláusulas que coloquem o consumidor em desvantagem exagerada são nulas de pleno direito.
+- A cobrança de material didático deve estar detalhada no contrato — pacificado no STJ.
+- Renovação de matrícula: escola pode negar renovação de aluno inadimplente ao final do ano letivo (Lei 9.870/99, arts. 5º e 6º — REsp 553.216).
+- Fonte: mpam.mp.br/caoinf-noticias/stj-especial e legislação aplicável`,
+    tags: ['#ContratoEscolar', '#JurídicoEscolar', '#CDC', '#EscolaPrivada', '#DireitoEducacional']
+  },
+  acidente: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- Código Civil, art. 932, IV: estabelecimentos de ensino são responsáveis pelos danos causados por alunos durante o período em que estiverem sob sua vigilância.
+- A responsabilidade da escola privada é objetiva (art. 14 do CDC) pela relação de consumo.
+- STJ (2026): indenização de R$ 1 milhão fixada por morte de aluna de 17 anos durante excursão escolar — escola falhou no dever de guarda e vigilância (4ª Turma, unânime).
+- STJ (jurisprudência consolidada): pensão vitalícia é devida mesmo que o aluno nunca tenha trabalhado — visa reparar capacidade laborativa futura (art. 950 CC).
+- A pensão indenizatória e o benefício previdenciário do INSS podem ser cumulados (naturezas distintas).
+- Dever de vigilância é gradual: absoluto na educação infantil/fundamental I; mitigado no ensino médio.
+- Fonte: migalhas.com.br/quentes/449218, legale.com.br/blog/responsabilidade-civil-na-escola-indenizacao-e-pensao`,
+    tags: ['#AcidenteEscolar', '#JurídicoEscolar', '#ResponsabilidadeCivil', '#STJ', '#EscolaPrivada']
+  },
+  responsabilidade: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- STJ, 4ª Turma (fevereiro/2026): indenização de R$ 1 milhão mantida por morte de aluna em excursão escolar. O valor representava apenas 13,9% do limite do seguro da própria escola.
+- STJ estabeleceu parâmetro orientador de 300 a 500 salários mínimos por morte de familiar — mas pode ser superado em casos excepcionais.
+- Responsabilidade civil das escolas privadas: subjetiva (arts. 927 e 932, III, CC) por atos de prepostos; e objetiva via CDC (art. 14) pela relação de consumo.
+- Dano moral in re ipsa: aplica-se em casos de humilhação do aluno por situação financeira — presume-se o dano.
+- "Perda de uma chance": aplicável quando a escola age com negligência no socorro e priva o aluno de melhor recuperação.
+- Fonte: cj.estrategia.com/portal/responsabilidade-civil-escolar-stj-caso-excursao, migalhas.com.br/quentes/449218`,
+    tags: ['#ResponsabilidadeCivil', '#JurídicoEscolar', '#STJ', '#DanoMoral', '#EscolaPrivada']
+  },
+  professores: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- A CLT se aplica integralmente ao contrato de trabalho de professores de escolas privadas.
+- Lei 9.394/1996 (LDB): o trabalho do professor inclui horas de preparação de aulas e atividades extraclasse — não apenas horas em sala.
+- Banco de horas: permitido por acordo coletivo ou convenção coletiva (CLT art. 59, §2º) — não pode ser imposto unilateralmente pela escola.
+- Insalubridade: NR-15 do MTE — a caracterização depende de laudo técnico. Escolas podem ter agentes insalubres como ruído excessivo e agentes biológicos (creches e educação infantil em especial).
+- TST possui súmulas sobre isonomia salarial entre professores com mesma função e nível de formação.
+- Jornada do professor: inclui 1/3 da carga como hora-atividade (LDB art. 67, V — com prazos progressivos estabelecidos pelo PSPN/Lei 11.738/2008).
+- Fonte: CLT, LDB, Lei 11.738/2008 e NR-15 MTE`,
+    tags: ['#DireitoDoTrabalho', '#JurídicoEscolar', '#Professores', '#CLT', '#EscolaPrivada']
+  },
+  cdc: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- STJ, jurisprudência pacificada: a relação entre pais/alunos e escola privada é de consumo — o CDC (Lei 8.078/90) se aplica plenamente.
+- CDC art. 14: responsabilidade objetiva pelo defeito na prestação do serviço (independe de culpa).
+- CDC art. 51: cláusulas abusivas em contratos escolares são nulas.
+- CDC art. 39, IX: é prática abusiva recusar-se a atender demandas dos consumidores, salvo justa causa.
+- Procon pode multar escola por infrações ao CDC, inclusive por práticas coercitivas de cobrança.
+- STJ (REsp 1.164.146): acordo homologado em juízo não afasta multa do Procon — são verbas de natureza distinta.
+- A cobrança de taxas extras não previstas no contrato viola o CDC e a Lei 9.870/99.
+- Fonte: mpam.mp.br/caoinf-noticias/stj-especial, CDC e jurisprudência STJ`,
+    tags: ['#CDC', '#JurídicoEscolar', '#ConsumidorEscolar', '#EscolaPrivada', '#Procon']
+  },
+  eca: {
+    base: `Você é uma advogada especializada em Direito Educacional, com escritório próprio em São Paulo, e cria conteúdo direto e prático para gestores e proprietários de escolas privadas no Instagram.
+
+DADOS VERIFICADOS E FONTES (use apenas estas informações):
+- ECA (Lei 8.069/1990): toda criança e adolescente tem direito à educação (art. 53). É obrigação da escola comunicar ao Conselho Tutelar casos de abandono escolar (art. 56).
+- ECA art. 5º: nenhuma criança será objeto de qualquer forma de negligência, discriminação, exploração, violência, crueldade ou opressão.
+- A Lei 14.811/2024 alterou o ECA para incluir combate ao bullying e cyberbullying.
+- Escola tem dever legal de comunicar ao Conselho Tutelar: faltas injustificadas reiteradas, maus tratos, ou situações que revelem violência (ECA art. 56, I, II e III).
+- O direito à educação é garantia constitucional (CF art. 205) — nenhuma dívida financeira pode obstruir o acesso ao ensino.
+- Conselho Tutelar: medida de proteção cabível em situações de vulnerabilidade detectadas no ambiente escolar (ECA art. 101).
+- Fonte: ECA, CF/1988, Lei 14.811/2024`,
+    tags: ['#ECA', '#JurídicoEscolar', '#DireitosDaCriança', '#EscolaPrivada', '#ProtecaoIntegral']
+  }
+};
+
+function setTema(id, btn) {
+  temaAtual.id = id;
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function renderPlano() {
+  const grid = document.getElementById('week-grid');
+  grid.innerHTML = PLANO.map((w, i) => `
+    <div class="week-card ${i===0?'selected':''}" onclick="selectWeek(${i}, this)">
+      <div class="week-num">Semana ${w.semana}</div>
+      <div class="week-theme">${w.tema}</div>
+      <div class="week-posts">
+        ${w.posts.map(p => `<span class="post-dot"></span>${p.dia}<br>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectWeek(idx, el) {
+  document.querySelectorAll('.week-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('sel-semana').value = idx + 1;
+}
+
+async function gerarPost() {
+  const btn = document.getElementById('btn-gerar');
+  const area = document.getElementById('content-area');
+  const semana = document.getElementById('sel-semana').value;
+  const formato = document.getElementById('sel-formato').value;
+  const angulo = document.getElementById('inp-angulo').value;
+  const tema = temaAtual.id;
+  const ctx = CONTEXTOS[tema];
+  
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Gerando...';
+
+  const formatoDesc = {
+    carrossel: 'Carrossel de Instagram (8-10 slides): Slide 1 = gancho/título impactante, Slides 2-7 = conteúdo em tópicos curtos (máx 3 linhas por slide), Slide 8 = CTA. Indique cada slide com "📌 SLIDE X:"',
+    reels: 'Script para Reels de Instagram (30-45 segundos): indicar cenas com tempo aproximado, gancho nos primeiros 3 segundos, conteúdo dinâmico, CTA no final.',
+    feed: 'Post de feed do Instagram: legenda completa com gancho na primeira linha (que aparece antes do "ver mais"), desenvolvimento em 3-4 parágrafos curtos, hashtags ao final.',
+    stories: 'Sequência de 5 Stories do Instagram: cada story com texto curto e direto (máx 15 palavras), indicar cor de fundo sugerida e elemento visual.'
+  }[formato];
+
+  const anguloExtra = angulo ? `\n\nÂNGULO ESPECÍFICO SOLICITADO: ${angulo}` : '';
+
+  const prompt = `${ctx.base}
+
+FORMATO SOLICITADO: ${formatoDesc}${anguloExtra}
+
+INSTRUÇÕES OBRIGATÓRIAS:
+1. Use APENAS os dados verificados fornecidos acima. Nunca invente leis, decisões ou números.
+2. Tom: direto e prático — fale como quem conhece bem o assunto e quer ajudar gestores e donos de escola a se protegerem.
+3. O conteúdo deve gerar valor imediato: o leitor deve sair sabendo algo que pode aplicar.
+4. Primeira linha/gancho: deve criar urgência ou curiosidade real, sem clickbait vazio.
+5. Inclua ao final: "📌 Fonte: [citar a fonte específica dos dados usados]"
+6. Não use frases genéricas como "é muito importante" ou "fique atento". Seja específico.
+7. Adapte a linguagem para proprietários e gestores de escolas privadas — eles são os responsáveis legais.
+
+Gere o conteúdo completo agora:`;
+
+  const cardId = 'post-' + Date.now();
+  const temasNomes = {
+    inadimplencia: 'Inadimplência Escolar', bullying: 'Bullying e Cyberbullying',
+    lgpd: 'LGPD nas Escolas', contrato: 'Contrato Educacional',
+    acidente: 'Acidente Escolar', responsabilidade: 'Responsabilidade Civil',
+    professores: 'Direitos dos Professores', cdc: 'CDC e Consumidor', eca: 'ECA'
+  };
+
+  area.innerHTML = `
+    <div class="nota-strip">
+      ✅ Conteúdo gerado com base em fontes verificadas — leis e jurisprudências reais. Revise antes de publicar.
+    </div>
+    <div class="post-card" id="${cardId}">
+      <div class="post-header">
+        <span class="post-day-badge">Semana ${semana}</span>
+        <span class="post-format-badge">${formato.charAt(0).toUpperCase()+formato.slice(1)}</span>
+        <span class="post-source-badge">✓ Fontes verificadas</span>
+      </div>
+      <div class="post-body">
+        <div class="post-hook">${temasNomes[tema]}</div>
+        <div class="post-content generating" id="content-${cardId}">Gerando conteúdo com base em jurisprudência e legislação real...</div>
+        <div class="post-tags">${ctx.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      </div>
+      <div class="post-footer">
+        <span class="source-link">📚 Fontes: legislação e jurisprudência brasileiras</span>
+        <button class="copy-btn" id="copy-${cardId}" onclick="copiarPost('${cardId}')">
+          📋 Copiar texto
+        </button>
+      </div>
+    </div>`;
+
+  const contentEl = document.getElementById(`content-${cardId}`);
+
+  try {
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        stream: true,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const reader = resp.body.getReader();
+    const decoder = new TextDecoder();
+    let full = '';
+    contentEl.classList.remove('generating');
+    contentEl.textContent = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n');
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+          try {
+            const json = JSON.parse(data);
+            if (json.type === 'content_block_delta' && json.delta?.text) {
+              full += json.delta.text;
+              contentEl.textContent = full;
+            }
+          } catch {}
+        }
+      }
+    }
+
+    if (!full) {
+      const respB = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+      const data = await respB.json();
+      full = data.content?.map(b => b.text||'').join('') || 'Erro ao gerar conteúdo.';
+      contentEl.textContent = full;
+    }
+
+  } catch(e) {
+    contentEl.textContent = 'Erro ao conectar com a API. Verifique a conexão e tente novamente.';
+    contentEl.classList.add('generating');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Gerar post';
+}
+
+function copiarPost(cardId) {
+  const el = document.getElementById(`content-${cardId}`);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    const btn = document.getElementById(`copy-${cardId}`);
+    btn.textContent = '✅ Copiado!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copiar texto';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+renderPlano();
+</script>
+</body>
+</html>

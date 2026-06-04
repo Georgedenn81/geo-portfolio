@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ADMIN — GEO PORTFOLIO</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #1A1714;
+      --surface: #211E1A;
+      --border:  #2E2A25;
+      --lime:    #C8F135;
+      --white:   #F0EDE8;
+      --muted:   #7A7368;
+      --dim:     #3A3530;
+      --red:     #FF6B6B;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--white); font-family: 'Space Mono', monospace; min-height: 100vh; }
+
+    /* ── GATE ── */
+    #gate { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 9999; }
+    #gate.hidden { display: none; }
+    .gate-box { width: 380px; border: 1px solid var(--border); padding: 52px 44px; background: var(--surface); }
+    .gate-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 2.2rem; font-weight: 900; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .gate-logo span { color: var(--lime); }
+    .gate-subtitle { font-size: 0.55rem; letter-spacing: 0.28em; text-transform: uppercase; color: var(--muted); margin-bottom: 44px; }
+    .gate-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--dim); padding: 12px 0; color: var(--white); font-family: 'Space Mono', monospace; font-size: 0.9rem; outline: none; margin-bottom: 24px; transition: border-color 0.2s; }
+    .gate-input:focus { border-color: var(--lime); }
+    .gate-input::placeholder { color: var(--dim); }
+    .gate-btn { width: 100%; background: var(--lime); color: var(--bg); border: none; padding: 15px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.95rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
+    .gate-btn:hover { background: var(--white); }
+    .gate-err { font-size: 0.6rem; color: var(--red); letter-spacing: 0.15em; margin-top: 12px; min-height: 16px; text-transform: uppercase; }
+
+    /* ── PANEL ── */
+    #panel { display: none; flex-direction: column; min-height: 100vh; }
+    #panel.visible { display: flex; }
+
+    /* ── HEADER ── */
+    .admin-header { position: sticky; top: 0; z-index: 100; display: flex; align-items: center; padding: 0 32px; background: rgba(26,23,20,0.97); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); height: 58px; gap: 0; }
+    .admin-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 900; letter-spacing: 0.12em; white-space: nowrap; padding-right: 28px; border-right: 1px solid var(--border); }
+    .admin-logo span { color: var(--lime); }
+    .admin-tabs { display: flex; gap: 0; flex: 1; padding-left: 8px; }
+    .tab-btn { background: none; border: none; padding: 0 20px; height: 58px; font-family: 'Space Mono', monospace; font-size: 0.58rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; }
+    .tab-btn:hover { color: var(--white); }
+    .tab-btn.active { color: var(--lime); border-bottom-color: var(--lime); }
+    .admin-actions { display: flex; gap: 10px; align-items: center; margin-left: auto; }
+    .btn-save { background: var(--lime); color: var(--bg); border: none; padding: 8px 22px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
+    .btn-save:hover { background: var(--white); }
+    #save-status { font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); transition: color 0.3s; white-space: nowrap; }
+    #save-status.saved { color: var(--lime); }
+    #save-status.unsaved { color: var(--muted); }
+    .btn-preview { color: var(--lime); border: 1px solid var(--lime); padding: 7px 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; text-decoration: none; transition: background 0.15s, color 0.15s; }
+    .btn-preview:hover { background: var(--lime); color: var(--bg); }
+    .btn-logout { background: none; border: 1px solid var(--dim); color: var(--muted); padding: 7px 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+    .btn-publish { background: var(--bg); border: 1px solid var(--lime); color: var(--lime); padding: 8px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.15s, color 0.15s; }
+    .btn-publish:hover { background: var(--lime); color: var(--bg); }
+
+    /* ── PUBLISH MODAL ── */
+    #publish-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
+    #publish-modal.open { display: flex; }
+    .publish-box { background: var(--surface); border: 1px solid var(--lime); padding: 44px 48px; max-width: 520px; width: 100%; }
+    .publish-box h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 1.6rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 24px; }
+    .publish-box h2 span { color: var(--lime); }
+    .publish-steps { list-style: none; counter-reset: steps; margin-bottom: 28px; }
+    .publish-steps li { counter-increment: steps; display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; font-size: 0.72rem; line-height: 1.7; color: var(--muted); letter-spacing: 0.05em; }
+    .publish-steps li::before { content: counter(steps); font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 900; color: var(--lime); flex-shrink: 0; width: 22px; }
+    .publish-steps code { color: var(--white); background: var(--dim); padding: 2px 7px; font-size: 0.7rem; }
+    .publish-box-actions { display: flex; gap: 12px; }
+    .btn-download { background: var(--lime); color: var(--bg); border: none; padding: 13px 28px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.15s; }
+    .btn-download:hover { background: var(--white); }
+    .btn-close-modal { background: none; border: 1px solid var(--dim); color: var(--muted); padding: 13px 20px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
+    .btn-close-modal:hover { border-color: var(--white); color: var(--white); }
+
+    /* ── MAIN ── */
+    .admin-main { flex: 1; padding: 40px 32px 80px; max-width: 1080px; margin: 0 auto; width: 100%; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 16px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── FORM ── */
+    .field { margin-bottom: 18px; }
+    .field-label { display: block; font-size: 0.55rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+    .field-input, .field-textarea, .field-select { width: 100%; background: var(--bg); border: 1px solid var(--border); padding: 10px 14px; color: var(--white); font-family: 'Space Mono', monospace; font-size: 0.78rem; outline: none; transition: border-color 0.2s; }
+    .field-input:focus, .field-textarea:focus, .field-select:focus { border-color: var(--lime); }
+    .field-textarea { resize: vertical; min-height: 76px; }
+    .field-input::placeholder, .field-textarea::placeholder { color: var(--dim); }
+    .field-select { cursor: pointer; }
+    .field-select option { background: var(--surface); }
+    .range-row { display: flex; align-items: center; gap: 12px; }
+    .field-range { flex: 1; accent-color: var(--lime); cursor: pointer; }
+    .range-val { font-family: 'Barlow Condensed', sans-serif; font-size: 1.3rem; font-weight: 700; color: var(--lime); min-width: 48px; text-align: right; }
+
+    /* ── CARDS ── */
+    .card { background: var(--surface); border: 1px solid var(--border); padding: 28px; margin-bottom: 16px; }
+    .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .card-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--lime); }
+    .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .card-full { grid-column: 1 / -1; }
+
+    /* ── MEDIA PREVIEW ── */
+    .media-preview { width: 100%; height: 110px; background: var(--dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.55rem; letter-spacing: 0.2em; text-transform: uppercase; overflow: hidden; margin-top: 8px; }
+    .media-preview img, .media-preview video { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── STATS ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); padding: 20px 22px; }
+
+    /* ── LIST ITEMS ── */
+    .list-item { background: var(--surface); border: 1px solid var(--border); padding: 18px 20px; margin-bottom: 8px; }
+    .list-item-row { display: grid; grid-template-columns: 90px 1fr 180px 180px auto; gap: 10px; align-items: end; }
+    .btn-remove { background: none; border: 1px solid var(--dim); color: var(--muted); padding: 9px 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; white-space: nowrap; transition: border-color 0.15s, color 0.15s; }
+    .btn-remove:hover { border-color: var(--red); color: var(--red); }
+    .btn-add { background: none; border: 1px solid var(--lime); color: var(--lime); padding: 5px 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: background 0.15s, color 0.15s; white-space: nowrap; }
+    .btn-add:hover { background: var(--lime); color: var(--bg); }
+
+    /* ── TOGGLE ── */
+    .toggle-row { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-top: 1px solid var(--border); margin-top: 8px; }
+    .toggle-label { font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); flex: 1; }
+    .toggle-switch { position: relative; width: 44px; height: 22px; background: var(--dim); border-radius: 99px; cursor: pointer; transition: background 0.2s; border: none; padding: 0; flex-shrink: 0; }
+    .toggle-switch.on { background: var(--lime); }
+    .toggle-thumb { position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: transform 0.2s, background 0.2s; pointer-events: none; }
+    .toggle-switch.on .toggle-thumb { transform: translateX(22px); background: var(--bg); }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--lime); flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+    /* ── TOAST ── */
+    #toast { position: fixed; bottom: 28px; right: 28px; background: var(--lime); color: var(--bg); font-family: 'Barlow Condensed', sans-serif; font-size: 0.9rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; padding: 13px 28px; transform: translateY(80px); opacity: 0; transition: transform 0.3s, opacity 0.3s; pointer-events: none; z-index: 9999; }
+    #toast.show { transform: translateY(0); opacity: 1; }
+
+    .hint { font-size: 0.6rem; color: var(--muted); letter-spacing: 0.08em; line-height: 1.9; }
+    .hint code { color: var(--lime); }
+
+    /* ── DRAG & DROP ── */
+    .list-item { cursor: grab; user-select: none; transition: opacity 0.15s, border-color 0.15s; }
+    .list-item:active { cursor: grabbing; }
+    .list-item.dragging { opacity: 0.35; border-color: var(--lime); }
+    .list-item.drag-over { border-color: var(--lime); border-style: dashed; }
+    .drag-handle { display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 1rem; cursor: grab; padding: 0 6px; flex-shrink: 0; transition: color 0.15s; }
+    .drag-handle:hover { color: var(--lime); }
+
+    /* ── UPLOAD BUTTON ── */
+    .upload-btn { display: inline-flex; align-items: center; gap: 8px; background: none; border: 1px solid var(--dim); color: var(--muted); padding: 8px 14px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: border-color 0.15s, color 0.15s; margin-top: 8px; }
+    .upload-btn:hover { border-color: var(--lime); color: var(--lime); }
+    .upload-btn input[type="file"] { display: none; }
+    .upload-drop-zone { border: 2px dashed var(--dim); padding: 24px; text-align: center; color: var(--muted); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: border-color 0.2s, color 0.2s; margin-top: 8px; }
+    .upload-drop-zone:hover, .upload-drop-zone.dragover { border-color: var(--lime); color: var(--lime); }
+    .upload-size-warn { font-size: 0.55rem; color: var(--muted); letter-spacing: 0.1em; margin-top: 6px; }
+  </style>
+</head>
+<body>
+
+<!-- ── GATE ── -->
+<div id="gate">
+  <div class="gate-box">
+    <div class="gate-logo">GEO<span>.</span></div>
+    <div class="gate-subtitle">Painel Administrativo</div>
+    <input type="password" id="gate-pass" class="gate-input" placeholder="SENHA" autocomplete="current-password"/>
+    <button id="gate-btn" class="gate-btn">ENTRAR →</button>
+    <p class="gate-err" id="gate-err"></p>
+  </div>
+</div>
+
+<!-- ── PANEL ── -->
+<div id="panel">
+  <header class="admin-header">
+    <div class="admin-logo">GEO<span>.</span></div>
+    <nav class="admin-tabs">
+      <button class="tab-btn active" data-tab="projects">Projetos</button>
+      <button class="tab-btn" data-tab="about">Sobre</button>
+      <button class="tab-btn" data-tab="skills">Skills</button>
+      <button class="tab-btn" data-tab="contact">Contato</button>
+    </nav>
+    <div class="admin-actions">
+      <span id="save-status" class="saved">● SALVO</span>
+      <button id="save-btn" class="btn-save">SALVAR</button>
+      <button id="preview-btn" class="btn-preview">PREVIEW ↗</button>
+      <button id="publish-btn" class="btn-publish">↑ PUBLICAR</button>
+      <button id="logout-btn" class="btn-logout">SAIR</button>
+    </div>
+  </header>
+
+  <main class="admin-main">
+
+    <!-- ── PROJECTS TAB ── -->
+    <div id="tab-projects" class="tab-panel active">
+      <div class="section-title">Projetos em Destaque</div>
+      <div id="featured-grid"></div>
+
+      <div class="section-title" style="margin-top:48px">
+        Mais Projetos
+        <button class="btn-add" id="add-more-btn">+ Adicionar</button>
+      </div>
+      <div id="more-list"></div>
+    </div>
+
+    <!-- ── ABOUT TAB ── -->
+    <div id="tab-about" class="tab-panel">
+      <div class="section-title">Hero</div>
+      <div class="card">
+        <div class="card-grid">
+          <div class="field">
+            <label class="field-label">Status (texto)</label>
+            <input type="text" class="field-input" id="hero-status-text" placeholder="● AVAILABLE NOW"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Localização</label>
+            <input type="text" class="field-input" id="hero-location" placeholder="BASED IN SÃO PAULO"/>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Texto de Introdução</label>
+            <textarea class="field-textarea" id="hero-intro" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <span class="status-dot"></span>
+          <span class="toggle-label">Disponível para projetos</span>
+          <button class="toggle-switch on" id="hero-available-toggle"><span class="toggle-thumb"></span></button>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">Stats</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <!-- ── SKILLS TAB ── */
+    <div id="tab-skills" class="tab-panel">
+      <div class="section-title">
+        Habilidades
+        <button class="btn-add" id="add-skill-btn">+ Adicionar</button>
+      </div>
+      <div id="skills-list"></div>
+    </div>
+
+    <!-- ── CONTACT TAB ── -->
+    <div id="tab-contact" class="tab-panel">
+      <div class="section-title">Informações de Contato</div>
+      <div class="card">
+        <div class="card-grid">
+          <div class="field">
+            <label class="field-label">Telefone / WhatsApp</label>
+            <input type="text" class="field-input" id="contact-phone" placeholder="+55 11 9 0000-0000"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Website</label>
+            <input type="text" class="field-input" id="contact-website" placeholder="https://seusite.com"/>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Localização (rodapé)</label>
+            <input type="text" class="field-input" id="contact-location" placeholder="BASED IN SÃO PAULO · GMT-3"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">↑ Publicar no Vercel</div>
+      <div class="card">
+        <p style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;line-height:1.9;margin-bottom:20px;">
+          Clique no botão abaixo para gerar o arquivo com todas as suas edições. Depois coloque o arquivo na pasta <code style="color:var(--lime)">portfolio/</code> e rode <code style="color:var(--lime)">vercel --prod</code> no terminal.
+        </p>
+        <button class="btn-save" id="download-json-btn2" style="font-size:1rem;padding:16px 40px;letter-spacing:0.2em;">
+          ↓ BAIXAR portfolio-data.json
+        </button>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">Como adicionar imagens e vídeos</div>
+      <div class="card">
+        <p class="hint">
+          1. Coloque seus arquivos na pasta <code>portfolio/img/</code><br/>
+          2. Na aba <strong>Projetos</strong>, selecione o tipo de mídia (Imagem ou Vídeo) e informe o caminho.<br/><br/>
+          Exemplos:<br/>
+          <code>img/projeto1.jpg</code> &nbsp;·&nbsp; <code>img/projeto1.mp4</code> &nbsp;·&nbsp; <code>https://link-externo.com/video.mp4</code><br/><br/>
+          Para vídeos do YouTube, use um serviço de embed direto (MP4) ou hospede o vídeo no seu servidor.
+        </p>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">Senha do Admin</div>
+      <div class="card">
+        <div class="card-grid">
+          <div class="field">
+            <label class="field-label">Nova Senha</label>
+            <input type="password" class="field-input" id="new-pass" placeholder="••••••••" autocomplete="new-password"/>
+          </div>
+          <div class="field">
+            <label class="field-label">Confirmar Nova Senha</label>
+            <input type="password" class="field-input" id="confirm-pass" placeholder="••••••••" autocomplete="new-password"/>
+          </div>
+        </div>
+        <button class="btn-save" id="change-pass-btn" style="margin-top:8px">ALTERAR SENHA</button>
+        <p class="gate-err" id="pass-msg" style="margin-top:10px"></p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast">✓ SALVO</div>
+
+<!-- ── PUBLISH MODAL ── -->
+<div id="publish-modal">
+  <div class="publish-box">
+    <h2>↑ PUBLICAR NO <span>VERCEL</span></h2>
+    <ol class="publish-steps">
+      <li>Clique em <strong style="color:var(--white)">BAIXAR portfolio-data.json</strong> abaixo — o arquivo será gerado com todas as suas alterações.</li>
+      <li>Mova o arquivo baixado para dentro da pasta <code>portfolio/</code> no seu computador (substituindo se já existir).</li>
+      <li>No terminal, dentro da pasta <code>portfolio/</code>, rode:<br/><br/><code>vercel --prod</code></li>
+      <li>Pronto — em alguns segundos o site estará atualizado para todos.</li>
+    </ol>
+    <div class="publish-box-actions">
+      <button class="btn-download" id="download-json-btn">↓ BAIXAR portfolio-data.json</button>
+      <button class="btn-close-modal" id="close-modal-btn">FECHAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const DEFAULT_PASS = 'geo@2025';
+const STORAGE_KEY  = 'geo_portfolio_data';
+const AUTH_KEY     = 'geo_admin_auth';
+const PASS_KEY     = 'geo_admin_pass';
+
+const DEFAULT_DATA = {
+  hero: {
+    statusText: '● AVAILABLE NOW',
+    available: true,
+    location: 'BASED IN SÃO PAULO',
+    intro: "I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES."
+  },
+  stats: [
+    { n: '40+', l: 'Projects Shipped' },
+    { n: '20+', l: 'Years Experience' }
+  ],
+  projects: {
+    featured: [
+      { num: 'Nº 001 // FEATURED', title: 'DASHFLOW\nANALYTICS', desc: 'REAL-TIME SAAS ANALYTICS DASHBOARD SERVING 120K+ USERS. CUSTOM WIDGETS, RBAC, STRIPE BILLING.', tags: 'REACT, TYPESCRIPT, STRIPE', link: '#', mediaType: 'none', mediaSrc: '' },
+      { num: 'Nº 002 // DESIGN SYSTEM', title: 'LAYERUI\nCOMPONENTS', desc: '80+ ACCESSIBLE, THEMEABLE COMPONENTS BUILT FOR PRODUCTION-SCALE DESIGN SYSTEMS.', tags: 'NEXT.JS, STORYBOOK', link: '#', mediaType: 'none', mediaSrc: '' }
+    ],
+    more: [
+      { num: 'Nº 003', title: 'BRAND IDENTITY — NOVA STUDIO', tags: 'BRANDING, FIGMA, MOTION', link: '#' },
+      { num: 'Nº 004', title: 'E-COMMERCE REDESIGN — URBANWEAR', tags: 'UX/UI, SHOPIFY, REACT', link: '#' },
+      { num: 'Nº 005', title: 'AI CAMPAIGN — GENERATIVE ADS SYSTEM', tags: 'AI, AUTOMATION, ART DIRECTION', link: '#' },
+      { num: 'Nº 006', title: 'MOBILE APP — FINTECH DASHBOARD', tags: 'REACT NATIVE, FIGMA, TYPESCRIPT', link: '#' }
+    ]
+  },
+  skills: [
+    { name: 'React / TS', pct: 95 },
+    { name: 'Figma', pct: 90 },
+    { name: 'Node.js', pct: 85 },
+    { name: 'Motion', pct: 82 },
+    { name: 'React Native', pct: 78 },
+    { name: 'DevOps', pct: 70 }
+  ],
+  contact: {
+    phone: '+55 11 9 7638 6601',
+    website: 'https://georgedenison.com',
+    location: 'BASED IN SÃO PAULO · GMT-3'
+  }
+};
+
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+// ── AUTH ──
+const gate  = document.getElementById('gate');
+const panel = document.getElementById('panel');
+
+function getPass() { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS; }
+
+function checkAuth() {
+  if (sessionStorage.getItem(AUTH_KEY) === '1') showPanel();
+}
+
+function showPanel() {
+  gate.classList.add('hidden');
+  panel.classList.add('visible');
+  loadData();
+  renderAll();
+}
+
+document.getElementById('gate-btn').addEventListener('click', login);
+document.getElementById('gate-pass').addEventListener('keydown', e => { if (e.key === 'Enter') login(); });
+
+function login() {
+  const val = document.getElementById('gate-pass').value;
+  const err = document.getElementById('gate-err');
+  if (val === getPass()) {
+    sessionStorage.setItem(AUTH_KEY, '1');
+    err.textContent = '';
+    showPanel();
+  } else {
+    err.textContent = '// SENHA INCORRETA';
+    document.getElementById('gate-pass').value = '';
+    document.getElementById('gate-pass').focus();
+  }
+}
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  sessionStorage.removeItem(AUTH_KEY);
+  location.reload();
+});
+
+// ── DATA ──
+function loadData() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), JSON.parse(raw));
+  } catch(e) {}
+}
+
+let _autoSaveTimer = null;
+const saveStatus = document.getElementById('save-status');
+
+function markDirty() {
+  if (saveStatus) { saveStatus.textContent = '○ NÃO SALVO'; saveStatus.className = 'unsaved'; }
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer = setTimeout(saveData, 800); // auto-salva 800ms após última edição
+}
+
+function saveData() {
+  clearTimeout(_autoSaveTimer);
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch(e) {
+    showToast('⚠ ERRO AO SALVAR — DADOS MUITO GRANDES?');
+    return;
+  }
+  if (saveStatus) { saveStatus.textContent = '● SALVO'; saveStatus.className = 'saved'; }
+  showToast('✓ SALVO');
+}
+
+function deepMerge(target, source) {
+  const out = JSON.parse(JSON.stringify(target));
+  for (const k in source) {
+    if (source[k] !== null && typeof source[k] === 'object' && !Array.isArray(source[k])) {
+      out[k] = deepMerge(out[k] || {}, source[k]);
+    } else {
+      out[k] = source[k];
+    }
+  }
+  return out;
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+function renderAll() {
+  renderFeatured();
+  renderMore();
+  renderAbout();
+  renderSkills();
+  renderContact();
+}
+
+// ── FEATURED ──
+function renderFeatured() {
+  const grid = document.getElementById('featured-grid');
+  grid.innerHTML = '';
+  data.projects.featured.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.style.marginBottom = '20px';
+    card.innerHTML = `
+      <div class="card-header"><span class="card-label">Destaque ${i + 1}</span></div>
+      <div class="card-grid">
+        <div class="field">
+          <label class="field-label">Etiqueta</label>
+          <input type="text" class="field-input feat-num" data-i="${i}" value="${esc(p.num)}" placeholder="Nº 001 // FEATURED"/>
+        </div>
+        <div class="field">
+          <label class="field-label">Link do Projeto</label>
+          <input type="text" class="field-input feat-link" data-i="${i}" value="${esc(p.link)}" placeholder="https://behance.net/..."/>
+        </div>
+        <div class="field card-full">
+          <label class="field-label">Título (use Enter para quebrar linha)</label>
+          <textarea class="field-textarea feat-title" data-i="${i}" placeholder="TITULO DO\nPROJETO">${esc(p.title)}</textarea>
+        </div>
+        <div class="field card-full">
+          <label class="field-label">Descrição</label>
+          <textarea class="field-textarea feat-desc" data-i="${i}">${esc(p.desc)}</textarea>
+        </div>
+        <div class="field">
+          <label class="field-label">Tags (separadas por vírgula)</label>
+          <input type="text" class="field-input feat-tags" data-i="${i}" value="${esc(p.tags)}" placeholder="REACT, FIGMA"/>
+        </div>
+        <div class="field">
+          <label class="field-label">Tipo de Mídia</label>
+          <select class="field-select feat-media-type" data-i="${i}">
+            <option value="none"  ${p.mediaType==='none'  ? 'selected':''}>Sem mídia (gradiente)</option>
+            <option value="image" ${p.mediaType==='image' ? 'selected':''}>Imagem (upload ou caminho)</option>
+            <option value="video" ${p.mediaType==='video' ? 'selected':''}>Vídeo (URL)</option>
+          </select>
+        </div>
+        <div class="field card-full feat-src-wrap" data-i="${i}" ${p.mediaType==='none' ? 'style="display:none"' : ''}>
+          <label class="field-label">Caminho / URL da Mídia</label>
+          <input type="text" class="field-input feat-media-src" data-i="${i}" value="${esc(p.mediaSrc)}" placeholder="img/projeto1.jpg  ou  https://..."/>
+          <label class="upload-btn" title="Clique para fazer upload de imagem">
+            ↑ FAZER UPLOAD DE IMAGEM
+            <input type="file" class="feat-upload" data-i="${i}" accept="image/*"/>
+          </label>
+          <p class="upload-size-warn">⚠ Imagens grandes podem atingir o limite do navegador. Prefira arquivos abaixo de 1 MB.</p>
+          <div class="media-preview" id="feat-preview-${i}">${mediaHTML(p)}</div>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  grid.querySelectorAll('.feat-num').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].num = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-link').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].link = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-title').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].title = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-desc').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].desc = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-tags').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].tags = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-media-type').forEach(el => el.addEventListener('change', e => {
+    const i = +e.target.dataset.i;
+    data.projects.featured[i].mediaType = e.target.value;
+    const wrap = grid.querySelector(`.feat-src-wrap[data-i="${i}"]`);
+    if (wrap) wrap.style.display = e.target.value === 'none' ? 'none' : '';
+    markDirty();
+  }));
+  grid.querySelectorAll('.feat-media-src').forEach(el => el.addEventListener('input', e => {
+    const i = +e.target.dataset.i;
+    data.projects.featured[i].mediaSrc = e.target.value;
+    const prev = document.getElementById(`feat-preview-${i}`);
+    if (prev) prev.innerHTML = mediaHTML(data.projects.featured[i]);
+    markDirty();
+  }));
+  // Image upload → base64
+  grid.querySelectorAll('.feat-upload').forEach(el => el.addEventListener('change', e => {
+    const i    = +e.target.dataset.i;
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const b64 = ev.target.result;
+      data.projects.featured[i].mediaSrc  = b64;
+      data.projects.featured[i].mediaType = 'image';
+      const srcInput = grid.querySelector(`.feat-media-src[data-i="${i}"]`);
+      if (srcInput) srcInput.value = file.name + ' (upload)';
+      const prev = document.getElementById(`feat-preview-${i}`);
+      if (prev) prev.innerHTML = `<img src="${b64}" alt="preview"/>`;
+      showToast('✓ IMAGEM CARREGADA');
+    };
+    reader.readAsDataURL(file);
+  }));
+}
+
+function mediaHTML(p) {
+  if (!p.mediaSrc || p.mediaType === 'none') return 'SEM MÍDIA';
+  if (p.mediaType === 'image') return `<img src="${esc(p.mediaSrc)}" alt="preview"/>`;
+  if (p.mediaType === 'video') return `<video src="${esc(p.mediaSrc)}" muted autoplay loop playsinline></video>`;
+  return 'SEM MÍDIA';
+}
+
+// ── MORE PROJECTS (com drag & drop) ──
+let dragSrcIdx = null;
+
+function renderMore() {
+  const list = document.getElementById('more-list');
+  list.innerHTML = '';
+  data.projects.more.forEach((p, i) => {
+    const item = document.createElement('div');
+    item.className = 'list-item';
+    item.draggable = true;
+    item.dataset.idx = i;
+    item.innerHTML = `
+      <div class="list-item-row">
+        <div class="drag-handle" title="Arrastar para reordenar">⠿⠿</div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Nº</label>
+          <input type="text" class="field-input more-num" data-i="${i}" value="${esc(p.num)}" placeholder="Nº 007"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Título</label>
+          <input type="text" class="field-input more-title" data-i="${i}" value="${esc(p.title)}" placeholder="NOME DO PROJETO"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Tags</label>
+          <input type="text" class="field-input more-tags" data-i="${i}" value="${esc(p.tags)}" placeholder="FIGMA, REACT"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Link</label>
+          <input type="text" class="field-input more-link" data-i="${i}" value="${esc(p.link)}" placeholder="https://..."/>
+        </div>
+        <button class="btn-remove more-remove" data-i="${i}">✕</button>
+      </div>
+    `;
+    // Drag events
+    item.addEventListener('dragstart', e => {
+      dragSrcIdx = i;
+      item.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    item.addEventListener('dragend', () => {
+      item.classList.remove('dragging');
+      list.querySelectorAll('.list-item').forEach(el => el.classList.remove('drag-over'));
+    });
+    item.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.list-item').forEach(el => el.classList.remove('drag-over'));
+      item.classList.add('drag-over');
+    });
+    item.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetIdx = +item.dataset.idx;
+      if (dragSrcIdx === null || dragSrcIdx === targetIdx) return;
+      const moved = data.projects.more.splice(dragSrcIdx, 1)[0];
+      data.projects.more.splice(targetIdx, 0, moved);
+      dragSrcIdx = null;
+      markDirty();
+      renderMore();
+    });
+
+    list.appendChild(item);
+  });
+
+  // Prevent drag on inputs so typing still works
+  list.querySelectorAll('input').forEach(el => {
+    el.addEventListener('mousedown', e => e.stopPropagation());
+  });
+
+  list.querySelectorAll('.more-num').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].num = e.target.value; markDirty(); }));
+  list.querySelectorAll('.more-title').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].title = e.target.value; markDirty(); }));
+  list.querySelectorAll('.more-tags').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].tags = e.target.value; markDirty(); }));
+  list.querySelectorAll('.more-link').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].link = e.target.value; markDirty(); }));
+  list.querySelectorAll('.more-remove').forEach(el => el.addEventListener('click', e => {
+    data.projects.more.splice(+e.target.dataset.i, 1);
+    markDirty();
+    renderMore();
+  }));
+}
+
+document.getElementById('add-more-btn').addEventListener('click', () => {
+  const n = data.projects.more.length + 3;
+  data.projects.more.push({ num: `Nº 00${n}`, title: 'NOVO PROJETO', tags: 'TAG1, TAG2', link: '#' });
+  renderMore();
+});
+
+// ── ABOUT ──
+function renderAbout() {
+  document.getElementById('hero-status-text').value = data.hero.statusText;
+  document.getElementById('hero-location').value    = data.hero.location;
+  document.getElementById('hero-intro').value       = data.hero.intro;
+
+  const toggle = document.getElementById('hero-available-toggle');
+  toggle.className = 'toggle-switch' + (data.hero.available ? ' on' : '');
+
+  document.getElementById('hero-status-text').oninput = e => { data.hero.statusText = e.target.value; markDirty(); };
+  document.getElementById('hero-location').oninput    = e => { data.hero.location   = e.target.value; markDirty(); };
+  document.getElementById('hero-intro').oninput       = e => { data.hero.intro      = e.target.value; markDirty(); };
+
+  toggle.onclick = () => {
+    data.hero.available = !data.hero.available;
+    toggle.className = 'toggle-switch' + (data.hero.available ? ' on' : '');
+    markDirty();
+  };
+
+  const grid = document.getElementById('stats-grid');
+  grid.innerHTML = '';
+  data.stats.forEach((s, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'stat-card';
+    cell.innerHTML = `
+      <div class="field">
+        <label class="field-label">Número</label>
+        <input type="text" class="field-input stat-n" data-i="${i}" value="${esc(s.n)}" placeholder="40+"/>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label class="field-label">Rótulo</label>
+        <input type="text" class="field-input stat-l" data-i="${i}" value="${esc(s.l)}" placeholder="Projects Shipped"/>
+      </div>
+    `;
+    grid.appendChild(cell);
+  });
+  grid.querySelectorAll('.stat-n').forEach(el => el.addEventListener('input', e => { data.stats[+e.target.dataset.i].n = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.stat-l').forEach(el => el.addEventListener('input', e => { data.stats[+e.target.dataset.i].l = e.target.value; markDirty(); }));
+}
+
+// ── SKILLS ──
+function renderSkills() {
+  const list = document.getElementById('skills-list');
+  list.innerHTML = '';
+  data.skills.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'card';
+    item.style.marginBottom = '10px';
+    item.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 220px auto;gap:16px;align-items:end">
+        <div class="field" style="margin:0">
+          <label class="field-label">Nome</label>
+          <input type="text" class="field-input skill-name" data-i="${i}" value="${esc(s.name)}" placeholder="Figma"/>
+        </div>
+        <div class="field" style="margin:0">
+          <label class="field-label">Nível — <span class="range-val" id="sv-${i}">${s.pct}%</span></label>
+          <div class="range-row">
+            <input type="range" class="field-range skill-pct" data-i="${i}" value="${s.pct}" min="0" max="100"/>
+          </div>
+        </div>
+        <button class="btn-remove skill-remove" data-i="${i}" style="margin-bottom:1px">✕</button>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+  list.querySelectorAll('.skill-name').forEach(el => el.addEventListener('input', e => { data.skills[+e.target.dataset.i].name = e.target.value; markDirty(); }));
+  list.querySelectorAll('.skill-pct').forEach(el => el.addEventListener('input', e => {
+    const i = +e.target.dataset.i;
+    data.skills[i].pct = +e.target.value;
+    document.getElementById(`sv-${i}`).textContent = e.target.value + '%';
+    markDirty();
+  }));
+  list.querySelectorAll('.skill-remove').forEach(el => el.addEventListener('click', e => {
+    data.skills.splice(+e.target.dataset.i, 1);
+    markDirty();
+    renderSkills();
+  }));
+}
+
+document.getElementById('add-skill-btn').addEventListener('click', () => {
+  data.skills.push({ name: 'NOVA SKILL', pct: 80 });
+  markDirty();
+  renderSkills();
+});
+
+// ── CONTACT ──
+function renderContact() {
+  document.getElementById('contact-phone').value    = data.contact.phone;
+  document.getElementById('contact-website').value  = data.contact.website;
+  document.getElementById('contact-location').value = data.contact.location;
+
+  document.getElementById('contact-phone').oninput    = e => { data.contact.phone    = e.target.value; markDirty(); };
+  document.getElementById('contact-website').oninput  = e => { data.contact.website  = e.target.value; markDirty(); };
+  document.getElementById('contact-location').oninput = e => { data.contact.location = e.target.value; markDirty(); };
+}
+
+// ── PASSWORD ──
+document.getElementById('change-pass-btn').addEventListener('click', () => {
+  const np  = document.getElementById('new-pass').value;
+  const cp  = document.getElementById('confirm-pass').value;
+  const msg = document.getElementById('pass-msg');
+  if (!np) { msg.textContent = '// INFORME A NOVA SENHA'; msg.style.color = ''; return; }
+  if (np !== cp) { msg.textContent = '// SENHAS NÃO CONFEREM'; msg.style.color = ''; return; }
+  localStorage.setItem(PASS_KEY, np);
+  msg.style.color = '#C8F135';
+  msg.textContent = '// SENHA ALTERADA COM SUCESSO';
+  document.getElementById('new-pass').value = '';
+  document.getElementById('confirm-pass').value = '';
+  setTimeout(() => { msg.textContent = ''; msg.style.color = ''; }, 3000);
+});
+
+document.getElementById('save-btn').addEventListener('click', saveData);
+
+document.getElementById('preview-btn').addEventListener('click', () => {
+  saveData();
+  // Passa os dados direto na URL para evitar problema de origem entre file:// e localhost
+  try {
+    const payload = JSON.stringify(data);
+    const encoded = btoa(unescape(encodeURIComponent(payload)));
+    window.open('portfolio.html#geo=' + encoded, '_blank');
+  } catch(e) {
+    window.open('portfolio.html', '_blank');
+  }
+});
+
+// ── PUBLISH ──
+document.getElementById('publish-btn').addEventListener('click', () => {
+  saveData();
+  document.getElementById('publish-modal').classList.add('open');
+});
+
+document.getElementById('close-modal-btn').addEventListener('click', () => {
+  document.getElementById('publish-modal').classList.remove('open');
+});
+
+
+document.getElementById('download-json-btn2').addEventListener('click', downloadJSON);
+
+function downloadJSON() {
+  saveData();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'portfolio-data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✓ ARQUIVO GERADO!');
+}
+
+// também liga o botão do modal ao mesmo handler
+document.getElementById('download-json-btn').addEventListener('click', downloadJSON);
+
+function esc(str) {
+  return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+checkAuth();
+</script>
+</body>
+</html>
