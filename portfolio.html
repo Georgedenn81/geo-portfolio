@@ -1442,6 +1442,9 @@
     </div>
   </footer>
 
+  <!-- ADMIN DATA - atualizado pelo painel admin -->
+  <script id="__geo_admin_data__" type="application/json">null</script>
+
   <script>
     // ── Language toggle ──
     const translations = {
@@ -1616,33 +1619,14 @@
     const skillsSection = document.getElementById('skills');
     if (skillsSection) skillObs.observe(skillsSection);
 
-    // ── Apply admin data (portfolio-data.json → URL hash → localStorage) ──
-    async function loadPortfolioData() {
-      // 1. Tenta portfolio-data.json (publicado junto com o site na Vercel)
+    // ── Aplica dados do admin (embutidos diretamente no HTML pelo painel) ──
+    function loadPortfolioData() {
       try {
-        const res = await fetch('./portfolio-data.json', { cache: 'no-store' });
-        if (res.ok) {
-          const d = await res.json();
-          applyAdminData(d);
-          return;
+        const raw = document.getElementById('__geo_admin_data__').textContent.trim();
+        if (raw && raw !== 'null') {
+          applyAdminData(JSON.parse(raw));
         }
-      } catch(e) {}
-      // 2. URL hash (preview do admin)
-      const hash = window.location.hash;
-      if (hash.startsWith('#geo=')) {
-        try {
-          const d = JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))));
-          localStorage.setItem('geo_portfolio_data', JSON.stringify(d));
-          history.replaceState(null, '', window.location.pathname);
-          applyAdminData(d);
-          return;
-        } catch(e) {}
-      }
-      // 3. localStorage (fallback local)
-      try {
-        const raw = localStorage.getItem('geo_portfolio_data');
-        if (raw) applyAdminData(JSON.parse(raw));
-      } catch(e) {}
+      } catch(e) { console.warn('loadPortfolioData:', e); }
     }
 
     function applyAdminData(d) {
@@ -1758,12 +1742,6 @@
     }
 
     loadPortfolioData();
-    // Live-update quando admin salva enquanto o portfólio está aberto
-    window.addEventListener('storage', e => {
-      if (e.key === 'geo_portfolio_data') {
-        try { applyAdminData(JSON.parse(e.newValue)); } catch(ex) {}
-      }
-    });
 
     // ── Contact form ──
     const form   = document.getElementById('contact-form');

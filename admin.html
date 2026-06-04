@@ -842,9 +842,9 @@ document.getElementById('gh-token-save').addEventListener('click', () => {
 async function oneClickPublish() {
   const statusEl = document.getElementById('publish-status');
   const btn      = document.getElementById('one-click-publish');
-  const ghToken  = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input').value.trim();
+  const token    = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input').value.trim();
 
-  if (!ghToken) {
+  if (!token) {
     statusEl.style.color = 'var(--red)';
     statusEl.textContent = '⚠ COLE SEU TOKEN ACIMA E CLIQUE "SALVAR TOKEN" PRIMEIRO';
     return;
@@ -852,47 +852,53 @@ async function oneClickPublish() {
 
   btn.disabled    = true;
   btn.textContent = '⏳ PUBLICANDO...';
-  statusEl.textContent = 'Enviando dados para o GitHub...';
   statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = 'Buscando portfolio.html do GitHub...';
 
   try {
     saveData();
-    const token   = localStorage.getItem('geo_gh_token');
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
 
-    // Busca SHA atual do arquivo (se existir)
-    let sha = null;
-    try {
-      const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
-        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
-      });
-      if (res.ok) { const j = await res.json(); sha = j.sha; }
-    } catch(e) {}
+    // 1. Busca o portfolio.html atual do GitHub
+    const fileRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!fileRes.ok) throw new Error('Não foi possível buscar portfolio.html do GitHub');
+    const fileJson = await fileRes.json();
+    const currentHtml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
 
-    // Commita portfolio-data.json
-    const body = { message: 'Update portfolio data via admin', content, ...(sha ? { sha } : {}) };
-    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+    // 2. Injeta os dados do admin no HTML
+    const dataJson = JSON.stringify(data);
+    const updatedHtml = currentHtml.replace(
+      /<script id="__geo_admin_data__" type="application\/json">[\s\S]*?<\/script>/,
+      `<script id="__geo_admin_data__" type="application/json">${dataJson}</script>`
+    );
+
+    if (updatedHtml === currentHtml) throw new Error('Ponto de injeção não encontrado no portfolio.html');
+
+    // 3. Commita o HTML atualizado
+    statusEl.textContent = 'Salvando alterações no GitHub...';
+    const newContent = btoa(unescape(encodeURIComponent(updatedHtml)));
+    const commitRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       method: 'PUT',
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: JSON.stringify({ message: 'Update portfolio via admin panel', content: newContent, sha: fileJson.sha })
     });
-
-    if (!r.ok) {
-      const err = await r.json();
-      throw new Error(err.message || r.status);
+    if (!commitRes.ok) {
+      const err = await commitRes.json();
+      throw new Error(err.message || commitRes.status);
     }
 
     statusEl.style.color = 'var(--lime)';
-    statusEl.textContent = '✓ ENVIADO — DEPLOY INICIADO (~30s)';
+    statusEl.textContent = '✓ PUBLICADO — Deploy iniciado, site atualizado em ~30s';
     btn.textContent = '✓ PUBLICADO';
-    setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 5000);
+    setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 8000);
 
   } catch(e) {
     statusEl.style.color = 'var(--red)';
     statusEl.textContent = '⚠ ERRO: ' + e.message;
     if (e.message.includes('Bad credentials') || e.message.includes('401')) {
       localStorage.removeItem('geo_gh_token');
-      statusEl.textContent += ' — Token inválido. Tente novamente.';
+      statusEl.textContent += ' — Token inválido, cole um novo.';
     }
     btn.disabled = false;
     btn.textContent = '↑ PUBLICAR AGORA';
