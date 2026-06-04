@@ -556,8 +556,11 @@ function renderFeatured() {
         </div>
         <div class="field card-full">
           <label class="field-label">🎬 URL do Vídeo (abre no lightbox ao clicar)</label>
-          <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/... ou .mp4"/>
-          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'THUMBNAIL AUTO (após digitar URL)'}</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..." style="flex:1"/>
+            <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 BUSCAR THUMB</button>
+          </div>
+          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
         </div>
         <div class="field">
           <label class="field-label">Tipo de Mídia (imagem/vídeo de fundo do card)</label>
@@ -582,18 +585,25 @@ function renderFeatured() {
     grid.appendChild(card);
   });
 
-  grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('change', async e => {
-    const i   = +e.target.dataset.i;
-    const url = e.target.value.trim();
-    data.projects.featured[i].videoUrl = url;
+  grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
+    data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();
     markDirty();
-    // Auto-fetch thumbnail
+  }));
+
+  grid.querySelectorAll('.fetch-thumb-btn').forEach(btn => btn.addEventListener('click', async e => {
+    const i   = +btn.dataset.i;
+    const url = data.projects.featured[i].videoUrl || grid.querySelector(`.feat-video-url[data-i="${i}"]`)?.value || '';
+    const prev = document.getElementById(`thumb-preview-${i}`);
+    if (!url) { if (prev) prev.innerHTML = '⚠ INFORME A URL DO VÍDEO PRIMEIRO'; return; }
+    if (prev) prev.innerHTML = '⏳ BUSCANDO...';
     const thumb = await fetchThumbnail(url);
     if (thumb) {
       data.projects.featured[i].thumbnailSrc = thumb;
-      const prev = document.getElementById(`thumb-preview-${i}`);
       if (prev) prev.innerHTML = `<img src="${thumb}" alt="thumb"/>`;
       markDirty();
+      showToast('✓ THUMBNAIL ENCONTRADA');
+    } else {
+      if (prev) prev.innerHTML = '⚠ NÃO ENCONTROU THUMBNAIL';
     }
   }));
   grid.querySelectorAll('.feat-num').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].num = e.target.value; markDirty(); }));
@@ -980,16 +990,20 @@ document.getElementById('download-json-btn').addEventListener('click', downloadJ
 // ── Auto-fetch thumbnail ──
 async function fetchThumbnail(url) {
   if (!url) return '';
-  // YouTube
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  // YouTube → thumbnail direto sem API
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
   if (yt) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
-  // Vimeo
+  // Vimeo → oEmbed API
   const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vm) {
     try {
-      const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vm[1]}`);
-      if (res.ok) { const j = await res.json(); return j.thumbnail_url || ''; }
-    } catch(e) {}
+      const oembedUrl = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent('https://vimeo.com/' + vm[1])}`;
+      const res = await fetch(oembedUrl);
+      if (res.ok) {
+        const j = await res.json();
+        return j.thumbnail_url || '';
+      }
+    } catch(e) { console.warn('Vimeo oEmbed error:', e); }
   }
   return '';
 }
