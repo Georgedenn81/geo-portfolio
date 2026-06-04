@@ -2100,7 +2100,8 @@
     function applyZoom() {
       const img = getZoomImg();
       if (!img) return;
-      img.style.transform = `scale(${__zoom}) translate(${__panX/__zoom}px, ${__panY/__zoom}px)`;
+      // translate ANTES do scale = coordenadas de tela (sem divisão)
+      img.style.transform = `translate(${__panX}px, ${__panY}px) scale(${__zoom})`;
       img.classList.toggle('zoomed', __zoom > 1);
       lbZoomLevel.textContent = Math.round(__zoom * 100) + '%';
     }
@@ -2124,17 +2125,19 @@
       setZoom(__zoom - e.deltaY * 0.001);
     }, { passive: false });
 
-    // Click image to zoom in/out
+    // Click image para zoom — só se não houve drag
     lbWrap.addEventListener('click', e => {
-      if (e.target.tagName !== 'IMG') return;
+      if (e.target.tagName !== 'IMG' || __dragMoved) return;
       setZoom(__zoom > 1 ? 1 : 2);
-      if (__zoom <= 1) { __panX = 0; __panY = 0; applyZoom(); }
+      if (__zoom <= 1) resetZoom();
     });
 
     // Pan quando ampliado — mouse e touch
+    let __dragMoved = false;
     lbWrap.addEventListener('mousedown', e => {
       if (__zoom <= 1) return;
       __isPanning = true;
+      __dragMoved = false;
       __panStart = { x: e.clientX - __panX, y: e.clientY - __panY };
       lbWrap.style.cursor = 'grabbing';
       e.preventDefault();
@@ -2143,6 +2146,7 @@
       if (!__isPanning) return;
       __panX = e.clientX - __panStart.x;
       __panY = e.clientY - __panStart.y;
+      __dragMoved = true;
       applyZoom();
     });
     window.addEventListener('mouseup', () => {
