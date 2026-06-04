@@ -1042,6 +1042,37 @@
       transition: border-color 0.15s, color 0.15s;
     }
     .lb-close:hover { border-color: var(--white); color: var(--white); }
+
+    /* ── ZOOM ── */
+    .lb-zoom-bar {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-right: 8px;
+    }
+    .lb-zoom-bar.visible { display: flex; }
+    .lb-zoom-btn {
+      background: none; border: 1px solid var(--dim);
+      color: var(--muted); width: 32px; height: 32px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; cursor: pointer; flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .lb-zoom-btn:hover { border-color: var(--lime); color: var(--lime); }
+    .lb-zoom-level {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.75rem; font-weight: 700;
+      color: var(--muted); min-width: 36px; text-align: center;
+      letter-spacing: 0.05em;
+    }
+    .lb-slide img {
+      transform-origin: center center;
+      transition: transform 0.2s ease;
+      cursor: zoom-in;
+    }
+    .lb-slide img.zoomed { cursor: grab; }
+    .lb-slide img.zoomed:active { cursor: grabbing; }
     .lb-no-video {
       padding: 60px 32px;
       text-align: center;
@@ -1603,6 +1634,12 @@
           <div class="lb-title" id="lb-title"></div>
           <div class="lb-desc" id="lb-desc"></div>
         </div>
+        <div class="lb-zoom-bar" id="lb-zoom-bar">
+          <button class="lb-zoom-btn" id="lb-zoom-out" title="Zoom out">−</button>
+          <span class="lb-zoom-level" id="lb-zoom-level">100%</span>
+          <button class="lb-zoom-btn" id="lb-zoom-in" title="Zoom in">+</button>
+          <button class="lb-zoom-btn" id="lb-zoom-reset" title="Resetar zoom" style="font-size:0.7rem;width:auto;padding:0 8px;letter-spacing:0.05em">1:1</button>
+        </div>
         <button class="lb-close" id="lb-close" aria-label="Fechar">✕</button>
       </div>
     </div>
@@ -2026,6 +2063,8 @@
       if (dots[__slideIdx])   dots[__slideIdx].classList.add('active');
       if (counter) counter.textContent = `${__slideIdx + 1} / ${__slides.length}`;
       setWrapAspect(__slides[__slideIdx]);
+      showZoomControls(__slides[__slideIdx]?.type === 'image');
+      resetZoom();
     }
 
     function openLightbox(title, desc, p) {
@@ -2034,6 +2073,8 @@
       __slides = buildSlides(typeof p === 'object' ? p : { videoUrl: p });
       renderCarousel();
       setWrapAspect(__slides[0]);
+      showZoomControls(__slides[0]?.type === 'image');
+      resetZoom();
       lb.classList.add('open');
       requestAnimationFrame(() => lb.classList.add('visible'));
       document.body.style.overflow = 'hidden';
@@ -2042,6 +2083,69 @@
     function closeLightbox() {
       lb.classList.remove('visible');
       setTimeout(() => { lb.classList.remove('open'); lbWrap.innerHTML = ''; document.body.style.overflow = ''; }, 350);
+    }
+
+    // ── ZOOM ──
+    const lbZoomBar   = document.getElementById('lb-zoom-bar');
+    const lbZoomIn    = document.getElementById('lb-zoom-in');
+    const lbZoomOut   = document.getElementById('lb-zoom-out');
+    const lbZoomReset = document.getElementById('lb-zoom-reset');
+    const lbZoomLevel = document.getElementById('lb-zoom-level');
+    let __zoom = 1, __panX = 0, __panY = 0, __isPanning = false, __panStart = {};
+
+    function getZoomImg() { return lbWrap.querySelector('.lb-slide.active img'); }
+
+    function applyZoom() {
+      const img = getZoomImg();
+      if (!img) return;
+      img.style.transform = `scale(${__zoom}) translate(${__panX/__zoom}px, ${__panY/__zoom}px)`;
+      img.classList.toggle('zoomed', __zoom > 1);
+      lbZoomLevel.textContent = Math.round(__zoom * 100) + '%';
+    }
+
+    function setZoom(z) {
+      __zoom = Math.min(Math.max(z, 0.5), 4);
+      if (__zoom <= 1) { __zoom = Math.max(z, 1); __panX = 0; __panY = 0; }
+      applyZoom();
+    }
+
+    function resetZoom() { __zoom = 1; __panX = 0; __panY = 0; applyZoom(); lbZoomLevel.textContent = '100%'; }
+
+    lbZoomIn.addEventListener('click',    () => setZoom(__zoom + 0.25));
+    lbZoomOut.addEventListener('click',   () => setZoom(__zoom - 0.25));
+    lbZoomReset.addEventListener('click', resetZoom);
+
+    // Scroll to zoom (trackpad/mouse wheel)
+    lbWrap.addEventListener('wheel', e => {
+      if (!getZoomImg()) return;
+      e.preventDefault();
+      setZoom(__zoom - e.deltaY * 0.001);
+    }, { passive: false });
+
+    // Click image to zoom in/out
+    lbWrap.addEventListener('click', e => {
+      if (e.target.tagName !== 'IMG') return;
+      setZoom(__zoom > 1 ? 1 : 2);
+      if (__zoom <= 1) { __panX = 0; __panY = 0; applyZoom(); }
+    });
+
+    // Pan when zoomed
+    lbWrap.addEventListener('mousedown', e => {
+      if (e.target.tagName !== 'IMG' || __zoom <= 1) return;
+      __isPanning = true; __panStart = { x: e.clientX - __panX, y: e.clientY - __panY };
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', e => {
+      if (!__isPanning) return;
+      __panX = e.clientX - __panStart.x;
+      __panY = e.clientY - __panStart.y;
+      applyZoom();
+    });
+    window.addEventListener('mouseup', () => { __isPanning = false; });
+
+    function showZoomControls(show) {
+      lbZoomBar.classList.toggle('visible', show);
+      if (!show) resetZoom();
     }
 
     lbClose.addEventListener('click', closeLightbox);
