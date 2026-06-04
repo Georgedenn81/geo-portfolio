@@ -545,11 +545,17 @@ function renderFeatured() {
           </div>
           <div class="field card-full" style="margin-top:10px">
             <label class="field-label">🖼 Thumbnail do card</label>
-            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-              ↑ THUMBNAIL
-              <input type="file" class="feat-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
-            </label>
-            <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+              <input type="text" class="field-input feat-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="https://i.imgur.com/... ou imgbb.com/..." style="flex:1"/>
+              <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+                ↑ UPLOAD
+                <input type="file" class="feat-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
+              </label>
+            </div>
+            <p style="font-size:0.5rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:6px">
+              💡 Para publicar no site use URL externa (ex: <strong style="color:var(--lime)">imgbb.com</strong>, imgur). Upload base64 só funciona no preview.
+            </p>
+            <div id="thumb-preview-${i}" class="media-preview" style="height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
           </div>
           <div class="field card-full">
             <label class="field-label">📸 Galeria de imagens (carrossel no lightbox)</label>
@@ -573,6 +579,16 @@ function renderFeatured() {
 
   grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
     data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();
+    markDirty();
+  }));
+
+  // URL externa de thumbnail (featured)
+  grid.querySelectorAll('.feat-thumb-src').forEach(el => el.addEventListener('input', e => {
+    const i = +e.target.dataset.i;
+    const url = e.target.value.trim();
+    data.projects.featured[i].thumbnailSrc = url;
+    const prev = document.getElementById(`thumb-preview-${i}`);
+    if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
     markDirty();
   }));
 
@@ -741,11 +757,15 @@ function renderMore() {
         </div>
         <div class="field card-full" style="margin:0">
           <label class="field-label">🖼 Thumbnail do card</label>
-          <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-            ↑ THUMBNAIL
-            <input type="file" class="more-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
-          </label>
-          <div id="more-thumb-${i}" class="media-preview" style="margin-top:8px;height:70px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+            <input type="text" class="field-input more-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="https://i.imgur.com/... ou imgbb.com/..." style="flex:1"/>
+            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+              ↑ UPLOAD
+              <input type="file" class="more-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
+            </label>
+          </div>
+          <p style="font-size:0.5rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:6px">💡 URL externa para publicar no site. Upload só funciona no preview.</p>
+          <div id="more-thumb-${i}" class="media-preview" style="height:70px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
         </div>
         <div class="field card-full" style="margin:0">
           <label class="field-label">📸 Galeria (carrossel no lightbox)</label>
@@ -808,6 +828,16 @@ function renderMore() {
     markDirty();
     renderMore();
   }));
+  // URL externa de thumbnail (more)
+  list.querySelectorAll('.more-thumb-src').forEach(el => el.addEventListener('input', e => {
+    const i = +e.target.dataset.i;
+    const url = e.target.value.trim();
+    data.projects.more[i].thumbnailSrc = url;
+    const prev = document.getElementById(`more-thumb-${i}`);
+    if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
+    markDirty();
+  }));
+
   // Galeria more projects
   list.querySelectorAll('.more-gallery-upload').forEach(el => el.addEventListener('change', e => {
     const i = +e.target.dataset.i;
