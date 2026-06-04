@@ -927,6 +927,93 @@
     .form-success { display: none; color: var(--lime); font-size: 0.7rem; letter-spacing: 0.15em; margin-top: 12px; }
     .form-error  { display: none; color: #FF6B6B; font-size: 0.7rem; letter-spacing: 0.15em; margin-top: 12px; }
 
+    /* ── LIGHTBOX ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: rgba(0,0,0,0);
+      align-items: center;
+      justify-content: center;
+      transition: background 0.35s ease;
+    }
+    #lightbox.open {
+      display: flex;
+      background: rgba(0,0,0,0.92);
+    }
+    #lightbox.visible { background: rgba(0,0,0,0.92); }
+    .lb-box {
+      position: relative;
+      width: 90vw;
+      max-width: 1080px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      transform: translateY(40px);
+      opacity: 0;
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.4s ease;
+    }
+    #lightbox.visible .lb-box {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .lb-video-wrap {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 */
+      background: #000;
+    }
+    .lb-video-wrap iframe,
+    .lb-video-wrap video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .lb-info {
+      padding: 20px 28px 24px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .lb-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(22px, 3vw, 36px);
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      line-height: 1;
+    }
+    .lb-desc {
+      font-size: 0.65rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-top: 6px;
+      max-width: 600px;
+    }
+    .lb-close {
+      background: none;
+      border: 1px solid var(--dim);
+      color: var(--muted);
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .lb-close:hover { border-color: var(--white); color: var(--white); }
+    .lb-no-video {
+      padding: 60px 32px;
+      text-align: center;
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
     /* ── FOOTER ── */
     footer {
       display: flex;
@@ -1442,6 +1529,20 @@
     </div>
   </footer>
 
+  <!-- LIGHTBOX -->
+  <div id="lightbox">
+    <div class="lb-box">
+      <div class="lb-video-wrap" id="lb-video-wrap"></div>
+      <div class="lb-info">
+        <div>
+          <div class="lb-title" id="lb-title"></div>
+          <div class="lb-desc" id="lb-desc"></div>
+        </div>
+        <button class="lb-close" id="lb-close" aria-label="Fechar">✕</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ADMIN DATA - atualizado pelo painel admin -->
   <script id="__geo_admin_data__" type="application/json">null</script>
 
@@ -1680,6 +1781,7 @@
             if (descEl)            descEl.textContent = p.desc;
             if (linkEl && p.link)  linkEl.href        = p.link;
             if (tagsEl && p.tags)  tagsEl.innerHTML   = p.tags.split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
+            if (p.videoUrl)        card.dataset.videoUrl = p.videoUrl;
             if (bg) {
               if (p.mediaType === 'image' && p.mediaSrc) {
                 bg.style.cssText = `background:url('${p.mediaSrc}') center/cover no-repeat;position:absolute;inset:0;`;
@@ -1696,13 +1798,13 @@
           const moreListEl = document.getElementById('more-projects-list');
           if (moreListEl) {
             moreListEl.innerHTML = d.projects.more.map(p => `
-              <div class="project-item">
+              <div class="project-item" ${p.videoUrl ? `data-video-url="${p.videoUrl}"` : ''}>
                 <div class="project-num">${p.num}</div>
                 <div class="project-info">
                   <h3>${p.title}</h3>
                   <div class="project-tags">${(p.tags||'').split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('')}</div>
                 </div>
-                <a href="${p.link || '#'}" target="_blank" class="project-arrow">↗</a>
+                <div class="project-arrow">↗</div>
               </div>
             `).join('');
           }
@@ -1747,8 +1849,75 @@
           if (locEl && d.contact.location) locEl.textContent = d.contact.location;
         }
 
+        bindLightboxCards();
       } catch(e) { console.warn('[admin] applyAdminData error:', e); }
     }
+
+    // ── LIGHTBOX ──
+    const lb        = document.getElementById('lightbox');
+    const lbWrap    = document.getElementById('lb-video-wrap');
+    const lbTitle   = document.getElementById('lb-title');
+    const lbDesc    = document.getElementById('lb-desc');
+    const lbClose   = document.getElementById('lb-close');
+
+    function videoEmbedHTML(url) {
+      if (!url) return '';
+      // YouTube
+      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+      if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      // Vimeo
+      const vm = url.match(/vimeo\.com\/(\d+)/);
+      if (vm) return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      // MP4 / direto
+      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video src="${url}" autoplay controls playsinline style="background:#000"></video>`;
+      // Fallback: link
+      return `<div class="lb-no-video">Abrir em nova aba: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
+    }
+
+    function openLightbox(title, desc, videoUrl) {
+      lbTitle.textContent = title || '';
+      lbDesc.textContent  = desc  || '';
+      lbWrap.innerHTML    = videoUrl ? videoEmbedHTML(videoUrl) : '<div class="lb-no-video">SEM VÍDEO CONFIGURADO</div>';
+      lb.classList.add('open');
+      requestAnimationFrame(() => lb.classList.add('visible'));
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lb.classList.remove('visible');
+      setTimeout(() => {
+        lb.classList.remove('open');
+        lbWrap.innerHTML = '';
+        document.body.style.overflow = '';
+      }, 350);
+    }
+
+    lbClose.addEventListener('click', closeLightbox);
+    lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+    // Abre lightbox ao clicar nos cards
+    function bindLightboxCards() {
+      document.querySelectorAll('.bento-card').forEach(card => {
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', () => {
+          const title    = card.querySelector('.bento-title')?.textContent || '';
+          const desc     = card.querySelector('.bento-desc')?.textContent  || '';
+          const videoUrl = card.dataset.videoUrl || '';
+          openLightbox(title, desc, videoUrl);
+        });
+      });
+      document.querySelectorAll('.project-item').forEach(item => {
+        item.addEventListener('click', () => {
+          const title    = item.querySelector('h3')?.textContent || '';
+          const videoUrl = item.dataset.videoUrl || '';
+          const link     = item.querySelector('.project-arrow')?.getAttribute('href') || '';
+          if (videoUrl) { openLightbox(title, '', videoUrl); }
+          else if (link && link !== '#') { window.open(link, '_blank'); }
+        });
+      });
+    }
+    bindLightboxCards();
 
     loadPortfolioData();
 

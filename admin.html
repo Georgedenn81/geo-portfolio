@@ -528,8 +528,12 @@ function renderFeatured() {
           <label class="field-label">Tags (separadas por vírgula)</label>
           <input type="text" class="field-input feat-tags" data-i="${i}" value="${esc(p.tags)}" placeholder="REACT, FIGMA"/>
         </div>
+        <div class="field card-full">
+          <label class="field-label">🎬 URL do Vídeo (abre no lightbox ao clicar)</label>
+          <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/... ou .mp4"/>
+        </div>
         <div class="field">
-          <label class="field-label">Tipo de Mídia</label>
+          <label class="field-label">Tipo de Mídia (imagem/vídeo de fundo do card)</label>
           <select class="field-select feat-media-type" data-i="${i}">
             <option value="none"  ${p.mediaType==='none'  ? 'selected':''}>Sem mídia (gradiente)</option>
             <option value="image" ${p.mediaType==='image' ? 'selected':''}>Imagem (upload ou caminho)</option>
@@ -551,6 +555,7 @@ function renderFeatured() {
     grid.appendChild(card);
   });
 
+  grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-num').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].num = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-link').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].link = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-title').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].title = e.target.value; markDirty(); }));
