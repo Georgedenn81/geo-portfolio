@@ -1766,6 +1766,7 @@
 
         // Featured projects
         if (d.projects && d.projects.featured) {
+          __projects.featured = d.projects.featured; // atualiza variável global
           document.querySelectorAll('.bento-card').forEach((card, i) => {
             const p = d.projects.featured[i];
             if (!p) return;
@@ -1795,6 +1796,7 @@
 
         // More projects
         if (d.projects && d.projects.more) {
+          __projects.more = d.projects.more; // atualiza variável global
           const moreListEl = document.getElementById('more-projects-list');
           if (moreListEl) {
             moreListEl.innerHTML = d.projects.more.map(p => `
@@ -1900,25 +1902,31 @@
     lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-    // Abre lightbox ao clicar nos cards
+    // Dados dos projetos para o lightbox (atualizados por applyAdminData)
+    let __projects = { featured: [], more: [] };
+
     function bindLightboxCards() {
-      document.querySelectorAll('.bento-card').forEach(card => {
+      document.querySelectorAll('.bento-card').forEach((card, i) => {
         card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-          const title    = card.querySelector('.bento-title')?.textContent || '';
-          const desc     = card.querySelector('.bento-desc')?.textContent  || '';
-          const videoUrl = card.dataset.videoUrl || '';
+        card.onclick = () => {
+          const p        = __projects.featured[i] || {};
+          const title    = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
+          const desc     = p.desc  || card.querySelector('.bento-desc')?.textContent  || '';
+          const videoUrl = p.videoUrl || '';
           openLightbox(title, desc, videoUrl);
-        });
+        };
       });
-      document.querySelectorAll('.project-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const title    = item.querySelector('h3')?.textContent || '';
-          const videoUrl = item.dataset.videoUrl || '';
-          const link     = item.querySelector('.project-arrow')?.getAttribute('href') || '';
-          if (videoUrl) { openLightbox(title, '', videoUrl); }
-          else if (link && link !== '#') { window.open(link, '_blank'); }
-        });
+      document.querySelectorAll('.project-item').forEach((item, i) => {
+        item.style.cursor = 'pointer';
+        item.onclick = (e) => {
+          if (e.target.closest('a')) return; // deixa links funcionarem normalmente
+          const p        = __projects.more[i] || {};
+          const title    = p.title || item.querySelector('h3')?.textContent || '';
+          const videoUrl = p.videoUrl || item.dataset.videoUrl || '';
+          const link     = p.link || '#';
+          if (videoUrl) openLightbox(title, '', videoUrl);
+          else if (link && link !== '#') window.open(link, '_blank');
+        };
       });
     }
     bindLightboxCards();
