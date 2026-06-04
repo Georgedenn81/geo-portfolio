@@ -400,7 +400,11 @@ function showPanel() {
   gate.classList.add('hidden');
   panel.classList.add('visible');
   loadData();
-  renderAll();
+  try {
+    renderAll();
+  } catch(err) {
+    alert('ERRO AO CARREGAR PAINEL:\n' + err.message + '\n\n' + err.stack);
+  }
 }
 
 document.getElementById('gate-btn').addEventListener('click', login);
@@ -791,21 +795,18 @@ document.getElementById('change-pass-btn').addEventListener('click', () => {
 document.getElementById('save-btn').addEventListener('click', saveData);
 
 document.getElementById('preview-btn').addEventListener('click', () => {
-  saveData();
-  // Passa os dados direto na URL para evitar problema de origem entre file:// e localhost
   try {
-    const payload = JSON.stringify(data);
-    const encoded = btoa(unescape(encodeURIComponent(payload)));
-    window.open('portfolio.html#geo=' + encoded, '_blank');
-  } catch(e) {
-    window.open('portfolio.html', '_blank');
-  }
+    saveData();
+    window.open('/', '_blank');
+  } catch(e) { alert('Erro preview: ' + e.message); }
 });
 
 // ── PUBLISH ──
 document.getElementById('publish-btn').addEventListener('click', () => {
-  saveData();
-  document.getElementById('publish-modal').classList.add('open');
+  try {
+    saveData();
+    document.getElementById('publish-modal').classList.add('open');
+  } catch(e) { alert('Erro publicar: ' + e.message); }
 });
 
 document.getElementById('close-modal-btn').addEventListener('click', () => {
