@@ -259,12 +259,23 @@
         </div>
       </div>
 
-      <div class="section-title" style="margin-top:44px">↑ Publicar no Vercel</div>
+      <div class="section-title" style="margin-top:44px">↑ Publicar no Site</div>
       <div class="card">
         <p style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;line-height:1.9;margin-bottom:20px;">
-          Clique no botão abaixo para gerar o arquivo com todas as suas edições. Depois coloque o arquivo na pasta <code style="color:var(--lime)">portfolio/</code> e rode <code style="color:var(--lime)">vercel --prod</code> no terminal.
+          Clique em <strong style="color:var(--white)">PUBLICAR AGORA</strong> — as alterações vão ao ar em ~30 segundos automaticamente.
         </p>
-        <button class="btn-save" id="download-json-btn2" style="font-size:1rem;padding:16px 40px;letter-spacing:0.2em;">
+        <button class="btn-save" id="one-click-publish" style="font-size:1rem;padding:16px 40px;letter-spacing:0.2em;">
+          ↑ PUBLICAR AGORA
+        </button>
+        <p id="publish-status" style="font-size:0.6rem;letter-spacing:0.15em;color:var(--muted);margin-top:14px;min-height:18px;text-transform:uppercase;"></p>
+      </div>
+
+      <div class="section-title" style="margin-top:20px">↓ Baixar arquivo (alternativa)</div>
+      <div class="card">
+        <p style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;line-height:1.9;margin-bottom:16px;">
+          Se preferir, baixe o JSON e coloque na pasta <code style="color:var(--lime)">portfolio/</code> + <code style="color:var(--lime)">vercel --prod</code>.
+        </p>
+        <button class="btn-save" id="download-json-btn2" style="background:var(--dim);font-size:0.8rem;padding:10px 24px;">
           ↓ BAIXAR portfolio-data.json
         </button>
       </div>
@@ -792,6 +803,72 @@ document.getElementById('close-modal-btn').addEventListener('click', () => {
 
 
 document.getElementById('download-json-btn2').addEventListener('click', downloadJSON);
+
+// ── ONE-CLICK PUBLISH via GitHub API ──
+const GH_REPO  = 'Georgedenn81/geo-portfolio';
+const GH_FILE  = 'portfolio-data.json';
+
+async function oneClickPublish() {
+  const statusEl = document.getElementById('publish-status');
+  const btn      = document.getElementById('one-click-publish');
+  const ghToken  = localStorage.getItem('geo_gh_token');
+
+  if (!ghToken) {
+    const t = prompt('Cole seu GitHub Personal Access Token (precisa de permissão "repo"):');
+    if (!t) return;
+    localStorage.setItem('geo_gh_token', t.trim());
+  }
+
+  btn.disabled    = true;
+  btn.textContent = '⏳ PUBLICANDO...';
+  statusEl.textContent = 'Enviando dados para o GitHub...';
+  statusEl.style.color = 'var(--muted)';
+
+  try {
+    saveData();
+    const token   = localStorage.getItem('geo_gh_token');
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+
+    // Busca SHA atual do arquivo (se existir)
+    let sha = null;
+    try {
+      const res = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+        headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+      });
+      if (res.ok) { const j = await res.json(); sha = j.sha; }
+    } catch(e) {}
+
+    // Commita portfolio-data.json
+    const body = { message: 'Update portfolio data via admin', content, ...(sha ? { sha } : {}) };
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`, {
+      method: 'PUT',
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.message || r.status);
+    }
+
+    statusEl.style.color = 'var(--lime)';
+    statusEl.textContent = '✓ ENVIADO — DEPLOY INICIADO (~30s)';
+    btn.textContent = '✓ PUBLICADO';
+    setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 5000);
+
+  } catch(e) {
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '⚠ ERRO: ' + e.message;
+    if (e.message.includes('Bad credentials') || e.message.includes('401')) {
+      localStorage.removeItem('geo_gh_token');
+      statusEl.textContent += ' — Token inválido. Tente novamente.';
+    }
+    btn.disabled = false;
+    btn.textContent = '↑ PUBLICAR AGORA';
+  }
+}
+
+document.getElementById('one-click-publish').addEventListener('click', oneClickPublish);
 
 function downloadJSON() {
   saveData();
