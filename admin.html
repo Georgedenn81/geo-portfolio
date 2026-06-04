@@ -395,7 +395,7 @@ const panel = document.getElementById('panel');
 function getPass() { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS; }
 
 function checkAuth() {
-  if (sessionStorage.getItem(AUTH_KEY) === '1') showPanel();
+  if (localStorage.getItem(AUTH_KEY) === '1') showPanel();
 }
 
 function showPanel() {
@@ -416,7 +416,7 @@ function login() {
   const val = document.getElementById('gate-pass').value;
   const err = document.getElementById('gate-err');
   if (val === getPass()) {
-    sessionStorage.setItem(AUTH_KEY, '1');
+    localStorage.setItem(AUTH_KEY, '1');
     err.textContent = '';
     showPanel();
   } else {
@@ -427,7 +427,7 @@ function login() {
 }
 
 document.getElementById('logout-btn').addEventListener('click', () => {
-  sessionStorage.removeItem(AUTH_KEY);
+  localStorage.removeItem(AUTH_KEY);
   location.reload();
 });
 
@@ -954,9 +954,22 @@ async function oneClickPublish() {
     }
 
     statusEl.style.color = 'var(--lime)';
-    statusEl.textContent = '✓ PUBLICADO — Deploy iniciado, site atualizado em ~30s';
-    btn.textContent = '✓ PUBLICADO';
-    setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 8000);
+    statusEl.textContent = '✓ PUBLICADO — aguardando deploy...';
+    btn.textContent = '⏳ DEPLOY EM ANDAMENTO';
+    // Conta regressiva de 35s
+    let secs = 35;
+    const countdown = setInterval(() => {
+      secs--;
+      if (secs > 0) {
+        statusEl.textContent = `✓ ENVIADO — site ao vivo em ~${secs}s`;
+      } else {
+        clearInterval(countdown);
+        statusEl.textContent = '✅ SITE ATUALIZADO — abra o portfólio para confirmar';
+        btn.disabled = false;
+        btn.textContent = '↑ PUBLICAR AGORA';
+        showToast('✅ DEPLOY CONCLUÍDO!');
+      }
+    }, 1000);
 
   } catch(e) {
     statusEl.style.color = 'var(--red)';
