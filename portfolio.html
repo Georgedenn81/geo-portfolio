@@ -1862,16 +1862,20 @@
 
     function videoEmbedHTML(url) {
       if (!url) return '';
+      url = url.trim();
       // YouTube
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
       if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-      // Vimeo
-      const vm = url.match(/vimeo\.com\/(\d+)/);
-      if (vm) return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      // Vimeo — suporta /ID e /ID/HASH (vídeos privados)
+      const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
+      if (vm) {
+        const hash = vm[2] ? `&h=${vm[2]}` : '';
+        return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0${hash}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+      }
       // MP4 / direto
       if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video src="${url}" autoplay controls playsinline style="background:#000"></video>`;
-      // Fallback: link
-      return `<div class="lb-no-video">Abrir em nova aba: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
+      // Fallback: link externo
+      return `<div class="lb-no-video">Clique para abrir: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
     }
 
     function openLightbox(title, desc, videoUrl) {
