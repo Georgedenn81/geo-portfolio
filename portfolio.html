@@ -19,6 +19,8 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
+    .bento-card img, .lb-slide img, .project-item img { pointer-events: none; }
 
     html { scroll-behavior: smooth; }
 
@@ -2056,6 +2058,11 @@
       });
     }
     bindLightboxCards();
+
+    // ── Proteção de imagens ──
+    document.addEventListener('contextmenu', e => { e.preventDefault(); return false; });
+    document.addEventListener('dragstart',   e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+    document.addEventListener('selectstart', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
 
     loadPortfolioData();
 
