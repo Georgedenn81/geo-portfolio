@@ -558,7 +558,11 @@ function renderFeatured() {
           <label class="field-label">🎬 URL do Vídeo (abre no lightbox ao clicar)</label>
           <div style="display:flex;gap:8px;align-items:center">
             <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..." style="flex:1"/>
-            <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 BUSCAR THUMB</button>
+            <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 AUTO</button>
+          </div>
+          <div style="margin-top:8px">
+            <label class="field-label">URL da Thumbnail (cole manualmente se o AUTO não funcionar)</label>
+            <input type="text" class="field-input feat-thumb-url" data-i="${i}" value="${esc(p.thumbnailSrc||'')}" placeholder="https://i.vimeocdn.com/... ou https://img.youtube.com/..."/>
           </div>
           <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
         </div>
@@ -587,6 +591,15 @@ function renderFeatured() {
 
   grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
     data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();
+    markDirty();
+  }));
+
+  grid.querySelectorAll('.feat-thumb-url').forEach(el => el.addEventListener('input', e => {
+    const i   = +e.target.dataset.i;
+    const url = e.target.value.trim();
+    data.projects.featured[i].thumbnailSrc = url;
+    const prev = document.getElementById(`thumb-preview-${i}`);
+    if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
     markDirty();
   }));
 
