@@ -559,8 +559,12 @@ function renderFeatured() {
           </div>
           <div class="field card-full">
             <label class="field-label">📸 Galeria de imagens (carrossel no lightbox)</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" class="field-input feat-gallery-url" data-i="${i}" placeholder="Cole URL do imgbb.com, imgur, etc. e pressione Enter" style="flex:1;font-size:0.7rem"/>
+              <button class="btn-add feat-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
+            </div>
             <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-              ↑ ADICIONAR IMAGENS AO CARROSSEL
+              ↑ UPLOAD
               <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
             </label>
             <div id="gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
@@ -590,6 +594,23 @@ function renderFeatured() {
     const prev = document.getElementById(`thumb-preview-${i}`);
     if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
     markDirty();
+  }));
+
+  // Adicionar URL de imagem externa à galeria (featured)
+  grid.querySelectorAll('.feat-gallery-add-url').forEach(btn => btn.addEventListener('click', () => {
+    const i   = +btn.dataset.i;
+    const inp = grid.querySelector(`.feat-gallery-url[data-i="${i}"]`);
+    const url = inp?.value.trim();
+    if (!url) return;
+    if (!data.projects.featured[i].gallery) data.projects.featured[i].gallery = [];
+    data.projects.featured[i].gallery.push(url);
+    inp.value = '';
+    markDirty();
+    renderFeatured();
+    showToast('✓ IMAGEM ADICIONADA À GALERIA');
+  }));
+  grid.querySelectorAll('.feat-gallery-url').forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); grid.querySelector(`.feat-gallery-add-url[data-i="${el.dataset.i}"]`)?.click(); }
   }));
 
   // Galeria de imagens (featured)
@@ -769,8 +790,12 @@ function renderMore() {
         </div>
         <div class="field card-full" style="margin:0">
           <label class="field-label">📸 Galeria (carrossel no lightbox)</label>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <input type="text" class="field-input more-gallery-url" data-i="${i}" placeholder="Cole URL do imgbb.com, imgur, etc. e pressione Enter" style="flex:1;font-size:0.7rem"/>
+            <button class="btn-add more-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
+          </div>
           <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-            ↑ ADICIONAR IMAGENS
+            ↑ UPLOAD
             <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
           </label>
           <div id="more-gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
@@ -836,6 +861,23 @@ function renderMore() {
     const prev = document.getElementById(`more-thumb-${i}`);
     if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
     markDirty();
+  }));
+
+  // Adicionar URL de imagem externa à galeria (more)
+  list.querySelectorAll('.more-gallery-add-url').forEach(btn => btn.addEventListener('click', () => {
+    const i   = +btn.dataset.i;
+    const inp = list.querySelector(`.more-gallery-url[data-i="${i}"]`);
+    const url = inp?.value.trim();
+    if (!url) return;
+    if (!data.projects.more[i].gallery) data.projects.more[i].gallery = [];
+    data.projects.more[i].gallery.push(url);
+    inp.value = '';
+    markDirty();
+    renderMore();
+    showToast('✓ IMAGEM ADICIONADA À GALERIA');
+  }));
+  list.querySelectorAll('.more-gallery-url').forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); list.querySelector(`.more-gallery-add-url[data-i="${el.dataset.i}"]`)?.click(); }
   }));
 
   // Galeria more projects
