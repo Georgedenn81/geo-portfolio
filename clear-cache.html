@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Limpando cache...</title>
+  <style>
+    body { background: #1A1714; color: #C8F135; font-family: monospace; display: flex; align-items: center; justify-content: center; min-height: 100vh; flex-direction: column; gap: 20px; text-align: center; }
+    p { font-size: 1rem; letter-spacing: 0.15em; text-transform: uppercase; }
+    a { color: #C8F135; font-size: 0.8rem; letter-spacing: 0.2em; text-transform: uppercase; border: 1px solid #C8F135; padding: 12px 28px; text-decoration: none; margin-top: 20px; display: inline-block; }
+    a:hover { background: #C8F135; color: #1A1714; }
+  </style>
+</head>
+<body>
+  <p id="status">🗑 Limpando dados do cache...</p>
+  <a href="/admin.html" id="link" style="display:none">→ IR PARA O ADMIN</a>
+  <script>
+    try {
+      localStorage.removeItem('geo_portfolio_data');
+      localStorage.removeItem('geo_admin_auth');
+      document.getElementById('status').textContent = '✓ Cache limpo com sucesso!';
+    } catch(e) {
+      document.getElementById('status').textContent = '⚠ Erro: ' + e.message;
+    }
+    document.getElementById('link').style.display = 'inline-block';
+  </script>
+</body>
+</html>
