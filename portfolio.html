@@ -2216,10 +2216,21 @@
     lbZoomReset.addEventListener('click', resetZoom);
 
     // Scroll to zoom (trackpad/mouse wheel)
+    // Scroll vertical: navega slides (quando zoom = 1) ou faz zoom (quando ampliado)
+    let __wheelTimer = null;
     lbWrap.addEventListener('wheel', e => {
-      if (!getZoomImg()) return;
       e.preventDefault();
-      setZoom(__zoom - e.deltaY * 0.001);
+      if (__zoom > 1 && getZoomImg()) {
+        // Zoom mode
+        setZoom(__zoom - e.deltaY * 0.001);
+      } else if (__slides.length > 1) {
+        // Navegação entre slides com debounce
+        clearTimeout(__wheelTimer);
+        __wheelTimer = setTimeout(() => {
+          if (e.deltaY > 30)       goSlide(1);
+          else if (e.deltaY < -30) goSlide(-1);
+        }, 80);
+      }
     }, { passive: false });
 
     // Click image para zoom — só se não houve drag
@@ -2256,20 +2267,45 @@
       const img = getZoomImg();
       if (img) img.style.transition = 'transform 0.15s ease';
     });
-    // Touch pan
+    // Touch — pan (zoom) + swipe vertical/horizontal para navegar slides
+    let __touchStart = { x: 0, y: 0 };
     lbWrap.addEventListener('touchstart', e => {
-      if (__zoom <= 1 || e.touches.length !== 1) return;
-      __isPanning = true;
-      __panStart = { x: e.touches[0].clientX - __panX, y: e.touches[0].clientY - __panY };
+      if (e.touches.length !== 1) return;
+      __touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (__zoom > 1) {
+        __isPanning = true;
+        __panStart = { x: e.touches[0].clientX - __panX, y: e.touches[0].clientY - __panY };
+      }
     }, { passive: true });
+
     lbWrap.addEventListener('touchmove', e => {
-      if (!__isPanning || e.touches.length !== 1) return;
-      __panX = e.touches[0].clientX - __panStart.x;
-      __panY = e.touches[0].clientY - __panStart.y;
-      applyZoom();
-      e.preventDefault();
+      if (e.touches.length !== 1) return;
+      if (__isPanning && __zoom > 1) {
+        __panX = e.touches[0].clientX - __panStart.x;
+        __panY = e.touches[0].clientY - __panStart.y;
+        applyZoom();
+        e.preventDefault();
+      }
     }, { passive: false });
-    lbWrap.addEventListener('touchend', () => { __isPanning = false; });
+
+    lbWrap.addEventListener('touchend', e => {
+      __isPanning = false;
+      if (__slides.length <= 1) return;
+      const dx = e.changedTouches[0].clientX - __touchStart.x;
+      const dy = e.changedTouches[0].clientY - __touchStart.y;
+      const absDx = Math.abs(dx), absDy = Math.abs(dy);
+      if (absDx < 20 && absDy < 20) return; // tap, não swipe
+      if (__zoom > 1) return; // no slide nav while zoomed
+      if (absDy > absDx) {
+        // Swipe vertical → navega slides
+        if (dy < -40) goSlide(1);  // swipe up → próximo
+        else if (dy > 40) goSlide(-1); // swipe down → anterior
+      } else {
+        // Swipe horizontal → também navega
+        if (dx < -40) goSlide(1);
+        else if (dx > 40) goSlide(-1);
+      }
+    });
 
     function scaleIframe() {} // não necessário com abordagem simplificada
 
