@@ -994,18 +994,8 @@
       width: 100%;
       background: #000;
       overflow: hidden;
-      transition: aspect-ratio 0.2s;
+      transition: padding-top 0.25s ease;
     }
-    /* Vídeos: 16:9 fixo */
-    .lb-video-wrap.is-video { aspect-ratio: 16/9; }
-    /* Imagens: altura automática até 78vh */
-    .lb-video-wrap.is-image {
-      display: flex; align-items: center; justify-content: center;
-      max-height: 78vh; min-height: 200px;
-    }
-    .lb-video-wrap.is-image .lb-carousel,
-    .lb-video-wrap.is-image .lb-slide { position: relative; inset: auto; height: auto; }
-    .lb-video-wrap.is-image img { max-width: 100%; max-height: 78vh; width: auto; height: auto; object-fit: contain; }
     .lb-video-wrap iframe,
     .lb-video-wrap video {
       position: absolute;
@@ -2001,9 +1991,21 @@
 
     function goSlide(dir) { goToSlide((__slideIdx + dir + __slides.length) % __slides.length); }
 
-    function setWrapMode(slide) {
-      lbWrap.classList.remove('is-video', 'is-image');
-      lbWrap.classList.add(slide && slide.type === 'video' ? 'is-video' : 'is-image');
+    function setWrapAspect(slide) {
+      if (!slide || slide.type === 'video') {
+        lbWrap.style.paddingTop = '56.25%'; // 16:9
+      } else {
+        // Carrega a imagem para obter as dimensões reais
+        const img = new Image();
+        img.onload = () => {
+          const ratio = img.naturalHeight / img.naturalWidth;
+          // Limita: mínimo 40% (2.5:1 landscape), máximo 120% (~4:3 portrait)
+          const pct = Math.min(Math.max(ratio * 100, 40), 120);
+          lbWrap.style.paddingTop = pct + '%';
+        };
+        img.src = slide.src;
+        lbWrap.style.paddingTop = '75%'; // fallback enquanto carrega
+      }
     }
 
     function goToSlide(idx) {
@@ -2016,7 +2018,7 @@
       if (slides[__slideIdx]) slides[__slideIdx].classList.add('active');
       if (dots[__slideIdx])   dots[__slideIdx].classList.add('active');
       if (counter) counter.textContent = `${__slideIdx + 1} / ${__slides.length}`;
-      setWrapMode(__slides[__slideIdx]);
+      setWrapAspect(__slides[__slideIdx]);
     }
 
     function openLightbox(title, desc, p) {
@@ -2024,7 +2026,7 @@
       lbDesc.textContent  = desc  || '';
       __slides = buildSlides(typeof p === 'object' ? p : { videoUrl: p });
       renderCarousel();
-      setWrapMode(__slides[0]);
+      setWrapAspect(__slides[0]);
       lb.classList.add('open');
       requestAnimationFrame(() => lb.classList.add('visible'));
       document.body.style.overflow = 'hidden';
