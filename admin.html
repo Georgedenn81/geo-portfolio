@@ -264,6 +264,16 @@
         <p style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;line-height:1.9;margin-bottom:20px;">
           Clique em <strong style="color:var(--white)">PUBLICAR AGORA</strong> — as alterações vão ao ar em ~30 segundos automaticamente.
         </p>
+        <div id="gh-token-wrap" style="margin-bottom:16px;">
+          <label class="field-label">GitHub Personal Access Token</label>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <input type="password" id="gh-token-input" class="field-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" style="flex:1"/>
+            <button class="btn-add" id="gh-token-save" style="white-space:nowrap;padding:10px 16px;">SALVAR TOKEN</button>
+          </div>
+          <p style="font-size:0.55rem;color:var(--muted);margin-top:6px;letter-spacing:0.08em;">
+            Crie em <a href="https://github.com/settings/tokens/new?scopes=repo" target="_blank" style="color:var(--lime)">github.com/settings/tokens/new</a> → marque <strong style="color:var(--white)">repo</strong> → copie e cole aqui.
+          </p>
+        </div>
         <button class="btn-save" id="one-click-publish" style="font-size:1rem;padding:16px 40px;letter-spacing:0.2em;">
           ↑ PUBLICAR AGORA
         </button>
@@ -479,6 +489,7 @@ function renderAll() {
   renderAbout();
   renderSkills();
   renderContact();
+  loadGhTokenField();
 }
 
 // ── FEATURED ──
@@ -808,15 +819,35 @@ document.getElementById('download-json-btn2').addEventListener('click', download
 const GH_REPO  = 'Georgedenn81/geo-portfolio';
 const GH_FILE  = 'portfolio-data.json';
 
+// Carrega token salvo no campo ao iniciar
+function loadGhTokenField() {
+  const saved = localStorage.getItem('geo_gh_token');
+  const input = document.getElementById('gh-token-input');
+  const wrap  = document.getElementById('gh-token-wrap');
+  if (saved) {
+    input.value = saved;
+    input.placeholder = '● TOKEN SALVO';
+    wrap.style.opacity = '0.5';
+  }
+}
+
+document.getElementById('gh-token-save').addEventListener('click', () => {
+  const val = document.getElementById('gh-token-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('geo_gh_token', val);
+  document.getElementById('gh-token-wrap').style.opacity = '0.5';
+  showToast('✓ TOKEN SALVO');
+});
+
 async function oneClickPublish() {
   const statusEl = document.getElementById('publish-status');
   const btn      = document.getElementById('one-click-publish');
-  const ghToken  = localStorage.getItem('geo_gh_token');
+  const ghToken  = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input').value.trim();
 
   if (!ghToken) {
-    const t = prompt('Cole seu GitHub Personal Access Token (precisa de permissão "repo"):');
-    if (!t) return;
-    localStorage.setItem('geo_gh_token', t.trim());
+    statusEl.style.color = 'var(--red)';
+    statusEl.textContent = '⚠ COLE SEU TOKEN ACIMA E CLIQUE "SALVAR TOKEN" PRIMEIRO';
+    return;
   }
 
   btn.disabled    = true;
