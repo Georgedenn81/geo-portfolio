@@ -468,9 +468,17 @@ function markDirty() {
 function saveData() {
   clearTimeout(_autoSaveTimer);
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Remove base64 antes de salvar (pode estourar o limite do localStorage)
+    const clean = JSON.parse(JSON.stringify(data));
+    if (clean.projects?.featured) {
+      clean.projects.featured = clean.projects.featured.map(p => ({
+        ...p,
+        mediaSrc: (p.mediaSrc && p.mediaSrc.startsWith('data:')) ? '' : (p.mediaSrc || '')
+      }));
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
   } catch(e) {
-    showToast('⚠ ERRO AO SALVAR — DADOS MUITO GRANDES?');
+    showToast('⚠ ERRO AO SALVAR: ' + e.message);
     return;
   }
   if (saveStatus) { saveStatus.textContent = '● SALVO'; saveStatus.className = 'saved'; }
