@@ -1075,7 +1075,7 @@ async function oneClickPublish() {
 
     // Usa indexOf em vez de regex (mais confiável para evitar problemas com $ no JSON)
     const startTag = '<script id="__geo_admin_data__" type="application/json">';
-    const endTag   = '</script>';
+    const endTag   = '<\/script>';
     const si = currentHtml.indexOf(startTag);
     const ei = currentHtml.indexOf(endTag, si + startTag.length);
 
