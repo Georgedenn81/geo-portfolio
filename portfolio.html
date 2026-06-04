@@ -2083,7 +2083,7 @@
         <div class="lb-carousel">
           ${__slides.map((s, i) => {
             if (s.type === 'video') return `<div class="lb-slide${i===0?' active':''}">${videoEmbedHTML(s.src)}</div>`;
-            if (s.type === 'link')  return `<div class="lb-slide${i===0?' active':''}" style="overflow:hidden"><div class="lb-iframe-scaler"><iframe src="${s.src}" scrolling="yes" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe></div></div>`;
+            if (s.type === 'link')  return `<div class="lb-slide${i===0?' active':''}" style="overflow:auto"><iframe src="${s.src}" style="width:100%;height:100%;min-height:500px;border:none;display:block;" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe></div>`;
             return `<div class="lb-slide${i===0?' active':''}"><img src="${s.src}" alt=""/></div>`;
           }).join('')}
           ${showArrows ? `<button class="lb-arrow lb-arrow-prev">&#8592;</button><button class="lb-arrow lb-arrow-next">&#8594;</button>` : ''}
@@ -2102,8 +2102,10 @@
     function goSlide(dir) { goToSlide((__slideIdx + dir + __slides.length) % __slides.length); }
 
     function setWrapAspect(slide) {
-      if (!slide || slide.type === 'video' || slide.type === 'link') {
+      if (!slide || slide.type === 'video') {
         lbWrap.style.paddingTop = '56.25%'; // 16:9
+      } else if (slide.type === 'link') {
+        lbWrap.style.paddingTop = '75vh'; // mais alto para links
       } else {
         const applyRatio = (naturalW, naturalH) => {
           const ratio = naturalH / naturalW;
@@ -2243,24 +2245,7 @@
     }, { passive: false });
     lbWrap.addEventListener('touchend', () => { __isPanning = false; });
 
-    function scaleIframe() {
-      setTimeout(() => {
-        const scaler = lbWrap.querySelector('.lb-iframe-scaler');
-        if (!scaler) return;
-        const rect = lbWrap.getBoundingClientRect();
-        const w = rect.width  || lbWrap.offsetWidth  || window.innerWidth  * 0.9;
-        const h = rect.height || lbWrap.offsetHeight || window.innerHeight * 0.6;
-        const scale = Math.min(w / 1280, h / 800);
-        scaler.style.width  = '1280px';
-        scaler.style.height = '800px';
-        scaler.style.transform = `scale(${scale})`;
-        scaler.style.transformOrigin = 'top left';
-        // centraliza horizontalmente
-        const offsetX = (w - 1280 * scale) / 2;
-        scaler.style.left = offsetX + 'px';
-      }, 100);
-    }
-    window.addEventListener('resize', scaleIframe);
+    function scaleIframe() {} // não necessário com abordagem simplificada
 
     function showZoomControls(show) {
       lbZoomBar.classList.toggle('visible', show);
