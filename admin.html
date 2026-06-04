@@ -1053,7 +1053,10 @@ async function oneClickPublish() {
     });
     if (!fileRes.ok) throw new Error('Não foi possível buscar portfolio.html do GitHub');
     const fileJson = await fileRes.json();
-    const currentHtml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    // Decode UTF-8 corretamente (suporta ã, ç, é, etc.)
+    const b64 = fileJson.content.replace(/\n/g, '');
+    const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const currentHtml = new TextDecoder('utf-8').decode(bytes);
 
     // 2. Remove base64 antes de injetar (mantém HTML pequeno para o GitHub)
     function stripBase64(obj) {
@@ -1078,7 +1081,9 @@ async function oneClickPublish() {
 
     // 3. Commita o HTML atualizado
     statusEl.textContent = 'Salvando alterações no GitHub...';
-    const newContent = btoa(unescape(encodeURIComponent(updatedHtml)));
+    // Encode UTF-8 corretamente para base64
+    const encBytes = new TextEncoder().encode(updatedHtml);
+    const newContent = btoa(String.fromCharCode(...encBytes));
     const commitRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       method: 'PUT',
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
