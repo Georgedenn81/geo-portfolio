@@ -1065,23 +1065,27 @@ async function oneClickPublish() {
       const strip = p => ({
         ...p,
         thumbnailSrc: (p.thumbnailSrc||'').startsWith('data:') ? '' : (p.thumbnailSrc||''),
-        gallery: [] // galeria base64 não vai para o HTML — fica só no preview
+        gallery: []
       });
       if (o.projects?.featured) o.projects.featured = o.projects.featured.map(strip);
       if (o.projects?.more)     o.projects.more     = o.projects.more.map(strip);
       return o;
     }
     const dataJson = JSON.stringify(stripBase64(data));
-    const updatedHtml = currentHtml.replace(
-      /<script id="__geo_admin_data__" type="application\/json">[\s\S]*?<\/script>/,
-      `<script id="__geo_admin_data__" type="application/json">${dataJson}<\/script>`
-    );
 
-    if (updatedHtml === currentHtml) {
-      // Debug: mostra o que encontrou no HTML
-      const hasTag = currentHtml.includes('__geo_admin_data__');
-      throw new Error(`Ponto de injeção não encontrado. Tag existe: ${hasTag}. Tamanho HTML: ${currentHtml.length} chars`);
+    // Usa indexOf em vez de regex (mais confiável para evitar problemas com $ no JSON)
+    const startTag = '<script id="__geo_admin_data__" type="application/json">';
+    const endTag   = '</script>';
+    const si = currentHtml.indexOf(startTag);
+    const ei = currentHtml.indexOf(endTag, si + startTag.length);
+
+    if (si === -1 || ei === -1) {
+      throw new Error(`Ponto de injeção não encontrado. si=${si}, ei=${ei}, tamanho=${currentHtml.length}`);
     }
+
+    const updatedHtml = currentHtml.slice(0, si + startTag.length)
+                      + dataJson
+                      + currentHtml.slice(ei);
 
     // 3. Commita o HTML atualizado
     statusEl.textContent = 'Salvando alterações no GitHub...';
