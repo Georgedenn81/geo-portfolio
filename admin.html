@@ -560,11 +560,14 @@ function renderFeatured() {
             <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..." style="flex:1"/>
             <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 AUTO</button>
           </div>
-          <div style="margin-top:8px">
-            <label class="field-label">URL da Thumbnail (cole manualmente se o AUTO não funcionar)</label>
-            <input type="text" class="field-input feat-thumb-url" data-i="${i}" value="${esc(p.thumbnailSrc||'')}" placeholder="https://i.vimeocdn.com/... ou https://img.youtube.com/..."/>
+          <div style="margin-top:10px">
+            <label class="field-label">🖼 Thumbnail do card — caminho da imagem na pasta img/</label>
+            <input type="text" class="field-input feat-thumb-url" data-i="${i}" value="${esc(p.thumbnailSrc||'')}" placeholder="img/oakley-thumb.jpg"/>
+            <p style="font-size:0.55rem;color:var(--muted);margin-top:5px;letter-spacing:0.08em">
+              Coloque a imagem em <strong style="color:var(--lime)">portfolio/img/</strong> e escreva o caminho acima. Ex: <code style="color:var(--lime)">img/oakley.jpg</code>
+            </p>
           </div>
-          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:100px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
         </div>
         <div class="field">
           <label class="field-label">Tipo de Mídia (imagem/vídeo de fundo do card)</label>
