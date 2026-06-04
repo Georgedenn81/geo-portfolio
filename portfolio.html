@@ -2244,14 +2244,21 @@
     lbWrap.addEventListener('touchend', () => { __isPanning = false; });
 
     function scaleIframe() {
-      const scaler = lbWrap.querySelector('.lb-iframe-scaler');
-      if (!scaler) return;
-      const wrapW = lbWrap.offsetWidth || 900;
-      const wrapH = lbWrap.offsetHeight || 506;
-      const scaleX = wrapW / 1280;
-      const scaleY = wrapH / 800;
-      const scale  = Math.min(scaleX, scaleY);
-      scaler.style.transform = `scale(${scale})`;
+      setTimeout(() => {
+        const scaler = lbWrap.querySelector('.lb-iframe-scaler');
+        if (!scaler) return;
+        const rect = lbWrap.getBoundingClientRect();
+        const w = rect.width  || lbWrap.offsetWidth  || window.innerWidth  * 0.9;
+        const h = rect.height || lbWrap.offsetHeight || window.innerHeight * 0.6;
+        const scale = Math.min(w / 1280, h / 800);
+        scaler.style.width  = '1280px';
+        scaler.style.height = '800px';
+        scaler.style.transform = `scale(${scale})`;
+        scaler.style.transformOrigin = 'top left';
+        // centraliza horizontalmente
+        const offsetX = (w - 1280 * scale) / 2;
+        scaler.style.left = offsetX + 'px';
+      }, 100);
     }
     window.addEventListener('resize', scaleIframe);
 
