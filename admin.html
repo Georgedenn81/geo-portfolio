@@ -543,14 +543,28 @@ function renderFeatured() {
             <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/..." style="flex:1"/>
             <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 AUTO</button>
           </div>
-          <div style="margin-top:10px">
+          <div class="field card-full" style="margin-top:10px">
             <label class="field-label">🖼 Thumbnail do card</label>
-            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:8px">
-              ↑ FAZER UPLOAD DA THUMBNAIL
+            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+              ↑ THUMBNAIL
               <input type="file" class="feat-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
             </label>
+            <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
           </div>
-          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:4px;height:120px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL — faça upload acima'}</div>
+          <div class="field card-full">
+            <label class="field-label">📸 Galeria de imagens (carrossel no lightbox)</label>
+            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+              ↑ ADICIONAR IMAGENS AO CARROSSEL
+              <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+            </label>
+            <div id="gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+              ${(p.gallery||[]).map((src,gi) => `
+                <div style="position:relative;width:80px;height:60px">
+                  <img src="${src}" style="width:100%;height:100%;object-fit:cover"/>
+                  <button class="gallery-remove" data-i="${i}" data-gi="${gi}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);border:none;color:var(--white);width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+                </div>`).join('')}
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -560,6 +574,41 @@ function renderFeatured() {
   grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
     data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();
     markDirty();
+  }));
+
+  // Galeria de imagens (featured)
+  grid.querySelectorAll('.feat-gallery-upload').forEach(el => el.addEventListener('change', e => {
+    const i = +e.target.dataset.i;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    if (!data.projects.featured[i].gallery) data.projects.featured[i].gallery = [];
+    let processed = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1200, scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          data.projects.featured[i].gallery.push(canvas.toDataURL('image/jpeg', 0.8));
+          processed++;
+          if (processed === files.length) { markDirty(); renderFeatured(); showToast(`✓ ${files.length} IMAGEM(NS) ADICIONADA(S)`); }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  }));
+
+  // Remover imagem da galeria (featured)
+  grid.querySelectorAll('.gallery-remove').forEach(btn => btn.addEventListener('click', e => {
+    const i = +btn.dataset.i, gi = +btn.dataset.gi;
+    data.projects.featured[i].gallery.splice(gi, 1);
+    markDirty(); renderFeatured();
   }));
 
   // Upload thumbnail com compressão automática
@@ -691,12 +740,26 @@ function renderMore() {
           <input type="text" class="field-input more-link" data-i="${i}" value="${esc(p.link||'')}" placeholder="https://behance.net/..."/>
         </div>
         <div class="field card-full" style="margin:0">
-          <label class="field-label">🖼 Thumbnail</label>
+          <label class="field-label">🖼 Thumbnail do card</label>
           <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-            ↑ UPLOAD IMAGEM
+            ↑ THUMBNAIL
             <input type="file" class="more-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
           </label>
-          <div id="more-thumb-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+          <div id="more-thumb-${i}" class="media-preview" style="margin-top:8px;height:70px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+        </div>
+        <div class="field card-full" style="margin:0">
+          <label class="field-label">📸 Galeria (carrossel no lightbox)</label>
+          <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+            ↑ ADICIONAR IMAGENS
+            <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+          </label>
+          <div id="more-gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+            ${(p.gallery||[]).map((src,gi) => `
+              <div style="position:relative;width:70px;height:52px">
+                <img src="${src}" style="width:100%;height:100%;object-fit:cover"/>
+                <button class="more-gallery-remove" data-i="${i}" data-gi="${gi}" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,0.7);border:none;color:var(--white);width:16px;height:16px;font-size:9px;cursor:pointer">✕</button>
+              </div>`).join('')}
+          </div>
         </div>
       </div>
     `;
@@ -745,6 +808,39 @@ function renderMore() {
     markDirty();
     renderMore();
   }));
+  // Galeria more projects
+  list.querySelectorAll('.more-gallery-upload').forEach(el => el.addEventListener('change', e => {
+    const i = +e.target.dataset.i;
+    const files = Array.from(e.target.files);
+    if (!files.length) return;
+    if (!data.projects.more[i].gallery) data.projects.more[i].gallery = [];
+    let processed = 0;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 1200, scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          data.projects.more[i].gallery.push(canvas.toDataURL('image/jpeg', 0.8));
+          processed++;
+          if (processed === files.length) { markDirty(); renderMore(); showToast(`✓ ${files.length} IMAGEM(NS) ADICIONADA(S)`); }
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  }));
+  list.querySelectorAll('.more-gallery-remove').forEach(btn => btn.addEventListener('click', e => {
+    const i = +btn.dataset.i, gi = +btn.dataset.gi;
+    data.projects.more[i].gallery.splice(gi, 1);
+    markDirty(); renderMore();
+  }));
+
   // Thumbnail upload para more projects
   list.querySelectorAll('.more-thumb-upload').forEach(el => el.addEventListener('change', e => {
     const i = +e.target.dataset.i;

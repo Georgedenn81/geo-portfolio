@@ -1044,6 +1044,28 @@
       text-transform: uppercase;
     }
 
+    /* ── CAROUSEL ── */
+    .lb-carousel { position: relative; width: 100%; height: 100%; }
+    .lb-slide { display: none; width: 100%; height: 100%; }
+    .lb-slide.active { display: flex; align-items: center; justify-content: center; }
+    .lb-slide img { width: 100%; height: 100%; object-fit: contain; background: #000; }
+    .lb-slide iframe, .lb-slide video { width: 100%; height: 100%; border: none; }
+    .lb-arrow {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(0,0,0,0.65); border: 1px solid var(--border);
+      color: var(--white); width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.3rem; z-index: 10;
+      transition: background 0.15s, border-color 0.15s; user-select: none;
+    }
+    .lb-arrow:hover { background: var(--lime); color: var(--bg); border-color: var(--lime); }
+    .lb-arrow-prev { left: 12px; }
+    .lb-arrow-next { right: 12px; }
+    .lb-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+    .lb-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--dim); cursor: pointer; transition: background 0.2s, transform 0.2s; }
+    .lb-dot.active { background: var(--lime); transform: scale(1.3); }
+    .lb-counter { position: absolute; top: 10px; right: 12px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; color: var(--white); background: rgba(0,0,0,0.5); padding: 3px 10px; z-index: 10; }
+
     /* ── FOOTER ── */
     footer {
       display: flex;
@@ -1927,10 +1949,62 @@
       return `<div class="lb-no-video">Clique para abrir: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
     }
 
-    function openLightbox(title, desc, videoUrl) {
+    // ── Carrossel ──
+    let __slides = [], __slideIdx = 0;
+
+    function buildSlides(p) {
+      const slides = [];
+      if (p.videoUrl) slides.push({ type: 'video', src: p.videoUrl });
+      (p.gallery || []).forEach(src => slides.push({ type: 'image', src }));
+      return slides;
+    }
+
+    function slideHTML(slide) {
+      if (slide.type === 'video') return `<div class="lb-slide active">${videoEmbedHTML(slide.src)}</div>`;
+      return `<div class="lb-slide"><img src="${slide.src}" alt=""/></div>`;
+    }
+
+    function renderCarousel() {
+      if (!__slides.length) {
+        lbWrap.innerHTML = '<div class="lb-no-video">SEM CONTEÚDO</div>';
+        return;
+      }
+      const showArrows = __slides.length > 1;
+      lbWrap.innerHTML = `
+        <div class="lb-carousel">
+          ${__slides.map((s, i) => `<div class="lb-slide${i===0?' active':''}">${s.type==='video' ? videoEmbedHTML(s.src) : `<img src="${s.src}" alt=""/>`}</div>`).join('')}
+          ${showArrows ? `<button class="lb-arrow lb-arrow-prev">&#8592;</button><button class="lb-arrow lb-arrow-next">&#8594;</button>` : ''}
+          ${showArrows ? `<div class="lb-counter">1 / ${__slides.length}</div>` : ''}
+          ${showArrows ? `<div class="lb-dots">${__slides.map((_,i) => `<div class="lb-dot${i===0?' active':''}"></div>`).join('')}</div>` : ''}
+        </div>
+      `;
+      __slideIdx = 0;
+      if (showArrows) {
+        lbWrap.querySelector('.lb-arrow-prev').addEventListener('click', e => { e.stopPropagation(); goSlide(-1); });
+        lbWrap.querySelector('.lb-arrow-next').addEventListener('click', e => { e.stopPropagation(); goSlide(1); });
+        lbWrap.querySelectorAll('.lb-dot').forEach((dot, i) => dot.addEventListener('click', () => goToSlide(i)));
+      }
+    }
+
+    function goSlide(dir) { goToSlide((__slideIdx + dir + __slides.length) % __slides.length); }
+
+    function goToSlide(idx) {
+      const slides = lbWrap.querySelectorAll('.lb-slide');
+      const dots   = lbWrap.querySelectorAll('.lb-dot');
+      const counter = lbWrap.querySelector('.lb-counter');
+      if (slides[__slideIdx]) slides[__slideIdx].classList.remove('active');
+      if (dots[__slideIdx])   dots[__slideIdx].classList.remove('active');
+      __slideIdx = idx;
+      if (slides[__slideIdx]) slides[__slideIdx].classList.add('active');
+      if (dots[__slideIdx])   dots[__slideIdx].classList.add('active');
+      if (counter) counter.textContent = `${__slideIdx + 1} / ${__slides.length}`;
+    }
+
+    function openLightbox(title, desc, p) {
       lbTitle.textContent = title || '';
       lbDesc.textContent  = desc  || '';
-      lbWrap.innerHTML    = videoUrl ? videoEmbedHTML(videoUrl) : '<div class="lb-no-video">SEM VÍDEO CONFIGURADO</div>';
+      __slides = buildSlides(typeof p === 'object' ? p : { videoUrl: p });
+      renderCarousel();
       lb.classList.add('open');
       requestAnimationFrame(() => lb.classList.add('visible'));
       document.body.style.overflow = 'hidden';
@@ -1938,16 +2012,16 @@
 
     function closeLightbox() {
       lb.classList.remove('visible');
-      setTimeout(() => {
-        lb.classList.remove('open');
-        lbWrap.innerHTML = '';
-        document.body.style.overflow = '';
-      }, 350);
+      setTimeout(() => { lb.classList.remove('open'); lbWrap.innerHTML = ''; document.body.style.overflow = ''; }, 350);
     }
 
     lbClose.addEventListener('click', closeLightbox);
     lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeLightbox();
+      if (e.key === 'ArrowLeft')  goSlide(-1);
+      if (e.key === 'ArrowRight') goSlide(1);
+    });
 
     // Dados dos projetos para o lightbox (atualizados por applyAdminData)
     let __projects = { featured: [], more: [] };
@@ -1956,24 +2030,28 @@
       document.querySelectorAll('.bento-card').forEach((card, i) => {
         card.style.cursor = 'pointer';
         card.onclick = () => {
-          const p        = __projects.featured[i] || {};
-          const title    = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
-          const desc     = p.desc  || card.querySelector('.bento-desc')?.textContent  || '';
-          // lê videoUrl de múltiplas fontes para garantir
-          const videoUrl = p.videoUrl || card.dataset.videoUrl || card.getAttribute('data-video-url') || '';
-          openLightbox(title, desc, videoUrl);
+          const p     = __projects.featured[i] || {};
+          const title = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
+          const desc  = p.desc || card.querySelector('.bento-desc')?.textContent || '';
+          if (p.videoUrl || (p.gallery && p.gallery.length)) {
+            openLightbox(title, desc, p);
+          } else {
+            // sem conteúdo configurado, abre lightbox vazio
+            openLightbox(title, desc, {});
+          }
         };
       });
       document.querySelectorAll('.project-item').forEach((item, i) => {
         item.style.cursor = 'pointer';
         item.onclick = (e) => {
-          if (e.target.closest('a')) return; // deixa links funcionarem normalmente
-          const p        = __projects.more[i] || {};
-          const title    = p.title || item.querySelector('h3')?.textContent || '';
-          const videoUrl = p.videoUrl || item.dataset.videoUrl || '';
-          const link     = p.link || '#';
-          if (videoUrl) openLightbox(title, '', videoUrl);
-          else if (link && link !== '#') window.open(link, '_blank');
+          if (e.target.closest('a')) return;
+          const p     = __projects.more[i] || {};
+          const title = p.title || item.querySelector('h3')?.textContent || '';
+          if (p.videoUrl || (p.gallery && p.gallery.length)) {
+            openLightbox(title, '', p);
+          } else if (p.link && p.link !== '#') {
+            window.open(p.link, '_blank');
+          }
         };
       });
     }
