@@ -802,9 +802,8 @@ document.getElementById('save-btn').addEventListener('click', saveData);
 
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
-    saveData();
-    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-    window.open('/#geo=' + encoded, '_blank');
+    saveData(); // salva no localStorage do mesmo domínio
+    window.open('/?preview=1', '_blank');
   } catch(e) { alert('Erro preview: ' + e.message); }
 });
 

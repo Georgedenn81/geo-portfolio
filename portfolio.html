@@ -1723,18 +1723,16 @@
     // ── Aplica dados do admin ──
     function loadPortfolioData() {
       try {
-        // 1. URL hash (preview ao vivo do admin)
-        const hash = window.location.hash;
-        if (hash.startsWith('#geo=')) {
-          const d = JSON.parse(decodeURIComponent(escape(atob(hash.slice(5)))));
-          history.replaceState(null, '', window.location.pathname);
-          applyAdminData(d);
-          return;
+        // 1. Preview mode: lê do localStorage (mesmo domínio que o admin)
+        const isPreview = new URLSearchParams(window.location.search).get('preview');
+        if (isPreview) {
+          const raw = localStorage.getItem('geo_portfolio_data');
+          if (raw) { applyAdminData(JSON.parse(raw)); return; }
         }
         // 2. Dados embutidos no HTML (após PUBLICAR AGORA)
-        const raw = document.getElementById('__geo_admin_data__').textContent.trim();
-        if (raw && raw !== 'null') {
-          applyAdminData(JSON.parse(raw));
+        const embedded = document.getElementById('__geo_admin_data__').textContent.trim();
+        if (embedded && embedded !== 'null') {
+          applyAdminData(JSON.parse(embedded));
         }
       } catch(e) { console.warn('loadPortfolioData:', e); }
     }
