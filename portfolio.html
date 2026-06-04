@@ -1833,6 +1833,9 @@
               } else if (p.mediaType === 'video' && p.mediaSrc) {
                 bg.style.cssText = 'background:none;position:absolute;inset:0;';
                 bg.innerHTML = `<video src="${p.mediaSrc}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
+              } else if (p.thumbnailSrc) {
+                // thumbnail automática do Vimeo/YouTube
+                bg.style.cssText = `background:url('${p.thumbnailSrc}') center/cover no-repeat;position:absolute;inset:0;opacity:0.6;`;
               }
             }
           });

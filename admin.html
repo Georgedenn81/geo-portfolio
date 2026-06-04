@@ -557,6 +557,7 @@ function renderFeatured() {
         <div class="field card-full">
           <label class="field-label">🎬 URL do Vídeo (abre no lightbox ao clicar)</label>
           <input type="text" class="field-input feat-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://youtube.com/watch?v=... ou https://vimeo.com/... ou .mp4"/>
+          <div id="thumb-preview-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'THUMBNAIL AUTO (após digitar URL)'}</div>
         </div>
         <div class="field">
           <label class="field-label">Tipo de Mídia (imagem/vídeo de fundo do card)</label>
@@ -581,7 +582,20 @@ function renderFeatured() {
     grid.appendChild(card);
   });
 
-  grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value; markDirty(); }));
+  grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('change', async e => {
+    const i   = +e.target.dataset.i;
+    const url = e.target.value.trim();
+    data.projects.featured[i].videoUrl = url;
+    markDirty();
+    // Auto-fetch thumbnail
+    const thumb = await fetchThumbnail(url);
+    if (thumb) {
+      data.projects.featured[i].thumbnailSrc = thumb;
+      const prev = document.getElementById(`thumb-preview-${i}`);
+      if (prev) prev.innerHTML = `<img src="${thumb}" alt="thumb"/>`;
+      markDirty();
+    }
+  }));
   grid.querySelectorAll('.feat-num').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].num = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-link').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].link = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-title').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].title = e.target.value; markDirty(); }));
@@ -962,6 +976,23 @@ function downloadJSON() {
 
 // também liga o botão do modal ao mesmo handler
 document.getElementById('download-json-btn').addEventListener('click', downloadJSON);
+
+// ── Auto-fetch thumbnail ──
+async function fetchThumbnail(url) {
+  if (!url) return '';
+  // YouTube
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+  if (yt) return `https://img.youtube.com/vi/${yt[1]}/hqdefault.jpg`;
+  // Vimeo
+  const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vm) {
+    try {
+      const res = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${vm[1]}`);
+      if (res.ok) { const j = await res.json(); return j.thumbnail_url || ''; }
+    } catch(e) {}
+  }
+  return '';
+}
 
 function esc(str) {
   return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
