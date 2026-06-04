@@ -191,6 +191,7 @@
       <span id="save-status" class="saved">● SALVO</span>
       <button id="save-btn" class="btn-save">SALVAR</button>
       <button id="preview-btn" class="btn-preview">PREVIEW ↗</button>
+      <button id="clear-cache-btn" class="btn-logout" title="Limpar cache do navegador">🗑 CACHE</button>
       <button id="logout-btn" class="btn-logout">SAIR</button>
     </div>
   </header>
@@ -431,12 +432,52 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   location.reload();
 });
 
+document.getElementById('clear-cache-btn').addEventListener('click', () => {
+  if (!confirm('Limpar todos os dados base64 do cache? As alterações não publicadas serão perdidas.')) return;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const clean = stripBase64FromData(JSON.parse(raw));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+    }
+    showToast('✓ CACHE LIMPO — pode salvar agora');
+    loadData();
+    renderAll();
+  } catch(e) {
+    localStorage.removeItem(STORAGE_KEY);
+    showToast('✓ CACHE RESETADO');
+    location.reload();
+  }
+});
+
 // ── DATA ──
+function stripBase64FromData(d) {
+  if (!d) return d;
+  const strip = p => ({
+    ...p,
+    thumbnailSrc: (p.thumbnailSrc||'').startsWith('data:') ? '' : (p.thumbnailSrc||''),
+    gallery: (p.gallery||[]).filter(s => !s.startsWith('data:'))
+  });
+  if (d.projects?.featured) d.projects.featured = d.projects.featured.map(strip);
+  if (d.projects?.more)     d.projects.more     = d.projects.more.map(strip);
+  return d;
+}
+
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), JSON.parse(raw));
-  } catch(e) {}
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      // Remove base64 automaticamente ao carregar (evita quota exceeded)
+      const clean = stripBase64FromData(parsed);
+      data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), clean);
+      // Re-salva sem base64
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
+    }
+  } catch(e) {
+    // Se localStorage corrompido, limpa tudo
+    try { localStorage.removeItem(STORAGE_KEY); } catch(ex) {}
+  }
 }
 
 let _autoSaveTimer = null;
