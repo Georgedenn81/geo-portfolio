@@ -1847,13 +1847,13 @@
           const moreListEl = document.getElementById('more-projects-list');
           if (moreListEl) {
             moreListEl.innerHTML = d.projects.more.map(p => `
-              <div class="project-item" ${p.videoUrl ? `data-video-url="${p.videoUrl}"` : ''}>
+              <div class="project-item" style="${p.thumbnailSrc ? `background:linear-gradient(to right, rgba(26,23,20,0.92) 50%, rgba(26,23,20,0.5)), url('${p.thumbnailSrc}') right center/cover no-repeat` : ''}">
                 <div class="project-num">${p.num}</div>
                 <div class="project-info">
                   <h3>${p.title}</h3>
                   <div class="project-tags">${(p.tags||'').split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('')}</div>
                 </div>
-                <div class="project-arrow">↗</div>
+                <div class="project-arrow">${p.videoUrl ? '▶' : '↗'}</div>
               </div>
             `).join('');
           }

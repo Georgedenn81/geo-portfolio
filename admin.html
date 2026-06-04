@@ -665,25 +665,39 @@ function renderMore() {
     item.draggable = true;
     item.dataset.idx = i;
     item.innerHTML = `
-      <div class="list-item-row">
-        <div class="drag-handle" title="Arrastar para reordenar">⠿⠿</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="drag-handle" title="Arrastar para reordenar" style="font-size:1.2rem">⠿⠿</div>
+        <button class="btn-remove more-remove" data-i="${i}">✕ REMOVER</button>
+      </div>
+      <div class="card-grid">
         <div class="field" style="margin:0">
           <label class="field-label">Nº</label>
           <input type="text" class="field-input more-num" data-i="${i}" value="${esc(p.num)}" placeholder="Nº 007"/>
         </div>
         <div class="field" style="margin:0">
+          <label class="field-label">Tags</label>
+          <input type="text" class="field-input more-tags" data-i="${i}" value="${esc(p.tags)}" placeholder="BRANDING, FIGMA"/>
+        </div>
+        <div class="field card-full" style="margin:0">
           <label class="field-label">Título</label>
           <input type="text" class="field-input more-title" data-i="${i}" value="${esc(p.title)}" placeholder="NOME DO PROJETO"/>
         </div>
-        <div class="field" style="margin:0">
-          <label class="field-label">Tags</label>
-          <input type="text" class="field-input more-tags" data-i="${i}" value="${esc(p.tags)}" placeholder="FIGMA, REACT"/>
+        <div class="field card-full" style="margin:0">
+          <label class="field-label">🎬 URL do Vídeo (abre lightbox) — ou deixe vazio para usar imagem</label>
+          <input type="text" class="field-input more-video-url" data-i="${i}" value="${esc(p.videoUrl||'')}" placeholder="https://vimeo.com/... ou https://youtube.com/..."/>
         </div>
-        <div class="field" style="margin:0">
-          <label class="field-label">Link</label>
-          <input type="text" class="field-input more-link" data-i="${i}" value="${esc(p.link)}" placeholder="https://..."/>
+        <div class="field card-full" style="margin:0">
+          <label class="field-label">🔗 Link externo (usado se não houver vídeo)</label>
+          <input type="text" class="field-input more-link" data-i="${i}" value="${esc(p.link||'')}" placeholder="https://behance.net/..."/>
         </div>
-        <button class="btn-remove more-remove" data-i="${i}">✕</button>
+        <div class="field card-full" style="margin:0">
+          <label class="field-label">🖼 Thumbnail</label>
+          <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+            ↑ UPLOAD IMAGEM
+            <input type="file" class="more-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
+          </label>
+          <div id="more-thumb-${i}" class="media-preview" style="margin-top:8px;height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
+        </div>
       </div>
     `;
     // Drag events
@@ -725,10 +739,37 @@ function renderMore() {
   list.querySelectorAll('.more-title').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].title = e.target.value; markDirty(); }));
   list.querySelectorAll('.more-tags').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].tags = e.target.value; markDirty(); }));
   list.querySelectorAll('.more-link').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].link = e.target.value; markDirty(); }));
+  list.querySelectorAll('.more-video-url').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].videoUrl = e.target.value; markDirty(); }));
   list.querySelectorAll('.more-remove').forEach(el => el.addEventListener('click', e => {
     data.projects.more.splice(+e.target.dataset.i, 1);
     markDirty();
     renderMore();
+  }));
+  // Thumbnail upload para more projects
+  list.querySelectorAll('.more-thumb-upload').forEach(el => el.addEventListener('change', e => {
+    const i = +e.target.dataset.i;
+    const file = e.target.files[0];
+    if (!file) return;
+    const prev = document.getElementById(`more-thumb-${i}`);
+    if (prev) prev.innerHTML = '⏳ CARREGANDO...';
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 900, scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressed = canvas.toDataURL('image/jpeg', 0.75);
+        data.projects.more[i].thumbnailSrc = compressed;
+        if (prev) prev.innerHTML = `<img src="${compressed}" alt="thumb"/>`;
+        markDirty();
+        showToast('✓ THUMBNAIL CARREGADA');
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
   }));
 }
 
