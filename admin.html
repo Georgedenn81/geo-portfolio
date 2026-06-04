@@ -601,13 +601,20 @@ function renderFeatured() {
           <div class="field card-full">
             <label class="field-label">📸 Galeria de imagens (carrossel no lightbox)</label>
             <div style="display:flex;gap:8px;margin-bottom:8px">
-              <input type="text" class="field-input feat-gallery-url" data-i="${i}" placeholder="Cole URL do imgbb.com, imgur, etc. e pressione Enter" style="flex:1;font-size:0.7rem"/>
+              <input type="text" class="field-input feat-gallery-url" data-i="${i}" placeholder="Cole URL de imagem e pressione Enter" style="flex:1;font-size:0.7rem"/>
               <button class="btn-add feat-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
             </div>
-            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-              ↑ UPLOAD
-              <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-            </label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+                ↑ UPLOAD LOCAL
+                <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+              </label>
+              <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.7rem;padding:8px 14px">
+                ☁ SUBIR PARA VERCEL
+                <input type="file" class="feat-vercel-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+              </label>
+            </div>
+            <p id="feat-upload-status-${i}" style="font-size:0.55rem;color:var(--lime);letter-spacing:0.08em;margin-top:6px;min-height:16px"></p>
             <div id="gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
               ${(p.gallery||[]).map((src,gi) => `
                 <div style="position:relative;width:80px;height:60px">
@@ -635,6 +642,29 @@ function renderFeatured() {
     const prev = document.getElementById(`thumb-preview-${i}`);
     if (prev) prev.innerHTML = url ? `<img src="${url}" alt="thumb"/>` : 'SEM THUMBNAIL';
     markDirty();
+  }));
+
+  // Upload para Vercel (featured)
+  grid.querySelectorAll('.feat-vercel-upload').forEach(el => el.addEventListener('change', async e => {
+    const i = +e.target.dataset.i;
+    const files = Array.from(e.target.files);
+    const statusEl = document.getElementById(`feat-upload-status-${i}`);
+    if (!data.projects.featured[i].gallery) data.projects.featured[i].gallery = [];
+    for (const file of files) {
+      try {
+        const url = await uploadImageToVercel(file, msg => { if (statusEl) statusEl.textContent = msg; });
+        if (url) {
+          data.projects.featured[i].gallery.push(url);
+          markDirty();
+          renderFeatured();
+          showToast('✓ IMAGEM NO VERCEL!');
+        }
+      } catch(err) {
+        if (statusEl) statusEl.style.color = 'var(--red)';
+        if (statusEl) statusEl.textContent = '⚠ ERRO: ' + err.message;
+      }
+    }
+    e.target.value = '';
   }));
 
   // Adicionar URL de imagem externa à galeria (featured)
@@ -773,6 +803,57 @@ function renderFeatured() {
   }));
 }
 
+// ── Upload imagem para GitHub/Vercel ──
+const GH_IMG_REPO = 'Georgedenn81/geo-portfolio';
+
+async function uploadImageToVercel(file, statusCb) {
+  const token = localStorage.getItem('geo_gh_token');
+  if (!token) {
+    alert('Configure o GitHub Token na aba Contato primeiro.');
+    return null;
+  }
+  statusCb('⏳ Comprimindo imagem...');
+  // Comprime
+  const compressed = await new Promise(resolve => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const img = new Image();
+      img.onload = () => {
+        const maxW = 1920, scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  statusCb('⏳ Subindo para o Vercel...');
+  const filename = 'img/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const b64 = compressed.split(',')[1];
+  // Encode para GitHub
+  const encBytes = new TextEncoder().encode(atob(b64));
+  let binary = '';
+  for (let i = 0; i < encBytes.length; i++) binary += String.fromCharCode(encBytes[i]);
+  const content = btoa(binary);
+
+  const res = await fetch(`https://api.github.com/repos/${GH_IMG_REPO}/contents/${filename}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+    body: JSON.stringify({ message: `Upload image: ${filename}`, content: b64 })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || res.status);
+  }
+  const vercelUrl = `https://portfolio-seven-ashen-18.vercel.app/${filename}`;
+  statusCb('✓ Imagem no Vercel: ' + vercelUrl);
+  return vercelUrl;
+}
+
 function mediaHTML(p) {
   if (!p.mediaSrc || p.mediaType === 'none') return 'SEM MÍDIA';
   if (p.mediaType === 'image') return `<img src="${esc(p.mediaSrc)}" alt="preview"/>`;
@@ -832,13 +913,20 @@ function renderMore() {
         <div class="field card-full" style="margin:0">
           <label class="field-label">📸 Galeria (carrossel no lightbox)</label>
           <div style="display:flex;gap:8px;margin-bottom:8px">
-            <input type="text" class="field-input more-gallery-url" data-i="${i}" placeholder="Cole URL do imgbb.com, imgur, etc. e pressione Enter" style="flex:1;font-size:0.7rem"/>
+            <input type="text" class="field-input more-gallery-url" data-i="${i}" placeholder="Cole URL de imagem e pressione Enter" style="flex:1;font-size:0.7rem"/>
             <button class="btn-add more-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
           </div>
-          <label class="upload-btn" style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
-            ↑ UPLOAD
-            <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-          </label>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
+              ↑ UPLOAD LOCAL
+              <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+            </label>
+            <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.7rem;padding:8px 14px">
+              ☁ SUBIR PARA VERCEL
+              <input type="file" class="more-vercel-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+            </label>
+          </div>
+          <p id="more-upload-status-${i}" style="font-size:0.55rem;color:var(--lime);letter-spacing:0.08em;margin-top:6px;min-height:16px"></p>
           <div id="more-gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
             ${(p.gallery||[]).map((src,gi) => `
               <div style="position:relative;width:70px;height:52px">
@@ -919,6 +1007,29 @@ function renderMore() {
   }));
   list.querySelectorAll('.more-gallery-url').forEach(el => el.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); list.querySelector(`.more-gallery-add-url[data-i="${el.dataset.i}"]`)?.click(); }
+  }));
+
+  // Upload para Vercel (more projects)
+  list.querySelectorAll('.more-vercel-upload').forEach(el => el.addEventListener('change', async e => {
+    const i = +e.target.dataset.i;
+    const files = Array.from(e.target.files);
+    const statusEl = document.getElementById(`more-upload-status-${i}`);
+    if (!data.projects.more[i].gallery) data.projects.more[i].gallery = [];
+    for (const file of files) {
+      try {
+        const url = await uploadImageToVercel(file, msg => { if (statusEl) statusEl.textContent = msg; });
+        if (url) {
+          data.projects.more[i].gallery.push(url);
+          markDirty();
+          renderMore();
+          showToast('✓ IMAGEM NO VERCEL!');
+        }
+      } catch(err) {
+        if (statusEl) statusEl.style.color = 'var(--red)';
+        if (statusEl) statusEl.textContent = '⚠ ERRO: ' + err.message;
+      }
+    }
+    e.target.value = '';
   }));
 
   // Galeria more projects
