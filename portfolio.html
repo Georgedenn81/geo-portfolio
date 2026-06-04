@@ -1765,7 +1765,15 @@
           document.getElementById('preview-bar').classList.add('visible');
           document.body.classList.add('preview-mode');
           const raw = localStorage.getItem('geo_portfolio_data');
-          if (raw) { applyAdminData(JSON.parse(raw)); return; }
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            // debug: mostra videoUrl no preview bar
+            const vu = parsed?.projects?.featured?.[0]?.videoUrl;
+            const bar = document.getElementById('preview-bar').querySelector('span');
+            if (bar) bar.textContent = vu ? `● PREVIEW — videoUrl: ${vu.slice(0,40)}` : '● PREVIEW — SEM videoUrl no localStorage';
+            applyAdminData(parsed);
+            return;
+          }
         }
         // 2. Dados embutidos no HTML (após PUBLICAR AGORA)
         const embedded = document.getElementById('__geo_admin_data__').textContent.trim();
@@ -1948,7 +1956,8 @@
           const p        = __projects.featured[i] || {};
           const title    = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
           const desc     = p.desc  || card.querySelector('.bento-desc')?.textContent  || '';
-          const videoUrl = p.videoUrl || '';
+          // lê videoUrl de múltiplas fontes para garantir
+          const videoUrl = p.videoUrl || card.dataset.videoUrl || card.getAttribute('data-video-url') || '';
           openLightbox(title, desc, videoUrl);
         };
       });

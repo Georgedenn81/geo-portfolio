@@ -18,22 +18,22 @@
   "projects": {
     "featured": [
       {
-        "num": "Nº 001 // FEATURED",
+        "num": "Nº 001 // AD",
         "title": "OAKLEY",
-        "desc": "REAL-TIME SAAS ANALYTICS DASHBOARD SERVING 120K+ USERS. CUSTOM WIDGETS, RBAC, STRIPE BILLING.",
-        "tags": "REACT, TYPESCRIPT, STRIPE",
+        "desc": "FILME CAMPANHA OAKLEY",
+        "tags": "SUNGLASSES, OAKLEY, MILITARY",
         "link": "#",
         "mediaType": "video",
-        "mediaSrc": "https://vimeo.com/1198237423"
+        "mediaSrc": "https://vimeo.com/1198237499"
       },
       {
-        "num": "Nº 002 // DESIGN SYSTEM",
-        "title": "LAYERUI\nCOMPONENTS",
-        "desc": "80+ ACCESSIBLE, THEMEABLE COMPONENTS BUILT FOR PRODUCTION-SCALE DESIGN SYSTEMS.",
-        "tags": "NEXT.JS, STORYBOOK",
+        "num": "Nº 002 // SHORT AD",
+        "title": "SHORT AD JOHNSONS BABY.",
+        "desc": "UMA SHORT AD FEITA COM CARINHO PARA JJ BABY",
+        "tags": "VIRAL",
         "link": "#",
-        "mediaType": "none",
-        "mediaSrc": ""
+        "mediaType": "video",
+        "mediaSrc": "https://vimeo.com/1198237499"
       }
     ],
     "more": [
