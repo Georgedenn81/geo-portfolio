@@ -865,19 +865,6 @@ document.getElementById('preview-btn').addEventListener('click', () => {
   } catch(e) { alert('Erro preview: ' + e.message); }
 });
 
-// ── PUBLISH ──
-document.getElementById('publish-btn').addEventListener('click', () => {
-  try {
-    saveData();
-    document.getElementById('publish-modal').classList.add('open');
-  } catch(e) { alert('Erro publicar: ' + e.message); }
-});
-
-document.getElementById('close-modal-btn').addEventListener('click', () => {
-  document.getElementById('publish-modal').classList.remove('open');
-});
-
-
 document.getElementById('download-json-btn2').addEventListener('click', downloadJSON);
 
 // ── ONE-CLICK PUBLISH via GitHub API ──
@@ -999,7 +986,6 @@ function downloadJSON() {
 }
 
 // também liga o botão do modal ao mesmo handler
-document.getElementById('download-json-btn').addEventListener('click', downloadJSON);
 
 // ── Auto-fetch thumbnail ──
 async function fetchThumbnail(url) {
