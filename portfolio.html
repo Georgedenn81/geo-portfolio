@@ -118,6 +118,36 @@
       border-radius: 0;
     }
 
+    /* ── PREVIEW BAR ── */
+    #preview-bar {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 99999;
+      background: var(--lime);
+      color: var(--bg);
+      padding: 10px 24px;
+      align-items: center;
+      justify-content: space-between;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    #preview-bar.visible { display: flex; }
+    #preview-bar a {
+      background: var(--bg);
+      color: var(--lime);
+      padding: 6px 18px;
+      text-decoration: none;
+      font-size: 0.78rem;
+      letter-spacing: 0.15em;
+      transition: background 0.15s;
+    }
+    #preview-bar a:hover { background: #111; }
+    body.preview-mode { padding-top: 44px; }
+
     /* ── NAV ── */
     nav {
       position: fixed;
@@ -1529,6 +1559,12 @@
     </div>
   </footer>
 
+  <!-- PREVIEW BAR -->
+  <div id="preview-bar">
+    <span>● PREVIEW — suas alterações (não publicado)</span>
+    <a href="/admin.html">← VOLTAR AO ADMIN</a>
+  </div>
+
   <!-- LIGHTBOX -->
   <div id="lightbox">
     <div class="lb-box">
@@ -1723,9 +1759,11 @@
     // ── Aplica dados do admin ──
     function loadPortfolioData() {
       try {
-        // 1. Preview mode: lê do localStorage (mesmo domínio que o admin)
+        // 1. Preview mode: lê do localStorage + mostra barra de preview
         const isPreview = new URLSearchParams(window.location.search).get('preview');
         if (isPreview) {
+          document.getElementById('preview-bar').classList.add('visible');
+          document.body.classList.add('preview-mode');
           const raw = localStorage.getItem('geo_portfolio_data');
           if (raw) { applyAdminData(JSON.parse(raw)); return; }
         }

@@ -818,20 +818,18 @@ document.getElementById('change-pass-btn').addEventListener('click', () => {
 
 document.getElementById('save-btn').addEventListener('click', saveData);
 
-const previewOverlay = document.getElementById('preview-overlay');
-const previewFrame   = document.getElementById('preview-frame');
-
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
     saveData();
-    previewFrame.src = '/?preview=1&t=' + Date.now();
-    previewOverlay.classList.add('open');
+    // Abre em nova aba via link (contorna bloqueio de popup do Safari)
+    const a = document.createElement('a');
+    a.href = '/?preview=1';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   } catch(e) { alert('Erro preview: ' + e.message); }
-});
-
-document.getElementById('preview-close').addEventListener('click', () => {
-  previewOverlay.classList.remove('open');
-  previewFrame.src = '';
 });
 
 // ── PUBLISH ──
