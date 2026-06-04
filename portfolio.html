@@ -1228,6 +1228,21 @@
       .contact-left, .contact-right, .test-left, .test-right { padding: 40px 16px; }
       .projects-header { padding: 24px 16px; }
       footer { flex-direction: column; gap: 12px; text-align: center; padding: 24px 16px; }
+
+      /* Lightbox mobile */
+      .lb-box { width: 98vw; max-height: 98vh; }
+      .lb-info { padding: 12px 16px 16px; flex-wrap: wrap; gap: 10px; }
+      .lb-title { font-size: 1.2rem; }
+      .lb-desc { font-size: 0.6rem; }
+      .lb-arrow { width: 36px; height: 36px; font-size: 1rem; }
+      .lb-zoom-bar { gap: 4px; margin-right: 4px; }
+      .lb-zoom-btn { width: 28px; height: 28px; font-size: 0.9rem; }
+
+      /* Nav cta mobile */
+      .nav-cta { padding: 6px 12px; font-size: 0.55rem; }
+
+      /* Lang toggle mobile */
+      #lang-toggle { gap: 4px; }
     }
   </style>
 </head>
@@ -2140,6 +2155,9 @@
       __dragMoved = false;
       __panStart = { x: e.clientX - __panX, y: e.clientY - __panY };
       lbWrap.style.cursor = 'grabbing';
+      // Desativa transição CSS durante o drag (evita tremor)
+      const img = getZoomImg();
+      if (img) img.style.transition = 'none';
       e.preventDefault();
     });
     window.addEventListener('mousemove', e => {
@@ -2152,6 +2170,9 @@
     window.addEventListener('mouseup', () => {
       __isPanning = false;
       lbWrap.style.cursor = '';
+      // Reativa transição suave ao soltar
+      const img = getZoomImg();
+      if (img) img.style.transition = 'transform 0.15s ease';
     });
     // Touch pan
     lbWrap.addEventListener('touchstart', e => {
