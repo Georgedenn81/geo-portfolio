@@ -60,6 +60,15 @@
     .btn-publish { background: var(--bg); border: 1px solid var(--lime); color: var(--lime); padding: 8px 18px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .btn-publish:hover { background: var(--lime); color: var(--bg); }
 
+    /* ── PREVIEW OVERLAY ── */
+    #preview-overlay { display: none; position: fixed; inset: 0; z-index: 99999; flex-direction: column; background: var(--bg); }
+    #preview-overlay.open { display: flex; }
+    .preview-bar { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; background: rgba(26,23,20,0.97); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .preview-bar span { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--lime); }
+    .preview-close { background: var(--surface); border: 1px solid var(--dim); color: var(--white); padding: 6px 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+    .preview-close:hover { border-color: var(--white); }
+    #preview-frame { flex: 1; border: none; width: 100%; }
+
     /* ── PUBLISH MODAL ── */
     #publish-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; }
     #publish-modal.open { display: flex; }
@@ -323,6 +332,15 @@
 </div>
 
 <div id="toast">✓ SALVO</div>
+
+<!-- PREVIEW OVERLAY -->
+<div id="preview-overlay">
+  <div class="preview-bar">
+    <span>● PREVIEW — suas alterações</span>
+    <button class="preview-close" id="preview-close">✕ FECHAR PREVIEW</button>
+  </div>
+  <iframe id="preview-frame" src="" title="Preview do portfólio"></iframe>
+</div>
 
 <!-- ── PUBLISH MODAL ── -->
 <div id="publish-modal">
@@ -800,11 +818,20 @@ document.getElementById('change-pass-btn').addEventListener('click', () => {
 
 document.getElementById('save-btn').addEventListener('click', saveData);
 
+const previewOverlay = document.getElementById('preview-overlay');
+const previewFrame   = document.getElementById('preview-frame');
+
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
-    saveData(); // salva no localStorage do mesmo domínio
-    window.open('/?preview=1', '_blank');
+    saveData();
+    previewFrame.src = '/?preview=1&t=' + Date.now();
+    previewOverlay.classList.add('open');
   } catch(e) { alert('Erro preview: ' + e.message); }
+});
+
+document.getElementById('preview-close').addEventListener('click', () => {
+  previewOverlay.classList.remove('open');
+  previewFrame.src = '';
 });
 
 // ── PUBLISH ──
