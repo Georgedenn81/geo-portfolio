@@ -236,19 +236,24 @@
         </div>
       </div>
 
-      <div class="section-title" style="margin-top:44px">Imagem de Destaque (topo direito)</div>
+      <div class="section-title" style="margin-top:44px">Mídia de Destaque (faixa do topo, largura total)</div>
       <div class="card">
         <p style="font-size:0.62rem;color:var(--muted);letter-spacing:0.06em;line-height:1.7;margin-bottom:14px">
-          Imagem que aparece no topo direito da home. <strong style="color:var(--lime)">Medida ideal: 1200 × 1500 px (retrato 4:5)</strong>. A imagem é cortada automaticamente para preencher o espaço, então deixe o ponto principal centralizado.
+          Imagem ou vídeo que ocupa a faixa do topo da home (largura total).<br/>
+          <strong style="color:var(--lime)">Medida ideal: 1920 × 800 px (paisagem)</strong>. Vídeo: <strong style="color:var(--lime)">.mp4</strong> horizontal, leve (até ~10 MB). É cortado automaticamente — use o slider abaixo para ajustar a altura visível.
         </p>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-          <input type="text" class="field-input" id="hero-highlight-src" placeholder="URL ou faça upload →" style="flex:1"/>
+          <input type="text" class="field-input" id="hero-highlight-src" placeholder="URL (imagem ou .mp4) ou faça upload →" style="flex:1"/>
           <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-size:0.72rem;padding:9px 16px">
             ↑ UPLOAD
-            <input type="file" id="hero-highlight-upload" accept="image/*" style="display:none"/>
+            <input type="file" id="hero-highlight-upload" accept="image/*,video/mp4" style="display:none"/>
           </label>
         </div>
-        <div id="hero-highlight-preview" class="media-preview" style="height:160px"></div>
+        <div class="field" style="margin-bottom:10px">
+          <label class="field-label">Posição vertical — <span class="range-val" id="hero-pos-val">30%</span></label>
+          <div class="range-row"><input type="range" class="field-range" id="hero-highlight-pos" min="0" max="100" value="30"/></div>
+        </div>
+        <div id="hero-highlight-preview" class="media-preview" style="height:180px"></div>
       </div>
 
       <div class="section-title" style="margin-top:44px">Foto de Perfil (Nice to meet you)</div>
@@ -387,6 +392,8 @@ const DEFAULT_DATA = {
     location: 'BASED IN SÃO PAULO',
     intro: "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO.",
     highlightSrc: '',
+    highlightType: 'image',
+    highlightPosY: 30,
     photoSrc: ''
   },
   stats: [
@@ -888,6 +895,33 @@ async function uploadImageToVercel(file, statusCb) {
   return vercelUrl;
 }
 
+// Sobe imagem (comprimida) OU vídeo (bruto) para o Vercel
+async function uploadMediaToVercel(file, statusCb) {
+  if (file.type.startsWith('image/')) return uploadImageToVercel(file, statusCb);
+
+  // vídeo: upload bruto
+  const token = localStorage.getItem('geo_gh_token');
+  if (!token) { alert('Configure o GitHub Token na aba Contato primeiro.'); return null; }
+  if (file.size > 15 * 1024 * 1024) { throw new Error('Vídeo muito grande (máx ~15MB). Comprima antes.'); }
+  statusCb('⏳ Subindo vídeo para o Vercel...');
+  const buf = await file.arrayBuffer();
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  const content = btoa(binary);
+  const filename = 'img/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const res = await fetch(`https://api.github.com/repos/${GH_IMG_REPO}/contents/${filename}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
+    body: JSON.stringify({ message: `Upload video: ${filename}`, content })
+  });
+  if (!res.ok) { const err = await res.json(); throw new Error(err.message || res.status); }
+  const vercelUrl = `https://portfolio-seven-ashen-18.vercel.app/${filename}`;
+  statusCb('✓ Vídeo no Vercel');
+  return vercelUrl;
+}
+
 function mediaHTML(p) {
   if (!p.mediaSrc || p.mediaType === 'none') return 'SEM MÍDIA';
   if (p.mediaType === 'image') return `<img src="${esc(p.mediaSrc)}" alt="preview"/>`;
@@ -1131,26 +1165,47 @@ function renderAbout() {
     markDirty();
   };
 
-  // Imagem de destaque + foto de perfil
+  // Mídia de destaque + foto de perfil
   const hlSrc   = document.getElementById('hero-highlight-src');
   const hlPrev  = document.getElementById('hero-highlight-preview');
+  const hlPos   = document.getElementById('hero-highlight-pos');
+  const hlPosV  = document.getElementById('hero-pos-val');
   const phSrc   = document.getElementById('hero-photo-src');
   const phPrev  = document.getElementById('hero-photo-preview');
-  const showImg = (el, src, ph) => { el.innerHTML = src ? `<img src="${src}" alt=""/>` : ph; };
+
+  const isVid = src => /\.(mp4|webm|mov)(\?|$)/i.test(src||'');
+  const showMedia = (el, src, ph, posY) => {
+    if (!src) { el.innerHTML = ph; return; }
+    const op = `object-fit:cover;object-position:center ${posY != null ? posY : 30}%`;
+    el.innerHTML = isVid(src)
+      ? `<video src="${src}" muted autoplay loop playsinline style="${op}"></video>`
+      : `<img src="${src}" alt="" style="${op}"/>`;
+  };
+  const showImg = (el, src, ph) => { el.innerHTML = src ? `<img src="${src}" alt="" style="object-fit:cover"/>` : ph; };
 
   hlSrc.value = (data.hero.highlightSrc||'').startsWith('data:') ? '' : (data.hero.highlightSrc||'');
   phSrc.value = (data.hero.photoSrc||'').startsWith('data:') ? '' : (data.hero.photoSrc||'');
-  showImg(hlPrev, data.hero.highlightSrc, 'SEM IMAGEM');
+  const curPos = data.hero.highlightPosY != null ? data.hero.highlightPosY : 30;
+  hlPos.value = curPos; hlPosV.textContent = curPos + '%';
+  showMedia(hlPrev, data.hero.highlightSrc, 'SEM MÍDIA', curPos);
   showImg(phPrev, data.hero.photoSrc, 'SEM FOTO');
 
-  hlSrc.oninput = e => { data.hero.highlightSrc = e.target.value.trim(); showImg(hlPrev, data.hero.highlightSrc, 'SEM IMAGEM'); markDirty(); };
+  hlSrc.oninput = e => { data.hero.highlightSrc = e.target.value.trim(); showMedia(hlPrev, data.hero.highlightSrc, 'SEM MÍDIA', data.hero.highlightPosY); markDirty(); };
   phSrc.oninput = e => { data.hero.photoSrc     = e.target.value.trim(); showImg(phPrev, data.hero.photoSrc, 'SEM FOTO'); markDirty(); };
+
+  hlPos.oninput = e => {
+    data.hero.highlightPosY = +e.target.value;
+    hlPosV.textContent = e.target.value + '%';
+    const m = hlPrev.querySelector('img,video');
+    if (m) m.style.objectPosition = `center ${e.target.value}%`;
+    markDirty();
+  };
 
   document.getElementById('hero-highlight-upload').onchange = async e => {
     const file = e.target.files[0]; if (!file) return;
     try {
-      const url = await uploadImageToVercel(file, msg => hlPrev.innerHTML = msg);
-      if (url) { data.hero.highlightSrc = url; hlSrc.value = url; showImg(hlPrev, url); markDirty(); showToast('✓ DESTAQUE NO VERCEL'); }
+      const url = await uploadMediaToVercel(file, msg => hlPrev.innerHTML = msg);
+      if (url) { data.hero.highlightSrc = url; data.hero.highlightType = file.type.startsWith('video') ? 'video' : 'image'; hlSrc.value = url; showMedia(hlPrev, url, 'SEM MÍDIA', data.hero.highlightPosY); markDirty(); showToast('✓ DESTAQUE NO VERCEL'); }
     } catch(err) { hlPrev.innerHTML = '⚠ ' + err.message; }
     e.target.value = '';
   };
