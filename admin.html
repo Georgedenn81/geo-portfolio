@@ -1215,14 +1215,7 @@ document.getElementById('save-btn').addEventListener('click', saveData);
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
     saveData();
-    // Abre em nova aba via link (contorna bloqueio de popup do Safari)
-    const a = document.createElement('a');
-    a.href = '/?preview=1';
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    window.location.href = '/?preview=1';
   } catch(e) { alert('Erro preview: ' + e.message); }
 });
 
