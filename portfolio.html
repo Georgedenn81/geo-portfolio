@@ -406,12 +406,13 @@
       will-change: transform;
     }
     .hero-meet-bio {
-      font-size: 0.95rem;
-      line-height: 1.75;
+      font-size: 0.7rem;
+      line-height: 1.8;
       color: var(--muted);
-      max-width: 480px;
+      max-width: 460px;
       margin: 24px 0 0;
     }
+    .hero-meet-bio:empty { display: none; margin: 0; }
 
     /* ── MARQUEE ── */
     .marquee-wrap {
@@ -1471,9 +1472,7 @@
         <div class="hero-headline parallax-slow" data-speed="-0.08">
           NICE TO<br /><span class="accent">MEET</span><br />– YOU
         </div>
-        <p class="hero-meet-bio hero-intro" data-i18n="hero-intro">
-          I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.
-        </p>
+        <p class="hero-meet-bio hero-intro" data-i18n="hero-intro"></p>
       </div>
       <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.04" src="img/profile-edited.png" alt="George — Art Director" />
     </div>
@@ -1832,7 +1831,7 @@
         'nav-about': 'About', 'nav-work': 'Work', 'nav-skills': 'Skills',
         'nav-contact': 'Contact', 'nav-cta': 'Hire me',
         'hero-tag1': 'CRAFTING SEAMLESS', 'hero-tag2': 'ENGAGING DIGITAL EXPERIENCES',
-        'hero-intro': "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO. I TAKE LOOSE IDEAS AND TURN THEM INTO IMAGES THAT HOLD YOUR EYE. THESE DAYS I MIX ART DIRECTION WITH GENERATIVE AI: ADS, AVATARS, FILMS, THE KIND OF PROTOTYPE THAT WAS A SKETCH IN THE MORNING AND LIVE BY THE AFTERNOON. THE PART NOBODY KNOWS HOW TO DO YET IS MY FAVORITE.",
+        'hero-intro': "",
         'hero-role-label': 'Role', 'hero-loc-label': 'Location',
         'hero-status-label': 'Status', 'hero-status-val': 'AVAILABLE NOW',
         'about-num': 'Nº 002 &nbsp; ABOUT',
@@ -1865,7 +1864,7 @@
         'nav-about': 'Sobre', 'nav-work': 'Trabalhos', 'nav-skills': 'Habilidades',
         'nav-contact': 'Contato', 'nav-cta': 'Contrate-me',
         'hero-tag1': 'CRIANDO EXPERIÊNCIAS', 'hero-tag2': 'DIGITAIS ENVOLVENTES',
-        'hero-intro': 'SOU GEORGE, DIRETOR DE ARTE EM SÃO PAULO. PEGO IDEIA SOLTA E DEVOLVO IMAGEM QUE SEGURA O OLHO. HOJE MISTURO DIREÇÃO DE ARTE COM IA GENERATIVA NO DIA A DIA: ADS, AVATARES, FILMES, PROTÓTIPO QUE DE MANHÃ ERA RASCUNHO E DE TARDE JÁ TÁ RODANDO. GOSTO DA PARTE QUE NINGUÉM SABE AINDA COMO FAZER.',
+        'hero-intro': '',
         'hero-role-label': 'Função', 'hero-loc-label': 'Localização',
         'hero-status-label': 'Status', 'hero-status-val': 'DISPONÍVEL AGORA',
         'about-num': 'Nº 002 &nbsp; SOBRE',
