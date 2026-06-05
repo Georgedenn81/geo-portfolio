@@ -331,27 +331,6 @@
         <p id="publish-status" style="font-size:0.6rem;letter-spacing:0.15em;color:var(--muted);margin-top:14px;min-height:18px;text-transform:uppercase;"></p>
       </div>
 
-      <div class="section-title" style="margin-top:20px">↓ Baixar arquivo (alternativa)</div>
-      <div class="card">
-        <p style="font-size:0.65rem;color:var(--muted);letter-spacing:0.08em;line-height:1.9;margin-bottom:16px;">
-          Se preferir, baixe o JSON e coloque na pasta <code style="color:var(--lime)">portfolio/</code> + <code style="color:var(--lime)">vercel --prod</code>.
-        </p>
-        <button class="btn-save" id="download-json-btn2" style="background:var(--dim);font-size:0.8rem;padding:10px 24px;">
-          ↓ BAIXAR portfolio-data.json
-        </button>
-      </div>
-
-      <div class="section-title" style="margin-top:44px">Como adicionar imagens e vídeos</div>
-      <div class="card">
-        <p class="hint">
-          1. Coloque seus arquivos na pasta <code>portfolio/img/</code><br/>
-          2. Na aba <strong>Projetos</strong>, selecione o tipo de mídia (Imagem ou Vídeo) e informe o caminho.<br/><br/>
-          Exemplos:<br/>
-          <code>img/projeto1.jpg</code> &nbsp;·&nbsp; <code>img/projeto1.mp4</code> &nbsp;·&nbsp; <code>https://link-externo.com/video.mp4</code><br/><br/>
-          Para vídeos do YouTube, use um serviço de embed direto (MP4) ou hospede o vídeo no seu servidor.
-        </p>
-      </div>
-
       <div class="section-title" style="margin-top:44px">Senha do Admin</div>
       <div class="card">
         <div class="card-grid">
@@ -1335,8 +1314,6 @@ document.getElementById('preview-btn').addEventListener('click', () => {
   } catch(e) { alert('Erro preview: ' + e.message); }
 });
 
-document.getElementById('download-json-btn2').addEventListener('click', downloadJSON);
-
 // ── ONE-CLICK PUBLISH via GitHub API ──
 const GH_REPO  = 'Georgedenn81/geo-portfolio';
 const GH_FILE  = 'portfolio-data.json';
@@ -1465,18 +1442,6 @@ function oneClickPublish() { return publishToVercel(false); }
 
 document.getElementById('one-click-publish').addEventListener('click', oneClickPublish);
 
-function downloadJSON() {
-  saveData();
-  const json = JSON.stringify(data, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'portfolio-data.json';
-  a.click();
-  URL.revokeObjectURL(url);
-  showToast('✓ ARQUIVO GERADO!');
-}
 
 // também liga o botão do modal ao mesmo handler
 
