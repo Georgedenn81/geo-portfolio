@@ -2093,13 +2093,18 @@
               const isVideo = d.hero.highlightType === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(d.hero.highlightSrc);
               if (isVideo) {
                 hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline preload="auto"></video>`);
-                // Força o autoplay assim que a página abre
+                // Força o autoplay assim que a página abre (com fallback no 1º gesto)
                 const heroVid = hl.querySelector('video');
                 if (heroVid) {
                   heroVid.muted = true;
+                  heroVid.setAttribute('muted', '');
                   const tryPlay = () => heroVid.play().catch(()=>{});
                   tryPlay();
                   heroVid.addEventListener('canplay', tryPlay, { once: true });
+                  heroVid.addEventListener('loadeddata', tryPlay, { once: true });
+                  // se o navegador/iframe bloquear, toca no primeiro gesto
+                  ['pointerdown','touchstart','scroll','keydown','mousemove'].forEach(ev =>
+                    window.addEventListener(ev, tryPlay, { once: true, passive: true }));
                 }
                 // Botão de áudio (só se habilitado no admin)
                 if (d.hero.highlightAudio) {
