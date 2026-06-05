@@ -2381,11 +2381,22 @@
       }
       subBtn.disabled = true;
       subBtn.textContent = 'SENDING...';
-      await new Promise(r => setTimeout(r, 1200));
-      subBtn.disabled = false;
-      subBtn.innerHTML = 'SEND MESSAGE <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>';
-      form.reset();
-      sucBox.style.display = 'block';
+      try {
+        const res = await fetch('https://formspree.io/f/xgobvnkk', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, project, message, _subject: `Novo contato do portfólio: ${name}` })
+        });
+        if (!res.ok) throw new Error('Falha no envio');
+        form.reset();
+        sucBox.style.display = 'block';
+      } catch(err) {
+        errBox.textContent = '// ERRO AO ENVIAR. TENTE NOVAMENTE OU ESCREVA DIRETO POR E-MAIL.';
+        errBox.style.display = 'block';
+      } finally {
+        subBtn.disabled = false;
+        subBtn.innerHTML = 'SEND MESSAGE <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2L15 22 11 13 2 9l20-7z"/></svg>';
+      }
     });
   </script>
 </body>
