@@ -277,6 +277,13 @@
       </div>
 
       <div class="section-title" style="margin-top:44px">Stats</div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="toggle-row" style="border-top:none;margin-top:0;padding:0">
+          <span class="status-dot" id="stats-dot"></span>
+          <span class="toggle-label">Exibir seção de stats no site</span>
+          <button class="toggle-switch" id="stats-toggle"><span class="toggle-thumb"></span></button>
+        </div>
+      </div>
       <div class="stats-grid" id="stats-grid"></div>
     </div>
 
@@ -381,6 +388,7 @@ const DEFAULT_DATA = {
     highlightPosY: 30,
     photoSrc: ''
   },
+  statsOn: true,
   stats: [
     { n: '40+', l: 'Projects Shipped' },
     { n: '20+', l: 'Years Experience' }
@@ -1212,6 +1220,17 @@ function renderAbout() {
     } catch(err) { phPrev.innerHTML = '⚠ ' + err.message; }
     e.target.value = '';
   };
+
+  // toggle exibir/ocultar stats
+  const stToggle = document.getElementById('stats-toggle');
+  const stDot    = document.getElementById('stats-dot');
+  if (data.statsOn === undefined) data.statsOn = true;
+  const syncStToggle = () => {
+    stToggle.className = 'toggle-switch' + (data.statsOn ? ' on' : '');
+    if (stDot) stDot.style.opacity = data.statsOn ? '1' : '0.2';
+  };
+  syncStToggle();
+  stToggle.onclick = () => { data.statsOn = !data.statsOn; syncStToggle(); markDirty(); };
 
   const grid = document.getElementById('stats-grid');
   grid.innerHTML = '';

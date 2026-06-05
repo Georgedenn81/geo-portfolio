@@ -2088,6 +2088,8 @@
         }
 
         // Stats
+        const statRow = document.querySelector('.stat-row');
+        if (statRow) statRow.style.display = d.statsOn === false ? 'none' : '';
         if (d.stats) {
           document.querySelectorAll('.stat-cell').forEach((cell, i) => {
             if (!d.stats[i]) return;
