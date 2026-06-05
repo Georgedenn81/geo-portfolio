@@ -311,6 +311,34 @@
       letter-spacing: 0.05em;
       color: var(--white);
     }
+    /* bolinha pulsante do status */
+    .status-pulse {
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: var(--lime);
+      flex-shrink: 0;
+      position: relative;
+      animation: statusDot 1.8s ease-in-out infinite;
+    }
+    .status-pulse::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: var(--lime);
+      animation: statusRing 1.8s ease-out infinite;
+    }
+    @keyframes statusDot {
+      0%, 100% { transform: scale(1);   opacity: 1; }
+      50%      { transform: scale(0.85); opacity: 0.8; }
+    }
+    @keyframes statusRing {
+      0%   { transform: scale(1);   opacity: 0.55; }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .status-pulse, .status-pulse::after { animation: none; }
+    }
 
     /* imagem de destaque (hero-right) */
     .hero-avatar-bg {
@@ -671,8 +699,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      padding: 22px 32px;
+      gap: 18px;
+      padding: 34px 32px;
       border-bottom: 1px solid var(--border);
       cursor: pointer;
       background: none;
@@ -680,20 +708,34 @@
       border-left: none;
       border-right: none;
       width: 100%;
-      color: var(--muted);
+      color: var(--lime);
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.75rem;
-      font-weight: 700;
-      letter-spacing: 0.25em;
+      font-size: 1.25rem;
+      font-weight: 900;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
-      transition: color 0.2s, background 0.2s;
+      transition: background 0.2s;
+      animation: morePulse 2.2s ease-in-out infinite;
     }
-    .more-projects-toggle:hover { color: var(--lime); background: rgba(200,241,53,0.03); }
+    @keyframes morePulse {
+      0%, 100% { opacity: 0.55; }
+      50%      { opacity: 1; }
+    }
+    .more-projects-toggle:hover { background: rgba(200,241,53,0.06); animation: none; opacity: 1; }
+    .more-projects-toggle.open { animation: none; opacity: 1; }
     .toggle-arrow {
       display: inline-flex;
+      animation: arrowBob 2.2s ease-in-out infinite;
       transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
     }
-    .more-projects-toggle.open .toggle-arrow { transform: rotate(180deg); }
+    @keyframes arrowBob {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(4px); }
+    }
+    .more-projects-toggle.open .toggle-arrow { transform: rotate(180deg); animation: none; }
+    @media (prefers-reduced-motion: reduce) {
+      .more-projects-toggle, .toggle-arrow { animation: none; opacity: 1; }
+    }
     .more-projects-list {
       max-height: 0;
       overflow: hidden;
@@ -1431,7 +1473,7 @@
       </div>
       <div class="hero-bottom-cell">
         <div class="label" data-i18n="hero-status-label">Status</div>
-        <div class="value" style="color:var(--lime)" data-i18n="hero-status-val">● AVAILABLE NOW</div>
+        <div class="value" style="color:var(--lime);display:flex;align-items:center;gap:8px"><span class="status-pulse"></span><span data-i18n="hero-status-val">AVAILABLE NOW</span></div>
       </div>
     </div>
   </section>
@@ -1775,7 +1817,7 @@
         'hero-tag1': 'CRAFTING SEAMLESS', 'hero-tag2': 'ENGAGING DIGITAL EXPERIENCES',
         'hero-intro': "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO. I TAKE LOOSE IDEAS AND TURN THEM INTO IMAGES THAT HOLD YOUR EYE. THESE DAYS I MIX ART DIRECTION WITH GENERATIVE AI: ADS, AVATARS, FILMS, THE KIND OF PROTOTYPE THAT WAS A SKETCH IN THE MORNING AND LIVE BY THE AFTERNOON. THE PART NOBODY KNOWS HOW TO DO YET IS MY FAVORITE.",
         'hero-role-label': 'Role', 'hero-loc-label': 'Location',
-        'hero-status-label': 'Status', 'hero-status-val': '● AVAILABLE NOW',
+        'hero-status-label': 'Status', 'hero-status-val': 'AVAILABLE NOW',
         'about-num': 'Nº 002 &nbsp; ABOUT',
         'about-big': 'CREATING<br />HUMAN<span class="accent">-</span><br />CENTERED<br />DESIGNS',
         'about-sub': 'THAT DRIVE ENGAGEMENT &amp; CONVERSIONS. MY WORK BRIDGES THE GAP BETWEEN BRAND STRATEGY AND PIXEL-LEVEL CRAFT — ALWAYS ROOTED IN USER EMPATHY AND BUSINESS CLARITY.',
@@ -1808,7 +1850,7 @@
         'hero-tag1': 'CRIANDO EXPERIÊNCIAS', 'hero-tag2': 'DIGITAIS ENVOLVENTES',
         'hero-intro': 'SOU GEORGE, DIRETOR DE ARTE EM SÃO PAULO. PEGO IDEIA SOLTA E DEVOLVO IMAGEM QUE SEGURA O OLHO. HOJE MISTURO DIREÇÃO DE ARTE COM IA GENERATIVA NO DIA A DIA: ADS, AVATARES, FILMES, PROTÓTIPO QUE DE MANHÃ ERA RASCUNHO E DE TARDE JÁ TÁ RODANDO. GOSTO DA PARTE QUE NINGUÉM SABE AINDA COMO FAZER.',
         'hero-role-label': 'Função', 'hero-loc-label': 'Localização',
-        'hero-status-label': 'Status', 'hero-status-val': '● DISPONÍVEL AGORA',
+        'hero-status-label': 'Status', 'hero-status-val': 'DISPONÍVEL AGORA',
         'about-num': 'Nº 002 &nbsp; SOBRE',
         'about-big': 'CRIANDO<br />DESIGNS<span class="accent">-</span><br />CENTRADOS<br />NO HUMANO',
         'about-sub': 'QUE GERAM ENGAJAMENTO E CONVERSÕES. MEU TRABALHO CONECTA ESTRATÉGIA DE MARCA E EXECUÇÃO PIXEL A PIXEL — SEMPRE COM FOCO NA EMPATIA E NA CLAREZA DE NEGÓCIOS.',
@@ -2003,7 +2045,7 @@
           const statusEl = document.querySelector('[data-i18n="hero-status-val"]');
           const locCells = document.querySelectorAll('.hero-bottom-cell');
           if (introEl  && d.hero.intro)      introEl.textContent  = d.hero.intro;
-          if (statusEl && d.hero.statusText) statusEl.textContent = d.hero.statusText;
+          if (statusEl && d.hero.statusText) statusEl.textContent = d.hero.statusText.replace(/^[●•\s]+/, '');
           if (locCells[1] && d.hero.location) locCells[1].querySelector('.value').textContent = d.hero.location;
           // Imagem de destaque (topo direito)
           const hl = document.getElementById('hero-highlight');
