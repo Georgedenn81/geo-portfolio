@@ -1893,12 +1893,7 @@
           document.body.classList.add('preview-mode');
           const raw = localStorage.getItem('geo_portfolio_data');
           if (raw) {
-            const parsed = JSON.parse(raw);
-            // debug: mostra videoUrl no preview bar
-            const vu = parsed?.projects?.featured?.[0]?.videoUrl;
-            const bar = document.getElementById('preview-bar').querySelector('span');
-            if (bar) bar.textContent = vu ? `● PREVIEW — videoUrl: ${vu.slice(0,40)}` : '● PREVIEW — SEM videoUrl no localStorage';
-            applyAdminData(parsed);
+            applyAdminData(JSON.parse(raw));
             return;
           }
         }

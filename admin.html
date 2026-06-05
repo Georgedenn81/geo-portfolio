@@ -188,10 +188,11 @@
       <button class="tab-btn" data-tab="contact">Contato</button>
     </nav>
     <div class="admin-actions">
+      <span id="publish-head-status" style="font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis"></span>
       <span id="save-status" class="saved">● SALVO</span>
-      <button id="save-btn" class="btn-save">SALVAR</button>
       <button id="preview-btn" class="btn-preview">PREVIEW ↗</button>
-      <button id="clear-cache-btn" class="btn-logout" title="Limpar cache do navegador">🗑 CACHE</button>
+      <button id="publish-now-btn" class="btn-save" title="Publicar agora no Vercel">↑ PUBLICAR</button>
+      <button id="clear-cache-btn" class="btn-logout" title="Limpar cache do navegador">🗑</button>
       <button id="logout-btn" class="btn-logout">SAIR</button>
     </div>
   </header>
@@ -481,12 +482,22 @@ function loadData() {
 }
 
 let _autoSaveTimer = null;
+let _autoPublishTimer = null;
 const saveStatus = document.getElementById('save-status');
 
 function markDirty() {
   if (saveStatus) { saveStatus.textContent = '○ NÃO SALVO'; saveStatus.className = 'unsaved'; }
   clearTimeout(_autoSaveTimer);
-  _autoSaveTimer = setTimeout(saveData, 800); // auto-salva 800ms após última edição
+  _autoSaveTimer = setTimeout(saveData, 800); // auto-salva local 800ms após editar
+
+  // Auto-publica no Vercel 6s após a última edição (se auto-publish ligado e token configurado)
+  const autoOn = localStorage.getItem('geo_autopublish') !== 'off';
+  if (autoOn && localStorage.getItem('geo_gh_token')) {
+    const headEl = document.getElementById('publish-head-status');
+    if (headEl) { headEl.style.color = 'var(--muted)'; headEl.textContent = '○ alterado — publicando em breve...'; }
+    clearTimeout(_autoPublishTimer);
+    _autoPublishTimer = setTimeout(() => publishToVercel(true), 6000);
+  }
 }
 
 function saveData() {
@@ -597,16 +608,13 @@ function renderFeatured() {
           </div>
           <div class="field card-full" style="margin-top:10px">
             <label class="field-label">🖼 Thumbnail do card</label>
-            <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
-              <input type="text" class="field-input feat-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="https://i.imgur.com/... ou imgbb.com/..." style="flex:1"/>
-              <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+              <input type="text" class="field-input feat-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="URL ou faça upload →" style="flex:1"/>
+              <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-size:0.72rem;padding:9px 16px">
                 ↑ UPLOAD
                 <input type="file" class="feat-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
               </label>
             </div>
-            <p style="font-size:0.5rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:6px">
-              💡 Para publicar no site use URL externa (ex: <strong style="color:var(--lime)">imgbb.com</strong>, imgur). Upload base64 só funciona no preview.
-            </p>
             <div id="thumb-preview-${i}" class="media-preview" style="height:80px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
           </div>
           <div class="field card-full">
@@ -615,16 +623,10 @@ function renderFeatured() {
               <input type="text" class="field-input feat-gallery-url" data-i="${i}" placeholder="Cole URL de imagem e pressione Enter" style="flex:1;font-size:0.7rem"/>
               <button class="btn-add feat-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
             </div>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
-                ↑ UPLOAD LOCAL
-                <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-              </label>
-              <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.7rem;padding:8px 14px">
-                ☁ SUBIR PARA VERCEL
-                <input type="file" class="feat-vercel-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-              </label>
-            </div>
+            <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.72rem;padding:9px 16px">
+              ↑ ADICIONAR IMAGENS
+              <input type="file" class="feat-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+            </label>
             <p id="feat-upload-status-${i}" style="font-size:0.55rem;color:var(--lime);letter-spacing:0.08em;margin-top:6px;min-height:16px"></p>
             <div id="gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
               ${(p.gallery||[]).map((src,gi) => `
@@ -695,31 +697,22 @@ function renderFeatured() {
     if (e.key === 'Enter') { e.preventDefault(); grid.querySelector(`.feat-gallery-add-url[data-i="${el.dataset.i}"]`)?.click(); }
   }));
 
-  // Galeria de imagens (featured)
-  grid.querySelectorAll('.feat-gallery-upload').forEach(el => el.addEventListener('change', e => {
+  // Galeria de imagens (featured) → Vercel
+  grid.querySelectorAll('.feat-gallery-upload').forEach(el => el.addEventListener('change', async e => {
     const i = +e.target.dataset.i;
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    const statusEl = document.getElementById(`feat-upload-status-${i}`);
     if (!data.projects.featured[i].gallery) data.projects.featured[i].gallery = [];
-    let processed = 0;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-          const maxW = 1200, scale = Math.min(1, maxW / img.width);
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(img.width * scale);
-          canvas.height = Math.round(img.height * scale);
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          data.projects.featured[i].gallery.push(canvas.toDataURL('image/jpeg', 0.8));
-          processed++;
-          if (processed === files.length) { markDirty(); renderFeatured(); showToast(`✓ ${files.length} IMAGEM(NS) ADICIONADA(S)`); }
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      try {
+        const url = await uploadImageToVercel(file, msg => { if (statusEl) { statusEl.style.color = 'var(--lime)'; statusEl.textContent = msg; } });
+        if (url) { data.projects.featured[i].gallery.push(url); markDirty(); renderFeatured(); }
+      } catch(err) {
+        if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = '⚠ ' + err.message; }
+      }
+    }
+    showToast('✓ IMAGENS NO VERCEL');
     e.target.value = '';
   }));
 
@@ -730,33 +723,26 @@ function renderFeatured() {
     markDirty(); renderFeatured();
   }));
 
-  // Upload thumbnail com compressão automática
-  grid.querySelectorAll('.feat-thumb-upload').forEach(el => el.addEventListener('change', e => {
+  // Upload thumbnail → Vercel (URL real)
+  grid.querySelectorAll('.feat-thumb-upload').forEach(el => el.addEventListener('change', async e => {
     const i    = +e.target.dataset.i;
     const file = e.target.files[0];
     if (!file) return;
     const prev = document.getElementById(`thumb-preview-${i}`);
-    if (prev) prev.innerHTML = '⏳ COMPRIMINDO...';
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        // Comprime para max 900px de largura, 75% qualidade
-        const maxW   = 900;
-        const scale  = Math.min(1, maxW / img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width  = Math.round(img.width  * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressed = canvas.toDataURL('image/jpeg', 0.75);
-        data.projects.featured[i].thumbnailSrc = compressed;
-        if (prev) prev.innerHTML = `<img src="${compressed}" alt="thumb"/>`;
+    try {
+      const url = await uploadImageToVercel(file, msg => { if (prev) prev.innerHTML = msg; });
+      if (url) {
+        data.projects.featured[i].thumbnailSrc = url;
+        if (prev) prev.innerHTML = `<img src="${url}" alt="thumb"/>`;
+        const srcInput = grid.querySelector(`.feat-thumb-src[data-i="${i}"]`);
+        if (srcInput) srcInput.value = url;
         markDirty();
-        showToast('✓ THUMBNAIL CARREGADA');
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+        showToast('✓ THUMBNAIL NO VERCEL');
+      }
+    } catch(err) {
+      if (prev) prev.innerHTML = '⚠ ' + err.message;
+    }
+    e.target.value = '';
   }));
 
   grid.querySelectorAll('.fetch-thumb-btn').forEach(btn => btn.addEventListener('click', async e => {
@@ -912,13 +898,12 @@ function renderMore() {
         <div class="field card-full" style="margin:0">
           <label class="field-label">🖼 Thumbnail do card</label>
           <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
-            <input type="text" class="field-input more-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="https://i.imgur.com/... ou imgbb.com/..." style="flex:1"/>
-            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap">
+            <input type="text" class="field-input more-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="URL ou faça upload →" style="flex:1"/>
+            <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-size:0.72rem;padding:9px 16px">
               ↑ UPLOAD
               <input type="file" class="more-thumb-upload" data-i="${i}" accept="image/*" style="display:none"/>
             </label>
           </div>
-          <p style="font-size:0.5rem;color:var(--muted);letter-spacing:0.08em;margin-bottom:6px">💡 URL externa para publicar no site. Upload só funciona no preview.</p>
           <div id="more-thumb-${i}" class="media-preview" style="height:70px">${p.thumbnailSrc ? `<img src="${esc(p.thumbnailSrc)}" alt="thumb"/>` : 'SEM THUMBNAIL'}</div>
         </div>
         <div class="field card-full" style="margin:0">
@@ -927,16 +912,10 @@ function renderMore() {
             <input type="text" class="field-input more-gallery-url" data-i="${i}" placeholder="Cole URL de imagem e pressione Enter" style="flex:1;font-size:0.7rem"/>
             <button class="btn-add more-gallery-add-url" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ URL</button>
           </div>
-          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-            <label class="upload-btn" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer">
-              ↑ UPLOAD LOCAL
-              <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-            </label>
-            <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.7rem;padding:8px 14px">
-              ☁ SUBIR PARA VERCEL
-              <input type="file" class="more-vercel-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
-            </label>
-          </div>
+          <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:0.72rem;padding:9px 16px">
+            ↑ ADICIONAR IMAGENS
+            <input type="file" class="more-gallery-upload" data-i="${i}" accept="image/*" multiple style="display:none"/>
+          </label>
           <p id="more-upload-status-${i}" style="font-size:0.55rem;color:var(--lime);letter-spacing:0.08em;margin-top:6px;min-height:16px"></p>
           <div id="more-gallery-${i}" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
             ${(p.gallery||[]).map((src,gi) => `
@@ -1043,31 +1022,22 @@ function renderMore() {
     e.target.value = '';
   }));
 
-  // Galeria more projects
-  list.querySelectorAll('.more-gallery-upload').forEach(el => el.addEventListener('change', e => {
+  // Galeria more projects → Vercel
+  list.querySelectorAll('.more-gallery-upload').forEach(el => el.addEventListener('change', async e => {
     const i = +e.target.dataset.i;
     const files = Array.from(e.target.files);
     if (!files.length) return;
+    const statusEl = document.getElementById(`more-upload-status-${i}`);
     if (!data.projects.more[i].gallery) data.projects.more[i].gallery = [];
-    let processed = 0;
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const img = new Image();
-        img.onload = () => {
-          const maxW = 1200, scale = Math.min(1, maxW / img.width);
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(img.width * scale);
-          canvas.height = Math.round(img.height * scale);
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          data.projects.more[i].gallery.push(canvas.toDataURL('image/jpeg', 0.8));
-          processed++;
-          if (processed === files.length) { markDirty(); renderMore(); showToast(`✓ ${files.length} IMAGEM(NS) ADICIONADA(S)`); }
-        };
-        img.src = ev.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      try {
+        const url = await uploadImageToVercel(file, msg => { if (statusEl) { statusEl.style.color = 'var(--lime)'; statusEl.textContent = msg; } });
+        if (url) { data.projects.more[i].gallery.push(url); markDirty(); renderMore(); }
+      } catch(err) {
+        if (statusEl) { statusEl.style.color = 'var(--red)'; statusEl.textContent = '⚠ ' + err.message; }
+      }
+    }
+    showToast('✓ IMAGENS NO VERCEL');
     e.target.value = '';
   }));
   list.querySelectorAll('.more-gallery-remove').forEach(btn => btn.addEventListener('click', e => {
@@ -1076,31 +1046,26 @@ function renderMore() {
     markDirty(); renderMore();
   }));
 
-  // Thumbnail upload para more projects
-  list.querySelectorAll('.more-thumb-upload').forEach(el => el.addEventListener('change', e => {
+  // Thumbnail upload para more projects → Vercel
+  list.querySelectorAll('.more-thumb-upload').forEach(el => el.addEventListener('change', async e => {
     const i = +e.target.dataset.i;
     const file = e.target.files[0];
     if (!file) return;
     const prev = document.getElementById(`more-thumb-${i}`);
-    if (prev) prev.innerHTML = '⏳ CARREGANDO...';
-    const reader = new FileReader();
-    reader.onload = ev => {
-      const img = new Image();
-      img.onload = () => {
-        const maxW = 900, scale = Math.min(1, maxW / img.width);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressed = canvas.toDataURL('image/jpeg', 0.75);
-        data.projects.more[i].thumbnailSrc = compressed;
-        if (prev) prev.innerHTML = `<img src="${compressed}" alt="thumb"/>`;
+    try {
+      const url = await uploadImageToVercel(file, msg => { if (prev) prev.innerHTML = msg; });
+      if (url) {
+        data.projects.more[i].thumbnailSrc = url;
+        if (prev) prev.innerHTML = `<img src="${url}" alt="thumb"/>`;
+        const srcInput = list.querySelector(`.more-thumb-src[data-i="${i}"]`);
+        if (srcInput) srcInput.value = url;
         markDirty();
-        showToast('✓ THUMBNAIL CARREGADA');
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
+        showToast('✓ THUMBNAIL NO VERCEL');
+      }
+    } catch(err) {
+      if (prev) prev.innerHTML = '⚠ ' + err.message;
+    }
+    e.target.value = '';
   }));
 }
 
@@ -1221,7 +1186,7 @@ document.getElementById('change-pass-btn').addEventListener('click', () => {
   setTimeout(() => { msg.textContent = ''; msg.style.color = ''; }, 3000);
 });
 
-document.getElementById('save-btn').addEventListener('click', saveData);
+document.getElementById('publish-now-btn').addEventListener('click', () => publishToVercel(false));
 
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
@@ -1256,111 +1221,103 @@ document.getElementById('gh-token-save').addEventListener('click', () => {
   showToast('✓ TOKEN SALVO');
 });
 
-async function oneClickPublish() {
+// Mantém apenas URLs reais (remove base64 que não pode ir pro GitHub)
+function buildPublishData() {
+  const o = JSON.parse(JSON.stringify(data));
+  const clean = p => ({
+    ...p,
+    thumbnailSrc: (p.thumbnailSrc||'').startsWith('data:') ? '' : (p.thumbnailSrc||''),
+    gallery: (p.gallery||[]).filter(s => !s.startsWith('data:'))  // mantém URLs, remove base64
+  });
+  if (o.projects?.featured) o.projects.featured = o.projects.featured.map(clean);
+  if (o.projects?.more)     o.projects.more     = o.projects.more.map(clean);
+  return o;
+}
+
+let __publishing = false;
+let __publishQueued = false;
+
+// Núcleo de publicação. silent=true → auto-publish (usa indicador do header)
+async function publishToVercel(silent) {
   const statusEl = document.getElementById('publish-status');
   const btn      = document.getElementById('one-click-publish');
-  const token    = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input').value.trim();
+  const headEl   = document.getElementById('publish-head-status');
+  const token    = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input')?.value.trim();
+
+  const setStatus = (msg, color) => {
+    if (statusEl) { statusEl.style.color = color || 'var(--muted)'; statusEl.textContent = msg; }
+    if (headEl)   { headEl.style.color   = color || 'var(--muted)'; headEl.textContent   = msg; }
+  };
 
   if (!token) {
-    statusEl.style.color = 'var(--red)';
-    statusEl.textContent = '⚠ COLE SEU TOKEN ACIMA E CLIQUE "SALVAR TOKEN" PRIMEIRO';
-    return;
+    setStatus('⚠ Configure o GitHub Token (aba Contato) para publicar', 'var(--red)');
+    return false;
   }
 
-  btn.disabled    = true;
-  btn.textContent = '⏳ PUBLICANDO...';
-  statusEl.style.color = 'var(--muted)';
-  statusEl.textContent = 'Buscando portfolio.html do GitHub...';
+  // Evita commits simultâneos — enfileira
+  if (__publishing) { __publishQueued = true; return false; }
+  __publishing = true;
+
+  if (!silent && btn) { btn.disabled = true; btn.textContent = '⏳ PUBLICANDO...'; }
+  setStatus('⏳ Publicando no Vercel...', 'var(--muted)');
 
   try {
     saveData();
 
-    // 1. Busca o portfolio.html atual do GitHub
     const fileRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
-    if (!fileRes.ok) throw new Error('Não foi possível buscar portfolio.html do GitHub');
+    if (!fileRes.ok) throw new Error('Não foi possível buscar portfolio.html');
     const fileJson = await fileRes.json();
-    // Decode UTF-8 corretamente (suporta ã, ç, é, etc.)
     const b64 = fileJson.content.replace(/\n/g, '');
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const currentHtml = new TextDecoder('utf-8').decode(bytes);
 
-    // 2. Remove base64 antes de injetar (mantém HTML pequeno para o GitHub)
-    function stripBase64(obj) {
-      if (!obj) return obj;
-      const o = JSON.parse(JSON.stringify(obj));
-      const strip = p => ({
-        ...p,
-        thumbnailSrc: (p.thumbnailSrc||'').startsWith('data:') ? '' : (p.thumbnailSrc||''),
-        gallery: []
-      });
-      if (o.projects?.featured) o.projects.featured = o.projects.featured.map(strip);
-      if (o.projects?.more)     o.projects.more     = o.projects.more.map(strip);
-      return o;
-    }
-    const dataJson = JSON.stringify(stripBase64(data));
-
-    // Usa indexOf em vez de regex (mais confiável para evitar problemas com $ no JSON)
+    const dataJson = JSON.stringify(buildPublishData());
     const startTag = '<script id="__geo_admin_data__" type="application/json">';
     const endTag   = '<\/script>';
     const si = currentHtml.indexOf(startTag);
     const ei = currentHtml.indexOf(endTag, si + startTag.length);
+    if (si === -1 || ei === -1) throw new Error('Ponto de injeção não encontrado');
 
-    if (si === -1 || ei === -1) {
-      throw new Error(`Ponto de injeção não encontrado. si=${si}, ei=${ei}, tamanho=${currentHtml.length}`);
-    }
-
-    const updatedHtml = currentHtml.slice(0, si + startTag.length)
-                      + dataJson
-                      + currentHtml.slice(ei);
-
-    // 3. Commita o HTML atualizado
-    statusEl.textContent = 'Salvando alterações no GitHub...';
-    // Encode UTF-8 para base64 sem stack overflow
+    const updatedHtml = currentHtml.slice(0, si + startTag.length) + dataJson + currentHtml.slice(ei);
     const encBytes = new TextEncoder().encode(updatedHtml);
     let binary = '';
     for (let i = 0; i < encBytes.length; i++) binary += String.fromCharCode(encBytes[i]);
     const newContent = btoa(binary);
+
     const commitRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       method: 'PUT',
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Update portfolio via admin panel', content: newContent, sha: fileJson.sha })
+      body: JSON.stringify({ message: 'Update portfolio via admin', content: newContent, sha: fileJson.sha })
     });
     if (!commitRes.ok) {
       const err = await commitRes.json();
       throw new Error(err.message || commitRes.status);
     }
 
-    statusEl.style.color = 'var(--lime)';
-    statusEl.textContent = '✓ PUBLICADO — aguardando deploy...';
-    btn.textContent = '⏳ DEPLOY EM ANDAMENTO';
-    // Conta regressiva de 35s
-    let secs = 35;
-    const countdown = setInterval(() => {
-      secs--;
-      if (secs > 0) {
-        statusEl.textContent = `✓ ENVIADO — site ao vivo em ~${secs}s`;
-      } else {
-        clearInterval(countdown);
-        statusEl.textContent = '✅ SITE ATUALIZADO — abra o portfólio para confirmar';
-        btn.disabled = false;
-        btn.textContent = '↑ PUBLICAR AGORA';
-        showToast('✅ DEPLOY CONCLUÍDO!');
-      }
-    }, 1000);
+    setStatus('✓ Publicado — site ao vivo em ~40s', 'var(--lime)');
+    if (!silent && btn) {
+      btn.textContent = '✓ PUBLICADO';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 5000);
+    }
+    return true;
 
   } catch(e) {
-    statusEl.style.color = 'var(--red)';
-    statusEl.textContent = '⚠ ERRO: ' + e.message;
-    if (e.message.includes('Bad credentials') || e.message.includes('401')) {
+    setStatus('⚠ ' + e.message, 'var(--red)');
+    if (String(e.message).match(/Bad credentials|401/)) {
       localStorage.removeItem('geo_gh_token');
-      statusEl.textContent += ' — Token inválido, cole um novo.';
     }
-    btn.disabled = false;
-    btn.textContent = '↑ PUBLICAR AGORA';
+    if (!silent && btn) { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }
+    return false;
+  } finally {
+    __publishing = false;
+    // Se houve mudança durante a publicação, republica
+    if (__publishQueued) { __publishQueued = false; setTimeout(() => publishToVercel(true), 1000); }
   }
 }
+
+function oneClickPublish() { return publishToVercel(false); }
 
 document.getElementById('one-click-publish').addEventListener('click', oneClickPublish);
 
