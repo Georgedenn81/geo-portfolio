@@ -225,8 +225,8 @@
             <input type="text" class="field-input" id="hero-location" placeholder="BASED IN SÃO PAULO"/>
           </div>
           <div class="field card-full">
-            <label class="field-label">Texto de Introdução</label>
-            <textarea class="field-textarea" id="hero-intro" rows="3"></textarea>
+            <label class="field-label">Bio (texto do "Nice to meet you")</label>
+            <textarea class="field-textarea" id="hero-intro" rows="4"></textarea>
           </div>
         </div>
         <div class="toggle-row">
@@ -234,6 +234,36 @@
           <span class="toggle-label">Disponível para projetos</span>
           <button class="toggle-switch on" id="hero-available-toggle"><span class="toggle-thumb"></span></button>
         </div>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">Imagem de Destaque (topo direito)</div>
+      <div class="card">
+        <p style="font-size:0.62rem;color:var(--muted);letter-spacing:0.06em;line-height:1.7;margin-bottom:14px">
+          Imagem que aparece no topo direito da home. <strong style="color:var(--lime)">Medida ideal: 1200 × 1500 px (retrato 4:5)</strong>. A imagem é cortada automaticamente para preencher o espaço, então deixe o ponto principal centralizado.
+        </p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input type="text" class="field-input" id="hero-highlight-src" placeholder="URL ou faça upload →" style="flex:1"/>
+          <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-size:0.72rem;padding:9px 16px">
+            ↑ UPLOAD
+            <input type="file" id="hero-highlight-upload" accept="image/*" style="display:none"/>
+          </label>
+        </div>
+        <div id="hero-highlight-preview" class="media-preview" style="height:160px"></div>
+      </div>
+
+      <div class="section-title" style="margin-top:44px">Foto de Perfil (Nice to meet you)</div>
+      <div class="card">
+        <p style="font-size:0.62rem;color:var(--muted);letter-spacing:0.06em;line-height:1.7;margin-bottom:14px">
+          Foto redonda ao lado da bio. <strong style="color:var(--lime)">Medida ideal: 600 × 600 px (quadrada)</strong>, rosto centralizado.
+        </p>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px">
+          <input type="text" class="field-input" id="hero-photo-src" placeholder="URL ou faça upload →" style="flex:1"/>
+          <label class="btn-save" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;white-space:nowrap;font-size:0.72rem;padding:9px 16px">
+            ↑ UPLOAD
+            <input type="file" id="hero-photo-upload" accept="image/*" style="display:none"/>
+          </label>
+        </div>
+        <div id="hero-photo-preview" class="media-preview" style="height:120px"></div>
       </div>
 
       <div class="section-title" style="margin-top:44px">Stats</div>
@@ -355,7 +385,9 @@ const DEFAULT_DATA = {
     statusText: '● AVAILABLE NOW',
     available: true,
     location: 'BASED IN SÃO PAULO',
-    intro: "I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES."
+    intro: "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO.",
+    highlightSrc: '',
+    photoSrc: ''
   },
   stats: [
     { n: '40+', l: 'Projects Shipped' },
@@ -461,6 +493,11 @@ function stripBase64FromData(d) {
   });
   if (d.projects?.featured) d.projects.featured = d.projects.featured.map(strip);
   if (d.projects?.more)     d.projects.more     = d.projects.more.map(strip);
+  // remove base64 do hero também
+  if (d.hero) {
+    if ((d.hero.highlightSrc||'').startsWith('data:')) d.hero.highlightSrc = '';
+    if ((d.hero.photoSrc||'').startsWith('data:'))     d.hero.photoSrc = '';
+  }
   return d;
 }
 
@@ -1094,6 +1131,38 @@ function renderAbout() {
     markDirty();
   };
 
+  // Imagem de destaque + foto de perfil
+  const hlSrc   = document.getElementById('hero-highlight-src');
+  const hlPrev  = document.getElementById('hero-highlight-preview');
+  const phSrc   = document.getElementById('hero-photo-src');
+  const phPrev  = document.getElementById('hero-photo-preview');
+  const showImg = (el, src, ph) => { el.innerHTML = src ? `<img src="${src}" alt=""/>` : ph; };
+
+  hlSrc.value = (data.hero.highlightSrc||'').startsWith('data:') ? '' : (data.hero.highlightSrc||'');
+  phSrc.value = (data.hero.photoSrc||'').startsWith('data:') ? '' : (data.hero.photoSrc||'');
+  showImg(hlPrev, data.hero.highlightSrc, 'SEM IMAGEM');
+  showImg(phPrev, data.hero.photoSrc, 'SEM FOTO');
+
+  hlSrc.oninput = e => { data.hero.highlightSrc = e.target.value.trim(); showImg(hlPrev, data.hero.highlightSrc, 'SEM IMAGEM'); markDirty(); };
+  phSrc.oninput = e => { data.hero.photoSrc     = e.target.value.trim(); showImg(phPrev, data.hero.photoSrc, 'SEM FOTO'); markDirty(); };
+
+  document.getElementById('hero-highlight-upload').onchange = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const url = await uploadImageToVercel(file, msg => hlPrev.innerHTML = msg);
+      if (url) { data.hero.highlightSrc = url; hlSrc.value = url; showImg(hlPrev, url); markDirty(); showToast('✓ DESTAQUE NO VERCEL'); }
+    } catch(err) { hlPrev.innerHTML = '⚠ ' + err.message; }
+    e.target.value = '';
+  };
+  document.getElementById('hero-photo-upload').onchange = async e => {
+    const file = e.target.files[0]; if (!file) return;
+    try {
+      const url = await uploadImageToVercel(file, msg => phPrev.innerHTML = msg);
+      if (url) { data.hero.photoSrc = url; phSrc.value = url; showImg(phPrev, url); markDirty(); showToast('✓ FOTO NO VERCEL'); }
+    } catch(err) { phPrev.innerHTML = '⚠ ' + err.message; }
+    e.target.value = '';
+  };
+
   const grid = document.getElementById('stats-grid');
   grid.innerHTML = '';
   data.stats.forEach((s, i) => {
@@ -1231,6 +1300,10 @@ function buildPublishData() {
   });
   if (o.projects?.featured) o.projects.featured = o.projects.featured.map(clean);
   if (o.projects?.more)     o.projects.more     = o.projects.more.map(clean);
+  if (o.hero) {
+    if ((o.hero.highlightSrc||'').startsWith('data:')) o.hero.highlightSrc = '';
+    if ((o.hero.photoSrc||'').startsWith('data:'))     o.hero.photoSrc = '';
+  }
   return o;
 }
 

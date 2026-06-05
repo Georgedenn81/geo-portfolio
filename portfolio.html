@@ -309,7 +309,7 @@
       color: var(--white);
     }
 
-    /* avatar placeholder */
+    /* imagem de destaque (hero-right) */
     .hero-avatar-bg {
       position: absolute;
       inset: 0;
@@ -317,15 +317,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
     .hero-avatar-bg svg {
       width: 60%;
       height: 60%;
       opacity: 0.15;
     }
-    .hero-coords {
-      position: relative;
-      z-index: 1;
+    .hero-avatar-bg img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .hero-coords-left {
       font-size: 0.6rem;
       letter-spacing: 0.15em;
       color: var(--muted);
@@ -335,6 +337,31 @@
       line-height: 1.7;
       color: var(--muted);
       max-width: 340px;
+    }
+    /* perfil + bio na faixa NICE TO MEET YOU */
+    .hero-meet {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-top: 24px;
+      padding-bottom: 8px;
+      max-width: 720px;
+    }
+    .hero-meet-photo {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center 20%;
+      border: 2px solid var(--lime);
+      flex-shrink: 0;
+    }
+    .hero-meet-bio {
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0;
     }
 
     /* ── MARQUEE ── */
@@ -1259,7 +1286,7 @@
     @media (max-width: 768px) {
       #hero { grid-template-columns: 1fr; }
       .hero-meta-top { flex-wrap: wrap; gap: 8px; }
-      .hero-right { display: none; }
+      .hero-right { min-height: 50vh; }
       .hero-bottom { grid-template-columns: 1fr; }
       .hero-bottom-cell { border-right: none; border-bottom: 1px solid var(--border); }
       #about, #skills, #contact, #testimonials { grid-template-columns: 1fr; }
@@ -1274,6 +1301,8 @@
       .hero-headline { font-size: clamp(56px, 18vw, 90px); }
       .hero-headline-wrap { padding: 12px 16px; }
       .hero-left, .hero-right { padding: 24px 16px; }
+      .hero-meet { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .hero-meet-photo { width: 72px; height: 72px; }
       .about-left, .about-right, .skills-left, .skills-right,
       .contact-left, .contact-right, .test-left, .test-right { padding: 40px 16px; }
       .projects-header { padding: 24px 16px; }
@@ -1344,26 +1373,29 @@
       <div>
         <div class="hero-year">2022 —<br />PRESENT</div>
       </div>
-      <div class="hero-intro" data-i18n="hero-intro">
-        I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.
-      </div>
-    </div>
-
-    <!-- right col (avatar) -->
-    <div class="hero-right">
-      <div class="hero-avatar-bg">
-        <img src="img/profile-edited.png" alt="GEO — Art Director" style="width:100%;height:100%;object-fit:cover;object-position:center 15%;filter:grayscale(15%) contrast(1.05);transform:scale(1.15);transform-origin:center 30%;" />
-      </div>
-      <div class="hero-coords">
+      <div class="hero-coords-left">
         <div>23.5505° S</div>
         <div>46.6333° W</div>
       </div>
     </div>
 
-    <!-- GIANT headline spanning full width -->
+    <!-- right col — imagem de destaque (editável no admin) -->
+    <div class="hero-right">
+      <div class="hero-avatar-bg" id="hero-highlight">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--lime)"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+      </div>
+    </div>
+
+    <!-- GIANT headline + perfil + bio -->
     <div class="hero-headline-wrap">
       <div class="hero-headline parallax-slow" data-speed="-0.08">
         NICE TO<br /><span class="accent">MEET</span><br />– YOU
+      </div>
+      <div class="hero-meet">
+        <img class="hero-meet-photo" id="hero-photo" src="img/profile-edited.png" alt="George — Art Director" />
+        <p class="hero-meet-bio hero-intro" data-i18n="hero-intro">
+          I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.
+        </p>
       </div>
     </div>
 
@@ -1721,7 +1753,7 @@
         'nav-about': 'About', 'nav-work': 'Work', 'nav-skills': 'Skills',
         'nav-contact': 'Contact', 'nav-cta': 'Hire me',
         'hero-tag1': 'CRAFTING SEAMLESS', 'hero-tag2': 'ENGAGING DIGITAL EXPERIENCES',
-        'hero-intro': "I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.",
+        'hero-intro': "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO. I TAKE LOOSE IDEAS AND TURN THEM INTO IMAGES THAT HOLD YOUR EYE. THESE DAYS I MIX ART DIRECTION WITH GENERATIVE AI: ADS, AVATARS, FILMS, THE KIND OF PROTOTYPE THAT WAS A SKETCH IN THE MORNING AND LIVE BY THE AFTERNOON. THE PART NOBODY KNOWS HOW TO DO YET IS MY FAVORITE.",
         'hero-role-label': 'Role', 'hero-loc-label': 'Location',
         'hero-status-label': 'Status', 'hero-status-val': '● AVAILABLE NOW',
         'about-num': 'Nº 002 &nbsp; ABOUT',
@@ -1754,7 +1786,7 @@
         'nav-about': 'Sobre', 'nav-work': 'Trabalhos', 'nav-skills': 'Habilidades',
         'nav-contact': 'Contato', 'nav-cta': 'Contrate-me',
         'hero-tag1': 'CRIANDO EXPERIÊNCIAS', 'hero-tag2': 'DIGITAIS ENVOLVENTES',
-        'hero-intro': 'SOU ELMENCHOOO, DESIGNER UIX FREELANCE COM PAIXÃO POR CRIAR EXPERIÊNCIAS DIGITAIS FLUIDAS E MEMORÁVEIS.',
+        'hero-intro': 'SOU GEORGE, DIRETOR DE ARTE EM SÃO PAULO. PEGO IDEIA SOLTA E DEVOLVO IMAGEM QUE SEGURA O OLHO. HOJE MISTURO DIREÇÃO DE ARTE COM IA GENERATIVA NO DIA A DIA: ADS, AVATARES, FILMES, PROTÓTIPO QUE DE MANHÃ ERA RASCUNHO E DE TARDE JÁ TÁ RODANDO. GOSTO DA PARTE QUE NINGUÉM SABE AINDA COMO FAZER.',
         'hero-role-label': 'Função', 'hero-loc-label': 'Localização',
         'hero-status-label': 'Status', 'hero-status-val': '● DISPONÍVEL AGORA',
         'about-num': 'Nº 002 &nbsp; SOBRE',
@@ -1922,6 +1954,14 @@
           if (introEl  && d.hero.intro)      introEl.textContent  = d.hero.intro;
           if (statusEl && d.hero.statusText) statusEl.textContent = d.hero.statusText;
           if (locCells[1] && d.hero.location) locCells[1].querySelector('.value').textContent = d.hero.location;
+          // Imagem de destaque (topo direito)
+          const hl = document.getElementById('hero-highlight');
+          if (hl && d.hero.highlightSrc) {
+            hl.innerHTML = `<img src="${d.hero.highlightSrc}" alt="destaque"/>`;
+          }
+          // Foto de perfil (NICE TO MEET YOU)
+          const photo = document.getElementById('hero-photo');
+          if (photo && d.hero.photoSrc) photo.src = d.hero.photoSrc;
         }
 
         // Stats
