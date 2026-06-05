@@ -1133,6 +1133,9 @@
 
     /* ── CAROUSEL ── */
     .lb-carousel { position: absolute; inset: 0; width: 100%; height: 100%; }
+    /* Camada de controles — fixa sobre a imagem, não rola junto */
+    .lb-controls { position: absolute; left: 0; top: 0; width: 100%; pointer-events: none; z-index: 20; }
+    .lb-controls .lb-arrow, .lb-controls .lb-dots, .lb-controls .lb-counter { pointer-events: auto; }
     .lb-slide { display: none; position: absolute; inset: 0; width: 100%; height: 100%; }
     .lb-slide.active { display: flex; align-items: center; justify-content: center; background: #000; }
     .lb-slide img { width: 100%; height: 100%; object-fit: contain; }
@@ -2068,12 +2071,25 @@
       return `<div class="lb-slide"><img src="${slide.src}" alt=""/></div>`;
     }
 
+    function positionControls() {
+      const box  = lbWrap.parentElement;
+      const ctrl = box && box.querySelector('.lb-controls');
+      if (!ctrl) return;
+      // a camada de controles cobre exatamente a área da mídia (lbWrap), sem rolar
+      ctrl.style.top    = lbWrap.offsetTop + 'px';
+      ctrl.style.height = lbWrap.clientHeight + 'px';
+    }
+    window.addEventListener('resize', positionControls);
+
     function renderCarousel() {
+      const box = lbWrap.parentElement;
+      // remove controles antigos
+      box.querySelectorAll('.lb-controls').forEach(el => el.remove());
+
       if (!__slides.length) {
         lbWrap.innerHTML = '<div class="lb-no-video">SEM CONTEÚDO</div>';
         return;
       }
-      const showArrows = __slides.length > 1;
       lbWrap.innerHTML = `
         <div class="lb-carousel">
           ${__slides.map((s, i) => {
@@ -2081,16 +2097,25 @@
             if (s.type === 'link')  return `<div class="lb-slide${i===0?' active':''}" style="overflow:auto"><iframe src="${s.src}" style="width:100%;height:100%;min-height:500px;border:none;display:block;" allowfullscreen loading="lazy" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"></iframe></div>`;
             return `<div class="lb-slide${i===0?' active':''}"><img src="${s.src}" alt=""/></div>`;
           }).join('')}
-          ${showArrows ? `<button class="lb-arrow lb-arrow-prev">&#8592;</button><button class="lb-arrow lb-arrow-next">&#8594;</button>` : ''}
-          ${showArrows ? `<div class="lb-counter">1 / ${__slides.length}</div>` : ''}
-          ${showArrows ? `<div class="lb-dots">${__slides.map((_,i) => `<div class="lb-dot${i===0?' active':''}"></div>`).join('')}</div>` : ''}
         </div>
       `;
       __slideIdx = 0;
+
+      const showArrows = __slides.length > 1;
       if (showArrows) {
-        lbWrap.querySelector('.lb-arrow-prev').addEventListener('click', e => { e.stopPropagation(); goSlide(-1); });
-        lbWrap.querySelector('.lb-arrow-next').addEventListener('click', e => { e.stopPropagation(); goSlide(1); });
-        lbWrap.querySelectorAll('.lb-dot').forEach((dot, i) => dot.addEventListener('click', () => goToSlide(i)));
+        const ctrl = document.createElement('div');
+        ctrl.className = 'lb-controls';
+        ctrl.innerHTML = `
+          <button class="lb-arrow lb-arrow-prev">&#8592;</button>
+          <button class="lb-arrow lb-arrow-next">&#8594;</button>
+          <div class="lb-counter">1 / ${__slides.length}</div>
+          <div class="lb-dots">${__slides.map((_,i) => `<div class="lb-dot${i===0?' active':''}"></div>`).join('')}</div>
+        `;
+        box.appendChild(ctrl);
+        ctrl.querySelector('.lb-arrow-prev').addEventListener('click', e => { e.stopPropagation(); goSlide(-1); });
+        ctrl.querySelector('.lb-arrow-next').addEventListener('click', e => { e.stopPropagation(); goSlide(1); });
+        ctrl.querySelectorAll('.lb-dot').forEach((dot, i) => dot.addEventListener('click', () => goToSlide(i)));
+        setTimeout(positionControls, 50);
       }
     }
 
@@ -2145,26 +2170,30 @@
           }
         };
         const img = new Image();
-        img.onload = () => applyRatio(img.naturalWidth, img.naturalHeight);
+        img.onload = () => { applyRatio(img.naturalWidth, img.naturalHeight); positionControls(); };
         img.src = slide.src;
         applyRatio(4, 3); // fallback enquanto carrega
       }
+      setTimeout(positionControls, 60);
     }
 
     function goToSlide(idx) {
+      const box     = lbWrap.parentElement;
       const slides  = lbWrap.querySelectorAll('.lb-slide');
-      const dots    = lbWrap.querySelectorAll('.lb-dot');
-      const counter = lbWrap.querySelector('.lb-counter');
+      const dots    = box.querySelectorAll('.lb-dot');
+      const counter = box.querySelector('.lb-counter');
       if (slides[__slideIdx]) slides[__slideIdx].classList.remove('active');
       if (dots[__slideIdx])   dots[__slideIdx].classList.remove('active');
       __slideIdx = idx;
       if (slides[__slideIdx]) slides[__slideIdx].classList.add('active');
       if (dots[__slideIdx])   dots[__slideIdx].classList.add('active');
       if (counter) counter.textContent = `${__slideIdx + 1} / ${__slides.length}`;
+      lbWrap.scrollTop = 0; // volta ao topo ao trocar de slide
       setWrapAspect(__slides[__slideIdx]);
       showZoomControls(__slides[__slideIdx]?.type === 'image');
       resetZoom();
       scaleIframe();
+      setTimeout(positionControls, 60);
     }
 
     function openLightbox(title, desc, p) {
@@ -2177,13 +2206,19 @@
       resetZoom();
       scaleIframe();
       lb.classList.add('open');
-      requestAnimationFrame(() => lb.classList.add('visible'));
+      requestAnimationFrame(() => { lb.classList.add('visible'); positionControls(); });
       document.body.style.overflow = 'hidden';
     }
 
     function closeLightbox() {
       lb.classList.remove('visible');
-      setTimeout(() => { lb.classList.remove('open'); lbWrap.innerHTML = ''; document.body.style.overflow = ''; }, 350);
+      setTimeout(() => {
+        lb.classList.remove('open');
+        lbWrap.innerHTML = '';
+        const box = lbWrap.parentElement;
+        box.querySelectorAll('.lb-controls').forEach(el => el.remove());
+        document.body.style.overflow = '';
+      }, 350);
     }
 
     // ── ZOOM ──
