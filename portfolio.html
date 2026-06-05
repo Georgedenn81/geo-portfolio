@@ -265,14 +265,17 @@
     .hero-headline .accent { color: var(--lime); }
     .hero-headline-wrap {
       grid-column: 1 / -1;
-      padding: 0 32px;
+      padding: 24px 32px;
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      padding-top: 16px;
-      padding-bottom: 8px;
       position: relative;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 40px;
     }
+    .hero-headline-col { flex: 1; min-width: 0; }
     .hero-jp {
       position: absolute;
       right: 32px;
@@ -338,18 +341,10 @@
       color: var(--muted);
       max-width: 340px;
     }
-    /* perfil + bio na faixa NICE TO MEET YOU */
-    .hero-meet {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-      margin-top: 32px;
-      padding-bottom: 16px;
-      max-width: 760px;
-    }
+    /* foto na faixa NICE TO MEET YOU (lado direito) */
     .hero-meet-photo {
-      width: clamp(180px, 22vw, 300px);
-      height: clamp(180px, 22vw, 300px);
+      width: clamp(240px, 32vw, 460px);
+      height: clamp(240px, 32vw, 460px);
       object-fit: cover;
       object-position: center 20%;
       border: 1px solid var(--border);
@@ -361,8 +356,8 @@
       font-size: 0.95rem;
       line-height: 1.75;
       color: var(--muted);
-      max-width: 420px;
-      margin: 0;
+      max-width: 480px;
+      margin: 24px 0 0;
     }
 
     /* ── MARQUEE ── */
@@ -1302,8 +1297,8 @@
       .hero-headline { font-size: clamp(56px, 18vw, 90px); }
       .hero-headline-wrap { padding: 12px 16px; }
       .hero-left, .hero-right { padding: 24px 16px; }
-      .hero-meet { flex-direction: column; align-items: flex-start; gap: 14px; }
-      .hero-meet-photo { width: 72px; height: 72px; }
+      .hero-headline-wrap { flex-direction: column; align-items: flex-start; gap: 24px; }
+      .hero-meet-photo { width: 100%; height: auto; aspect-ratio: 1; max-width: 360px; }
       .about-left, .about-right, .skills-left, .skills-right,
       .contact-left, .contact-right, .test-left, .test-right { padding: 40px 16px; }
       .projects-header { padding: 24px 16px; }
@@ -1387,17 +1382,17 @@
       </div>
     </div>
 
-    <!-- GIANT headline + perfil + bio -->
+    <!-- GIANT headline (esquerda) + foto (direita) -->
     <div class="hero-headline-wrap">
-      <div class="hero-headline parallax-slow" data-speed="-0.08">
-        NICE TO<br /><span class="accent">MEET</span><br />– YOU
-      </div>
-      <div class="hero-meet">
-        <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.05" src="img/profile-edited.png" alt="George — Art Director" />
+      <div class="hero-headline-col">
+        <div class="hero-headline parallax-slow" data-speed="-0.08">
+          NICE TO<br /><span class="accent">MEET</span><br />– YOU
+        </div>
         <p class="hero-meet-bio hero-intro" data-i18n="hero-intro">
           I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.
         </p>
       </div>
+      <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.06" src="img/profile-edited.png" alt="George — Art Director" />
     </div>
 
     <!-- bottom meta strip -->
