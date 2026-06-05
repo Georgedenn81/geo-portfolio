@@ -1456,7 +1456,7 @@
     </div>
 
     <!-- faixa de mídia (largura total, editável no admin) -->
-    <div class="hero-media-band" id="hero-highlight">
+    <div class="hero-media-band" id="hero-highlight" style="display:none">
       <div class="hero-media-placeholder">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="1"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
       </div>
@@ -2065,7 +2065,8 @@
           if (locCells[1] && d.hero.location) locCells[1].querySelector('.value').textContent = d.hero.location;
           // Faixa de mídia (topo, largura total) — imagem ou vídeo + posição vertical
           const hl = document.getElementById('hero-highlight');
-          if (hl) {
+          if (hl) hl.style.display = d.hero.highlightOn ? '' : 'none';
+          if (hl && d.hero.highlightOn) {
             hl.querySelectorAll('img, video').forEach(el => el.remove());
             const ph = hl.querySelector('.hero-media-placeholder');
             if (d.hero.highlightSrc) {
