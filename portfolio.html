@@ -80,25 +80,27 @@
       bottom: 8%; left: 28%;
       animation: morphShape3 38s ease-in-out infinite, blobPulse3 9s ease-in-out infinite;
     }
-    /* deriva + morph contínuos, independentes do scroll */
+    /* deriva + morph contínuos, independentes do scroll — movimento amplo */
     @keyframes morphShape1 {
       0%,100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: translate(0,0) scale(1) rotate(0deg); }
-      33%      { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: translate(80px,-50px) scale(1.08) rotate(8deg); }
-      66%      { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: translate(-40px,60px) scale(0.94) rotate(-5deg); }
+      25%      { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: translate(300px,140px) scale(1.18) rotate(12deg); }
+      50%      { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: translate(180px,340px) scale(0.9) rotate(-8deg); }
+      75%      { border-radius: 50% 50% 40% 60% / 50% 40% 70% 40%; transform: translate(-140px,200px) scale(1.1) rotate(6deg); }
     }
     @keyframes morphShape2 {
       0%,100% { border-radius: 50% 50% 60% 40% / 40% 60% 40% 60%; transform: translate(0,0) scale(1) rotate(0deg); }
-      40%      { border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%; transform: translate(-90px,40px) scale(1.1) rotate(-10deg); }
-      70%      { border-radius: 60% 40% 70% 30% / 50% 50% 30% 70%; transform: translate(50px,-30px) scale(0.92) rotate(6deg); }
+      33%      { border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%; transform: translate(-340px,160px) scale(1.2) rotate(-14deg); }
+      66%      { border-radius: 60% 40% 70% 30% / 50% 50% 30% 70%; transform: translate(-200px,-220px) scale(0.88) rotate(10deg); }
     }
     @keyframes morphShape3 {
       0%,100% { border-radius: 40% 60% 50% 50% / 60% 40% 60% 40%; transform: translate(0,0) scale(1) rotate(0deg); }
-      50%      { border-radius: 60% 40% 30% 70% / 40% 70% 30% 60%; transform: translate(60px,-70px) scale(1.12) rotate(12deg); }
+      40%      { border-radius: 60% 40% 30% 70% / 40% 70% 30% 60%; transform: translate(260px,-280px) scale(1.25) rotate(16deg); }
+      70%      { border-radius: 50% 50% 60% 40% / 60% 50% 40% 50%; transform: translate(-240px,-130px) scale(0.95) rotate(-10deg); }
     }
-    /* pulso discreto de intensidade */
-    @keyframes blobPulse1 { 0%,100% { opacity: 0.14; } 50% { opacity: 0.24; } }
-    @keyframes blobPulse2 { 0%,100% { opacity: 0.20; } 50% { opacity: 0.10; } }
-    @keyframes blobPulse3 { 0%,100% { opacity: 0.12; } 50% { opacity: 0.22; } }
+    /* pulso de intensidade mais perceptível */
+    @keyframes blobPulse1 { 0%,100% { opacity: 0.16; } 50% { opacity: 0.36; } }
+    @keyframes blobPulse2 { 0%,100% { opacity: 0.32; } 50% { opacity: 0.12; } }
+    @keyframes blobPulse3 { 0%,100% { opacity: 0.14; } 50% { opacity: 0.34; } }
     @media (prefers-reduced-motion: reduce) {
       .morph-blob { animation: none; }
     }
@@ -2090,7 +2092,15 @@
               hl.style.setProperty('--hero-pos', posY);
               const isVideo = d.hero.highlightType === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(d.hero.highlightSrc);
               if (isVideo) {
-                hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline></video>`);
+                hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline preload="auto"></video>`);
+                // Força o autoplay assim que a página abre
+                const heroVid = hl.querySelector('video');
+                if (heroVid) {
+                  heroVid.muted = true;
+                  const tryPlay = () => heroVid.play().catch(()=>{});
+                  tryPlay();
+                  heroVid.addEventListener('canplay', tryPlay, { once: true });
+                }
                 // Botão de áudio (só se habilitado no admin)
                 if (d.hero.highlightAudio) {
                   const vid = hl.querySelector('video');
