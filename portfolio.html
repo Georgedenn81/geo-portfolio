@@ -286,6 +286,22 @@
       z-index: 2;
       text-shadow: 0 1px 10px rgba(0,0,0,0.6);
     }
+    .hero-hud {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      border-top: 1px solid rgba(240,237,232,0.25);
+      padding-top: 10px;
+    }
+    .hero-hud-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--lime);
+    }
     .hero-year {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 0.7rem;
@@ -1478,7 +1494,10 @@
       </div>
       <div class="hero-band-meta">
         <div class="hero-year">2022 —<br />PRESENT</div>
-        <div class="hero-coords-left">23.5505° S &nbsp; 46.6333° W</div>
+        <div class="hero-hud">
+          <span class="hero-hud-label" id="hero-hud-label">FEATURED REEL</span>
+          <span class="hero-coords-left">23.5505° S &nbsp; 46.6333° W</span>
+        </div>
       </div>
     </div>
 
@@ -2115,6 +2134,13 @@
             } else if (ph) {
               ph.style.display = '';
             }
+          }
+          // HUD label da faixa
+          const hud = document.getElementById('hero-hud-label');
+          if (hud) {
+            const yr = d.hero.highlightYear || new Date().getFullYear();
+            const lbl = (d.hero.highlightLabel || '').trim();
+            hud.textContent = lbl ? `FEATURED / ${yr} · ${lbl}` : `FEATURED REEL / ${yr}`;
           }
           // Foto de perfil (NICE TO MEET YOU)
           const photo = document.getElementById('hero-photo');

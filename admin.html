@@ -262,6 +262,10 @@
           <label class="field-label">Posição vertical — <span class="range-val" id="hero-pos-val">30%</span></label>
           <div class="range-row"><input type="range" class="field-range" id="hero-highlight-pos" min="0" max="100" value="30"/></div>
         </div>
+        <div class="field" style="margin-bottom:10px">
+          <label class="field-label">Legenda HUD (nome do arquivo/projeto) — o ano entra automático</label>
+          <input type="text" class="field-input" id="hero-highlight-label" placeholder="ex: OAKLEY_FILM.MP4"/>
+        </div>
         <div id="hero-highlight-preview" class="media-preview" style="height:180px"></div>
       </div>
 
@@ -388,6 +392,7 @@ const DEFAULT_DATA = {
     intro: "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO.",
     highlightOn: false,
     highlightAudio: false,
+    highlightLabel: '',
     highlightSrc: '',
     highlightType: 'image',
     highlightPosY: 30,
@@ -1214,6 +1219,10 @@ function renderAbout() {
     if (m) m.style.objectPosition = `center ${e.target.value}%`;
     markDirty();
   };
+
+  const hlLabel = document.getElementById('hero-highlight-label');
+  hlLabel.value = data.hero.highlightLabel || '';
+  hlLabel.oninput = e => { data.hero.highlightLabel = e.target.value; markDirty(); };
 
   document.getElementById('hero-highlight-upload').onchange = async e => {
     const file = e.target.files[0]; if (!file) return;
