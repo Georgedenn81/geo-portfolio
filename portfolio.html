@@ -342,25 +342,26 @@
     .hero-meet {
       display: flex;
       align-items: center;
-      gap: 24px;
-      margin-top: 24px;
-      padding-bottom: 8px;
-      max-width: 720px;
+      gap: 32px;
+      margin-top: 32px;
+      padding-bottom: 16px;
+      max-width: 760px;
     }
     .hero-meet-photo {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
+      width: clamp(180px, 22vw, 300px);
+      height: clamp(180px, 22vw, 300px);
       object-fit: cover;
       object-position: center 20%;
-      border: 2px solid var(--lime);
+      border: 1px solid var(--border);
       flex-shrink: 0;
+      filter: grayscale(15%) contrast(1.05);
+      will-change: transform;
     }
     .hero-meet-bio {
-      font-size: 0.92rem;
-      line-height: 1.7;
+      font-size: 0.95rem;
+      line-height: 1.75;
       color: var(--muted);
-      max-width: 560px;
+      max-width: 420px;
       margin: 0;
     }
 
@@ -1392,7 +1393,7 @@
         NICE TO<br /><span class="accent">MEET</span><br />– YOU
       </div>
       <div class="hero-meet">
-        <img class="hero-meet-photo" id="hero-photo" src="img/profile-edited.png" alt="George — Art Director" />
+        <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.05" src="img/profile-edited.png" alt="George — Art Director" />
         <p class="hero-meet-bio hero-intro" data-i18n="hero-intro">
           I'M ELMENCHOOO, A FREELANCE UIX DESIGNER WITH A PASSION FOR CRAFTING SEAMLESS AND ENGAGING DIGITAL EXPERIENCES.
         </p>
