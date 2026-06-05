@@ -492,18 +492,29 @@ function markDirty() {
 function saveData() {
   clearTimeout(_autoSaveTimer);
   try {
-    // Remove base64 antes de salvar (pode estourar o limite do localStorage)
-    const clean = JSON.parse(JSON.stringify(data));
+    // Remove TUDO base64 antes de salvar
+    const clean = stripBase64FromData(JSON.parse(JSON.stringify(data)));
     if (clean.projects?.featured) {
       clean.projects.featured = clean.projects.featured.map(p => ({
         ...p,
         mediaSrc: (p.mediaSrc && p.mediaSrc.startsWith('data:')) ? '' : (p.mediaSrc || '')
       }));
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+    // Tenta salvar; se falhar por quota, limpa e tenta de novo
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+    } catch(quotaErr) {
+      // Limpa completamente e salva só os dados essenciais (sem galeria)
+      localStorage.removeItem(STORAGE_KEY);
+      const minimal = JSON.parse(JSON.stringify(clean));
+      if (minimal.projects?.more) minimal.projects.more = minimal.projects.more.map(p => ({...p, gallery: []}));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+      showToast('⚠ GALERIA REMOVIDA DO CACHE — use URLs externas para imagens');
+    }
+    return true;
   } catch(e) {
     showToast('⚠ ERRO AO SALVAR: ' + e.message);
-    return;
+    return false;
   }
   if (saveStatus) { saveStatus.textContent = '● SALVO'; saveStatus.className = 'saved'; }
   showToast('✓ SALVO');
@@ -1214,8 +1225,8 @@ document.getElementById('save-btn').addEventListener('click', saveData);
 
 document.getElementById('preview-btn').addEventListener('click', () => {
   try {
-    saveData();
-    window.location.href = '/?preview=1';
+    const ok = saveData();
+    if (ok !== false) window.location.href = '/?preview=1';
   } catch(e) { alert('Erro preview: ' + e.message); }
 });
 
