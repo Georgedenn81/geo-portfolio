@@ -249,6 +249,22 @@
       object-fit: cover;
       object-position: center var(--hero-pos, 30%);
     }
+    .hero-audio-btn {
+      position: absolute;
+      bottom: 20px; right: 24px;
+      z-index: 3;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(240,237,232,0.4);
+      color: var(--white);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .hero-audio-btn:hover { background: var(--lime); color: var(--bg); border-color: var(--lime); }
     .hero-media-placeholder {
       position: absolute;
       inset: 0;
@@ -2067,17 +2083,35 @@
           const hl = document.getElementById('hero-highlight');
           if (hl) hl.style.display = d.hero.highlightOn ? '' : 'none';
           if (hl && d.hero.highlightOn) {
-            hl.querySelectorAll('img, video').forEach(el => el.remove());
+            hl.querySelectorAll('img, video, .hero-audio-btn').forEach(el => el.remove());
             const ph = hl.querySelector('.hero-media-placeholder');
             if (d.hero.highlightSrc) {
               if (ph) ph.style.display = 'none';
               const posY = (d.hero.highlightPosY != null ? d.hero.highlightPosY : 30) + '%';
               hl.style.setProperty('--hero-pos', posY);
               const isVideo = d.hero.highlightType === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(d.hero.highlightSrc);
-              const media = isVideo
-                ? `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline></video>`
-                : `<img src="${d.hero.highlightSrc}" alt="destaque"/>`;
-              hl.insertAdjacentHTML('afterbegin', media);
+              if (isVideo) {
+                hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline></video>`);
+                // Botão de áudio (só se habilitado no admin)
+                if (d.hero.highlightAudio) {
+                  const vid = hl.querySelector('video');
+                  const iconOff = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+                  const iconOn  = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+                  const btn = document.createElement('button');
+                  btn.className = 'hero-audio-btn';
+                  btn.setAttribute('aria-label', 'Ativar/desativar som');
+                  btn.innerHTML = iconOff;
+                  btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    vid.muted = !vid.muted;
+                    if (!vid.muted) { vid.play().catch(()=>{}); }
+                    btn.innerHTML = vid.muted ? iconOff : iconOn;
+                  });
+                  hl.appendChild(btn);
+                }
+              } else {
+                hl.insertAdjacentHTML('afterbegin', `<img src="${d.hero.highlightSrc}" alt="destaque"/>`);
+              }
             } else if (ph) {
               ph.style.display = '';
             }

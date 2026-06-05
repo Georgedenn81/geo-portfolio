@@ -243,6 +243,10 @@
           <span class="toggle-label">Exibir faixa de destaque no site</span>
           <button class="toggle-switch" id="hero-highlight-toggle"><span class="toggle-thumb"></span></button>
         </div>
+        <div class="toggle-row">
+          <span class="toggle-label" style="flex:1">Permitir áudio no vídeo (botão de som para o visitante)</span>
+          <button class="toggle-switch" id="hero-audio-toggle"><span class="toggle-thumb"></span></button>
+        </div>
         <p style="font-size:0.74rem;color:var(--muted);letter-spacing:0.04em;line-height:1.7;margin-bottom:14px">
           Imagem ou vídeo que ocupa a faixa do topo da home (largura total).<br/>
           <strong style="color:var(--lime)">Medida ideal: 1920 × 800 px (paisagem)</strong>. Vídeo: <strong style="color:var(--lime)">.mp4</strong> horizontal, leve (até ~10 MB). É cortado automaticamente — use o slider abaixo para ajustar a altura visível.
@@ -383,6 +387,7 @@ const DEFAULT_DATA = {
     location: 'BASED IN SÃO PAULO',
     intro: "I'M GEORGE, AN ART DIRECTOR BASED IN SÃO PAULO.",
     highlightOn: false,
+    highlightAudio: false,
     highlightSrc: '',
     highlightType: 'image',
     highlightPosY: 30,
@@ -1185,6 +1190,12 @@ function renderAbout() {
   };
   syncHlToggle();
   hlToggle.onclick = () => { data.hero.highlightOn = !data.hero.highlightOn; syncHlToggle(); markDirty(); };
+
+  // toggle áudio
+  const audToggle = document.getElementById('hero-audio-toggle');
+  const syncAud = () => { audToggle.className = 'toggle-switch' + (data.hero.highlightAudio ? ' on' : ''); };
+  syncAud();
+  audToggle.onclick = () => { data.hero.highlightAudio = !data.hero.highlightAudio; syncAud(); markDirty(); };
 
   hlSrc.value = (data.hero.highlightSrc||'').startsWith('data:') ? '' : (data.hero.highlightSrc||'');
   phSrc.value = (data.hero.photoSrc||'').startsWith('data:') ? '' : (data.hero.photoSrc||'');
