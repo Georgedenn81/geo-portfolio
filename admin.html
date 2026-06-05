@@ -201,7 +201,10 @@
 
     <!-- ── PROJECTS TAB ── -->
     <div id="tab-projects" class="tab-panel active">
-      <div class="section-title">Projetos em Destaque</div>
+      <div class="section-title">
+        Projetos em Destaque
+        <button class="btn-add" id="add-featured-btn">+ Adicionar</button>
+      </div>
       <div id="featured-grid"></div>
 
       <div class="section-title" style="margin-top:48px">
@@ -625,7 +628,7 @@ function renderFeatured() {
     card.className = 'card';
     card.style.marginBottom = '20px';
     card.innerHTML = `
-      <div class="card-header"><span class="card-label">Destaque ${i + 1}</span></div>
+      <div class="card-header"><span class="card-label">Destaque ${i + 1}</span><button class="btn-remove feat-remove" data-i="${i}">✕ REMOVER</button></div>
       <div class="card-grid">
         <div class="field">
           <label class="field-label">Etiqueta</label>
@@ -807,6 +810,11 @@ function renderFeatured() {
     } else {
       if (prev) prev.innerHTML = '⚠ NÃO ENCONTROU THUMBNAIL';
     }
+  }));
+  grid.querySelectorAll('.feat-remove').forEach(el => el.addEventListener('click', e => {
+    if (!confirm('Remover este projeto em destaque?')) return;
+    data.projects.featured.splice(+e.currentTarget.dataset.i, 1);
+    markDirty(); renderFeatured();
   }));
   grid.querySelectorAll('.feat-num').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].num = e.target.value; markDirty(); }));
   grid.querySelectorAll('.feat-link').forEach(el => el.addEventListener('input', e => { data.projects.featured[+e.target.dataset.i].link = e.target.value; markDirty(); }));
@@ -1146,7 +1154,15 @@ function renderMore() {
 document.getElementById('add-more-btn').addEventListener('click', () => {
   const n = data.projects.more.length + 3;
   data.projects.more.push({ num: `Nº 00${n}`, title: 'NOVO PROJETO', tags: 'TAG1, TAG2', link: '#' });
+  markDirty();
   renderMore();
+});
+
+document.getElementById('add-featured-btn').addEventListener('click', () => {
+  const n = data.projects.featured.length + 1;
+  data.projects.featured.push({ num: `Nº 00${n} // FEATURED`, title: 'NOVO PROJETO', desc: '', tags: 'TAG1, TAG2', link: '', mediaType: 'none', mediaSrc: '', videoUrl: '', thumbnailSrc: '', gallery: [] });
+  markDirty();
+  renderFeatured();
 });
 
 // ── ABOUT ──

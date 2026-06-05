@@ -65,35 +65,40 @@
     .morph-blob-1 {
       width: 600px; height: 600px;
       background: radial-gradient(circle, #C8F135 0%, #6abe00 50%, transparent 75%);
-      top: 10%; left: -10%;
-      animation: morphShape1 8s ease-in-out infinite;
+      top: 8%; left: -8%;
+      animation: morphShape1 26s ease-in-out infinite, blobPulse1 11s ease-in-out infinite;
     }
     .morph-blob-2 {
       width: 500px; height: 500px;
       background: radial-gradient(circle, #C8F135 0%, #3a7a00 60%, transparent 80%);
-      top: 50%; right: -8%;
-      animation: morphShape2 10s ease-in-out infinite;
+      top: 45%; right: -6%;
+      animation: morphShape2 32s ease-in-out infinite, blobPulse2 14s ease-in-out infinite;
     }
     .morph-blob-3 {
       width: 400px; height: 400px;
       background: radial-gradient(circle, #a8d400 0%, #C8F135 40%, transparent 70%);
-      bottom: 10%; left: 30%;
-      animation: morphShape3 12s ease-in-out infinite;
+      bottom: 8%; left: 28%;
+      animation: morphShape3 38s ease-in-out infinite, blobPulse3 9s ease-in-out infinite;
     }
+    /* deriva + morph contínuos, independentes do scroll */
     @keyframes morphShape1 {
-      0%,100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: scale(1) rotate(0deg); }
-      33%      { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: scale(1.08) rotate(8deg); }
-      66%      { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: scale(0.94) rotate(-5deg); }
+      0%,100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: translate(0,0) scale(1) rotate(0deg); }
+      33%      { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: translate(80px,-50px) scale(1.08) rotate(8deg); }
+      66%      { border-radius: 70% 30% 50% 50% / 30% 70% 50% 50%; transform: translate(-40px,60px) scale(0.94) rotate(-5deg); }
     }
     @keyframes morphShape2 {
-      0%,100% { border-radius: 50% 50% 60% 40% / 40% 60% 40% 60%; transform: scale(1) rotate(0deg); }
-      40%      { border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%; transform: scale(1.1) rotate(-10deg); }
-      70%      { border-radius: 60% 40% 70% 30% / 50% 50% 30% 70%; transform: scale(0.92) rotate(6deg); }
+      0%,100% { border-radius: 50% 50% 60% 40% / 40% 60% 40% 60%; transform: translate(0,0) scale(1) rotate(0deg); }
+      40%      { border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%; transform: translate(-90px,40px) scale(1.1) rotate(-10deg); }
+      70%      { border-radius: 60% 40% 70% 30% / 50% 50% 30% 70%; transform: translate(50px,-30px) scale(0.92) rotate(6deg); }
     }
     @keyframes morphShape3 {
-      0%,100% { border-radius: 40% 60% 50% 50% / 60% 40% 60% 40%; transform: scale(1) rotate(0deg); }
-      50%      { border-radius: 60% 40% 30% 70% / 40% 70% 30% 60%; transform: scale(1.12) rotate(12deg); }
+      0%,100% { border-radius: 40% 60% 50% 50% / 60% 40% 60% 40%; transform: translate(0,0) scale(1) rotate(0deg); }
+      50%      { border-radius: 60% 40% 30% 70% / 40% 70% 30% 60%; transform: translate(60px,-70px) scale(1.12) rotate(12deg); }
     }
+    /* pulso discreto de intensidade */
+    @keyframes blobPulse1 { 0%,100% { opacity: 0.14; } 50% { opacity: 0.24; } }
+    @keyframes blobPulse2 { 0%,100% { opacity: 0.20; } 50% { opacity: 0.10; } }
+    @keyframes blobPulse3 { 0%,100% { opacity: 0.12; } 50% { opacity: 0.22; } }
     @media (prefers-reduced-motion: reduce) {
       .morph-blob { animation: none; }
     }
@@ -443,6 +448,7 @@
       color: var(--muted);
       max-width: 460px;
       margin: 24px 0 0;
+      text-transform: uppercase;
     }
     .hero-meet-bio:empty { display: none; margin: 0; }
 
@@ -483,20 +489,19 @@
     #about {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      min-height: 80vh;
     }
     .about-left {
-      padding: 64px 32px;
+      padding: 56px 32px;
       border-right: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: flex-start;
     }
     .about-right {
-      padding: 64px 32px;
+      padding: 56px 32px;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;
+      justify-content: center;
     }
     .section-num {
       font-family: 'Barlow Condensed', sans-serif;
@@ -677,14 +682,16 @@
     .project-bento {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
       border-bottom: 1px solid var(--border);
     }
     .bento-card {
       position: relative;
       overflow: hidden;
       cursor: pointer;
+      background: var(--bg);
     }
-    .bento-card:first-child { border-right: 1px solid var(--border); }
     .bento-inner {
       padding: 40px 32px;
       height: 340px;
@@ -728,6 +735,7 @@
       color: #D8D4CC;
       max-width: 280px;
       margin-top: 12px;
+      text-transform: uppercase;
     }
     .bento-foot {
       position: relative;
@@ -1997,10 +2005,7 @@
             el.style.transform = `translateY(${sy * speed}px)`;
           });
 
-          // blobs drift on scroll — each on a different axis/speed
-          if (blob1) blob1.style.transform = `translateY(${sy * -0.18}px) translateX(${Math.sin(pct * Math.PI * 2) * 60}px) scale(${1 + pct * 0.3})`;
-          if (blob2) blob2.style.transform = `translateY(${sy * 0.12}px) translateX(${Math.cos(pct * Math.PI * 2) * 80}px) scale(${1 + (1 - pct) * 0.25})`;
-          if (blob3) blob3.style.transform = `translateY(${sy * -0.08}px) translateX(${Math.sin(pct * Math.PI) * 50}px) scale(${0.9 + pct * 0.4})`;
+          // blobs NÃO são mais movidos pelo scroll — movem-se sozinhos via CSS
 
           ticking = false;
         });
@@ -2138,23 +2143,31 @@
         // Featured projects
         if (d.projects && d.projects.featured) {
           __projects.featured = d.projects.featured; // atualiza variável global
-          document.querySelectorAll('.bento-card').forEach((card, i) => {
-            const p = d.projects.featured[i];
-            if (!p) return;
-            const inner   = card.querySelector('.bento-inner');
-            const bg      = inner.querySelector('.bento-bg');
-            const numEl   = inner.querySelector('.bento-num');
-            const titleEl = inner.querySelector('.bento-title');
-            const descEl  = inner.querySelector('.bento-desc');
-            const linkEl  = inner.querySelector('.bento-link');
-            const tagsEl  = inner.querySelector('.bento-tags');
-            if (numEl)             numEl.textContent  = p.num;
-            if (titleEl)           titleEl.innerHTML  = p.title.replace(/\n/g, '<br>');
-            if (descEl)            descEl.textContent = p.desc;
-            if (linkEl && p.link)  linkEl.href        = p.link;
-            if (tagsEl && p.tags)  tagsEl.innerHTML   = p.tags.split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
-            if (p.videoUrl)        card.dataset.videoUrl = p.videoUrl;
-            if (bg) {
+          const bento = document.querySelector('.project-bento');
+          if (bento) {
+            bento.innerHTML = d.projects.featured.map((p, i) => {
+              const accent = String(i + 1).padStart(2, '0');
+              const tags = (p.tags || '').split(',').filter(Boolean).map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
+              return `
+                <div class="bento-card reveal in"${p.videoUrl ? ` data-video-url="${p.videoUrl}"` : ''}>
+                  <div class="bento-inner">
+                    <div class="bento-bg" data-bg="${i}"></div>
+                    <div class="bento-accent-num">${accent}</div>
+                    <div class="bento-content">
+                      <div class="bento-num">${p.num || ''}</div>
+                      <div class="bento-title">${(p.title || '').replace(/\n/g, '<br>')}</div>
+                      <p class="bento-desc">${p.desc || ''}</p>
+                    </div>
+                    <div class="bento-foot">
+                      <div class="bento-tags">${tags}</div>
+                      <a href="${p.link || '#'}" class="bento-link">VIEW ↗</a>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('');
+            d.projects.featured.forEach((p, i) => {
+              const bg = bento.querySelector(`.bento-bg[data-bg="${i}"]`);
+              if (!bg) return;
               if (p.mediaType === 'video' && p.mediaSrc) {
                 bg.style.cssText = 'background:none;position:absolute;inset:0;';
                 bg.innerHTML = `<video src="${p.mediaSrc}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
@@ -2162,8 +2175,8 @@
                 const src = (p.mediaType === 'image' && p.mediaSrc) ? p.mediaSrc : p.thumbnailSrc;
                 if (src) applyCardBg(bg, src);
               }
-            }
-          });
+            });
+          }
         }
 
         // More projects
