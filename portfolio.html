@@ -2246,14 +2246,6 @@
             phoneEl.href        = 'tel:' + d.contact.phone.replace(/[\s-]/g, '');
             phoneEl.textContent = d.contact.phone;
           }
-          const webLinks = document.querySelectorAll('.contact-detail a');
-          webLinks.forEach(a => {
-            if (a.href.startsWith('tel:')) return;
-            if (d.contact.website) {
-              a.href        = d.contact.website;
-              a.textContent = d.contact.website.replace(/^https?:\/\//, '').toUpperCase();
-            }
-          });
           const locEl = document.querySelector('[data-i18n="contact-location"]');
           if (locEl && d.contact.location) locEl.textContent = d.contact.location;
         }
