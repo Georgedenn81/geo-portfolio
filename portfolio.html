@@ -2050,7 +2050,7 @@
     }
 
     // ── Carrossel ──
-    let __slides = [], __slideIdx = 0;
+    let __slides = [], __slideIdx = 0, __scrollMode = false;
 
     function buildSlides(p) {
       const slides = [];
@@ -2098,8 +2098,12 @@
 
     function setWrapAspect(slide) {
       if (!slide || slide.type === 'video') {
+        __scrollMode = false;
+        lbWrap.style.height = ''; lbWrap.style.overflowY = '';
         lbWrap.style.paddingTop = '56.25%'; // 16:9
       } else if (slide.type === 'link') {
+        __scrollMode = false;
+        lbWrap.style.height = ''; lbWrap.style.overflowY = '';
         lbWrap.style.paddingTop = '75vh'; // mais alto para links
       } else {
         const applyRatio = (naturalW, naturalH) => {
@@ -2110,10 +2114,12 @@
 
           if (ratio > 1.5) {
             // Imagem vertical/longa → modo scroll (como Behance)
+            __scrollMode = true;
             lbWrap.style.paddingTop = '';
             lbWrap.style.height     = '82vh';
             lbWrap.style.overflowY  = 'auto';
             lbWrap.style.overflowX  = 'hidden';
+            lbWrap.style.webkitOverflowScrolling = 'touch';
             const activeSlide = lbWrap.querySelector('.lb-slide.active');
             if (activeSlide) {
               activeSlide.style.position = 'relative';
@@ -2131,6 +2137,7 @@
             }
           } else {
             // Imagem normal → ajusta proporção
+            __scrollMode = false;
             lbWrap.style.height    = '';
             lbWrap.style.overflowY = '';
             const pct = Math.min(ratio * 100, maxPct);
@@ -2210,16 +2217,17 @@
     lbZoomOut.addEventListener('click',   () => setZoom(__zoom - 0.25));
     lbZoomReset.addEventListener('click', resetZoom);
 
-    // Scroll to zoom (trackpad/mouse wheel)
-    // Scroll vertical: navega slides (quando zoom = 1) ou faz zoom (quando ampliado)
+    // Scroll do mouse/trackpad
     let __wheelTimer = null;
     lbWrap.addEventListener('wheel', e => {
+      // Modo scroll (imagem vertical longa) → deixa rolar naturalmente, não intercepta
+      if (__scrollMode && __zoom <= 1) return;
       e.preventDefault();
       if (__zoom > 1 && getZoomImg()) {
-        // Zoom mode
+        // Zoom ativo → ajusta zoom
         setZoom(__zoom - e.deltaY * 0.001);
       } else if (__slides.length > 1) {
-        // Navegação entre slides com debounce
+        // Navega entre slides com debounce
         clearTimeout(__wheelTimer);
         __wheelTimer = setTimeout(() => {
           if (e.deltaY > 30)       goSlide(1);
@@ -2291,6 +2299,13 @@
       const absDx = Math.abs(dx), absDy = Math.abs(dy);
       if (absDx < 20 && absDy < 20) return; // tap, não swipe
       if (__zoom > 1) return; // no slide nav while zoomed
+      if (__scrollMode) {
+        // Imagem longa → swipe vertical rola a imagem; só troca slide no swipe horizontal forte
+        if (absDx > absDy && absDx > 60) {
+          if (dx < 0) goSlide(1); else goSlide(-1);
+        }
+        return;
+      }
       if (absDy > absDx) {
         // Swipe vertical → navega slides
         if (dy < -40) goSlide(1);  // swipe up → próximo
