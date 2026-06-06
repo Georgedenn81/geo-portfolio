@@ -1522,7 +1522,7 @@
     <!-- GIANT headline (esquerda) + foto (direita) -->
     <div class="hero-headline-wrap">
       <div class="hero-headline-col">
-        <div class="hero-headline parallax-slow" data-speed="-0.08">
+        <div class="hero-headline parallax-slow" data-speed="-0.08" id="hero-meet-title">
           NICE TO<br /><span class="accent">MEET</span><br />– YOU
         </div>
         <p class="hero-meet-bio hero-intro" data-i18n="hero-intro"></p>
@@ -1603,7 +1603,7 @@
       <p style="font-size:0.7rem;line-height:1.8;color:var(--muted);max-width:400px;" data-i18n="quote-body">
         THIS QUOTE IS WIDELY EMBRACED IN UX/UI DESIGN: MINIMALISM AND PROBLEM-SOLVING. IT BECOMES TRUE SOPHISTICATION IN DESIGN BY UNDERSTANDING COMPLEX NEEDS AND SIMPLIFYING THINGS TO THEIR PUREST, MOST EFFECTIVE FORM.
       </p>
-      <p style="font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);margin-top:16px;">— LEONARDO DA VINCI</p>
+      <p id="quote-author" style="font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);margin-top:16px;">— LEONARDO DA VINCI</p>
     </div>
   </section>
 
@@ -2095,6 +2095,14 @@
       return obj[key] != null ? obj[key] : '';
     }
 
+    // Headline com marcações do admin: \n → quebra de linha, *palavra* → destaque verde.
+    function fmtHeadline(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/\*([^*]+)\*/g, '<span class="accent">$1</span>')
+        .replace(/\r?\n/g, '<br>');
+    }
+
     function applyAdminData(d) {
       try {
         if (!d) return;
@@ -2269,6 +2277,26 @@
           }
           const locEl = document.querySelector('[data-i18n="contact-location"]');
           if (locEl && d.contact.location) locEl.textContent = tv(d.contact, 'location');
+        }
+
+        // Textos editáveis das seções (sobrescrevem o template quando definidos no admin)
+        if (d.about) {
+          const ab = document.querySelector('.about-big');
+          const as = document.querySelector('.about-sub');
+          if (ab && tv(d.about, 'headline')) ab.innerHTML = fmtHeadline(tv(d.about, 'headline'));
+          if (as && tv(d.about, 'sub'))      as.textContent = tv(d.about, 'sub');
+        }
+        if (d.quote) {
+          const qh = document.querySelector('.about-quote');
+          const qb = document.querySelector('[data-i18n="quote-body"]');
+          const qa = document.getElementById('quote-author');
+          if (qh && tv(d.quote, 'headline')) qh.innerHTML = fmtHeadline(tv(d.quote, 'headline'));
+          if (qb && tv(d.quote, 'body'))     qb.textContent = tv(d.quote, 'body');
+          if (qa && tv(d.quote, 'author'))   qa.textContent = tv(d.quote, 'author');
+        }
+        if (d.meet) {
+          const mt = document.getElementById('hero-meet-title');
+          if (mt && tv(d.meet, 'headline')) mt.innerHTML = fmtHeadline(tv(d.meet, 'headline'));
         }
 
         bindLightboxCards();
@@ -2659,8 +2687,8 @@
       }
     } catch(e) {}
 
-    loadPortfolioData();
-    applyLang(currentLang); // sincroniza textos fixos + visual do toggle no 1º paint
+    applyLang(currentLang); // textos fixos + visual do toggle no 1º paint
+    loadPortfolioData();    // aplica dados do admin por último (sobrescreve o dicionário)
 
     // ── Contact form ──
     const form   = document.getElementById('contact-form');

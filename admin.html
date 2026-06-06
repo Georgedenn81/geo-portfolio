@@ -287,6 +287,39 @@
         <div id="hero-photo-preview" class="media-preview" style="height:120px"></div>
       </div>
 
+      <div class="section-title" style="margin-top:44px">Textos das Seções</div>
+      <div class="card">
+        <p style="font-size:0.74rem;color:var(--muted);letter-spacing:0.04em;line-height:1.7;margin-bottom:14px">
+          Nos títulos grandes: cada <strong style="color:var(--lime)">linha nova</strong> vira uma quebra, e a palavra entre <strong style="color:var(--lime)">*asteriscos*</strong> fica verde. Ex.: <code>NICE TO\n*MEET*\n– YOU</code>. Você escreve em português; o inglês é gerado automaticamente ao publicar.
+        </p>
+        <div class="card-grid">
+          <div class="field card-full">
+            <label class="field-label">Título "Nice to meet you"</label>
+            <textarea class="field-textarea" id="meet-headline" rows="3"></textarea>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Título da seção "Sobre" (grande)</label>
+            <textarea class="field-textarea" id="about-headline" rows="4"></textarea>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Subtítulo da seção "Sobre"</label>
+            <textarea class="field-textarea" id="about-sub" rows="3"></textarea>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Frase em destaque — título</label>
+            <textarea class="field-textarea" id="quote-headline" rows="3"></textarea>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Frase em destaque — corpo</label>
+            <textarea class="field-textarea" id="quote-body" rows="3"></textarea>
+          </div>
+          <div class="field card-full">
+            <label class="field-label">Frase em destaque — autor</label>
+            <input type="text" class="field-input" id="quote-author" placeholder="— LEONARDO DA VINCI"/>
+          </div>
+        </div>
+      </div>
+
       <div class="section-title" style="margin-top:44px">Stats</div>
       <div class="card" style="margin-bottom:16px">
         <div class="toggle-row" style="border-top:none;margin-top:0;padding:0">
@@ -449,6 +482,17 @@ const DEFAULT_DATA = {
     phone: '+55 11 9 7638 6601',
     website: 'https://georgedenison.com',
     location: 'BASED IN SÃO PAULO · GMT-3'
+  },
+  // Textos das seções (use \n para quebrar linha e *palavra* para destaque verde)
+  meet: { headline: 'NICE TO\n*MEET*\n– YOU' },
+  about: {
+    headline: 'CRIANDO\nDESIGNS*-*\nCENTRADOS\nNO HUMANO',
+    sub: 'QUE GERAM ENGAJAMENTO E CONVERSÕES. MEU TRABALHO CONECTA ESTRATÉGIA DE MARCA E EXECUÇÃO PIXEL A PIXEL — SEMPRE COM FOCO NA EMPATIA E NA CLAREZA DE NEGÓCIOS.'
+  },
+  quote: {
+    headline: 'SIMPLICIDADE É\nA MÁXIMA\n*SOFISTICAÇÃO*',
+    body: 'ESSA FRASE É AMPLAMENTE ADOTADA NO DESIGN UX/UI: MINIMALISMO E RESOLUÇÃO DE PROBLEMAS. A VERDADEIRA SOFISTICAÇÃO NO DESIGN SURGE AO ENTENDER NECESSIDADES COMPLEXAS E SIMPLIFICÁ-LAS À SUA FORMA MAIS PURA E EFICAZ.',
+    author: '— LEONARDO DA VINCI'
   }
 };
 
@@ -1190,6 +1234,23 @@ function renderAbout() {
   document.getElementById('hero-location').value    = data.hero.location;
   document.getElementById('hero-intro').value       = data.hero.intro;
 
+  // Textos das seções (com defaults p/ dados salvos antigos sem esses campos)
+  data.meet  = data.meet  || { headline: DEFAULT_DATA.meet.headline };
+  data.about = data.about || { headline: DEFAULT_DATA.about.headline, sub: DEFAULT_DATA.about.sub };
+  data.quote = data.quote || { headline: DEFAULT_DATA.quote.headline, body: DEFAULT_DATA.quote.body, author: DEFAULT_DATA.quote.author };
+  const textBind = (id, obj, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = obj[key] != null ? obj[key] : '';
+    el.oninput = e => { obj[key] = e.target.value; markDirty(); };
+  };
+  textBind('meet-headline',  data.meet,  'headline');
+  textBind('about-headline', data.about, 'headline');
+  textBind('about-sub',      data.about, 'sub');
+  textBind('quote-headline', data.quote, 'headline');
+  textBind('quote-body',     data.quote, 'body');
+  textBind('quote-author',   data.quote, 'author');
+
   const toggle = document.getElementById('hero-available-toggle');
   toggle.className = 'toggle-switch' + (data.hero.available ? ' on' : '');
 
@@ -1446,6 +1507,9 @@ function txCollectTargets(d) {
   (d.projects?.more || []).forEach(p => ['title', 'tags', 'num'].forEach(k => push(p, k)));
   (d.skills || []).forEach(s => push(s, 'name'));
   if (d.contact) push(d.contact, 'location');
+  if (d.meet)  push(d.meet, 'headline');
+  if (d.about) ['headline', 'sub'].forEach(k => push(d.about, k));
+  if (d.quote) ['headline', 'body', 'author'].forEach(k => push(d.quote, k));
   return targets;
 }
 

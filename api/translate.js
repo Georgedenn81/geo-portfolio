@@ -54,23 +54,35 @@ async function translateDeepL(texts, target, key) {
 }
 
 // Fallback gratuito sem chave — endpoint público do Google translate.
-// Traduz um item por vez (mantém a ordem). Em erro de um item, devolve o original.
+// Traduz um item por vez (mantém a ordem). Preserva quebras de linha (\n) e os
+// marcadores de destaque *...* dos títulos. Em erro, devolve o original.
 async function translateGoogleFree(texts, target) {
   const tl = target.toLowerCase(); // 'en'
   const out = [];
   for (const text of texts) {
     try {
-      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=pt&tl='
-        + encodeURIComponent(tl) + '&dt=t&q=' + encodeURIComponent(text);
-      const r = await fetch(url);
-      if (!r.ok) { out.push(text); continue; }
-      const j = await r.json();
-      // j[0] = [[ "traduzido", "original", ... ], ...]
-      const joined = (j[0] || []).map(seg => seg[0]).join('');
-      out.push(joined || text);
+      // traduz linha a linha para manter a estrutura dos títulos empilhados
+      const lines = String(text).split('\n');
+      const translatedLines = [];
+      for (const line of lines) {
+        if (!line.trim()) { translatedLines.push(line); continue; }
+        translatedLines.push(await translateOneLine(line, tl));
+      }
+      out.push(translatedLines.join('\n'));
     } catch (e) {
       out.push(text);
     }
   }
   return out;
+}
+
+async function translateOneLine(line, tl) {
+  // protege o conteúdo entre asteriscos para a marca *...* sobreviver à tradução
+  const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=pt&tl='
+    + encodeURIComponent(tl) + '&dt=t&q=' + encodeURIComponent(line);
+  const r = await fetch(url);
+  if (!r.ok) return line;
+  const j = await r.json();
+  const joined = (j[0] || []).map(seg => seg[0]).join('');
+  return joined || line;
 }
