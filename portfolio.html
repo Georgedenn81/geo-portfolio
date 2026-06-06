@@ -892,6 +892,34 @@
       min-width: 32px;
       text-align: right;
     }
+    /* ── SKILLS DASHBOARD (anéis redondos, full-width) ── */
+    #skills-dash { padding: 56px 32px; }
+    #skills-dash .section-num { margin-bottom: 36px; }
+    .dash-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 32px 24px;
+      width: 100%;
+    }
+    .dash-skill { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .dash-ring-wrap { position: relative; width: 124px; height: 124px; }
+    .dash-ring { width: 124px; height: 124px; transform: rotate(-90deg); }
+    .dash-track { fill: none; stroke: var(--border); stroke-width: 7; }
+    .dash-prog {
+      fill: none; stroke: var(--lime); stroke-width: 7; stroke-linecap: round;
+      transition: stroke-dashoffset 1.1s cubic-bezier(0.4,0,0.2,1);
+    }
+    .dash-pct {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Barlow Condensed', sans-serif; font-weight: 800;
+      font-size: 1.6rem; color: var(--white);
+    }
+    .dash-name {
+      font-family: 'Space Mono', monospace; font-size: 0.68rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); text-align: center; line-height: 1.4;
+    }
     .tools-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -1615,6 +1643,12 @@
     </div>
   </section>
 
+  <!-- ─── SKILLS DASHBOARD (teste) ─── -->
+  <section id="skills-dash" style="display:none">
+    <div class="section-num" data-i18n="skills-num">Nº 003 &nbsp; SKILLS</div>
+    <div class="dash-grid" id="dash-grid"></div>
+  </section>
+
   <!-- ─── PROJECTS ─── -->
   <section id="projects">
     <!-- Featured bento -->
@@ -2276,6 +2310,38 @@
               skillObs.unobserve(skillsSection);
               skillObs.observe(skillsSection);
             }
+          }
+        }
+
+        // Skills dashboard (anéis redondos) — controlado por skillsDashOn
+        const dashSection = document.getElementById('skills-dash');
+        if (dashSection) {
+          const on = d.skillsDashOn !== false; // padrão ligado (modo teste)
+          dashSection.style.display = on ? '' : 'none';
+          const grid = document.getElementById('dash-grid');
+          if (on && grid && d.skills && d.skills.length) {
+            const R = 54, C = 2 * Math.PI * R;
+            grid.innerHTML = d.skills.map(s => `
+              <div class="dash-skill">
+                <div class="dash-ring-wrap">
+                  <svg class="dash-ring" viewBox="0 0 124 124">
+                    <circle class="dash-track" cx="62" cy="62" r="${R}"></circle>
+                    <circle class="dash-prog" cx="62" cy="62" r="${R}" style="stroke-dasharray:${C};stroke-dashoffset:${C}"></circle>
+                  </svg>
+                  <div class="dash-pct">${s.pct}%</div>
+                </div>
+                <div class="dash-name">${tv(s, 'name')}</div>
+              </div>`).join('');
+            const fill = () => grid.querySelectorAll('.dash-prog').forEach((c, i) => {
+              const pct = Math.max(0, Math.min(100, d.skills[i].pct || 0));
+              c.style.strokeDashoffset = C * (1 - pct / 100);
+            });
+            if ('IntersectionObserver' in window) {
+              const ob = new IntersectionObserver(es => {
+                es.forEach(e => { if (e.isIntersecting) { fill(); ob.disconnect(); } });
+              }, { threshold: 0.2 });
+              ob.observe(dashSection);
+            } else { fill(); }
           }
         }
 

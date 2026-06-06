@@ -333,6 +333,13 @@
 
     <!-- ── SKILLS TAB ── -->
     <div id="tab-skills" class="tab-panel">
+      <div class="card" style="margin-bottom:16px">
+        <div class="toggle-row" style="border-top:none;margin-top:0;padding:0">
+          <span class="status-dot" id="skillsdash-dot"></span>
+          <span class="toggle-label">Exibir seção de skills (dashboard redondo) no site</span>
+          <button class="toggle-switch" id="skillsdash-toggle"><span class="toggle-thumb"></span></button>
+        </div>
+      </div>
       <div class="section-title">
         Habilidades
         <button class="btn-add" id="add-skill-btn">+ Adicionar</button>
@@ -454,6 +461,7 @@ const DEFAULT_DATA = {
     photoSrc: ''
   },
   statsOn: true,
+  skillsDashOn: true,
   stats: [
     { n: '40+', l: 'Projects Shipped' },
     { n: '20+', l: 'Years Experience' }
@@ -1371,6 +1379,19 @@ function renderAbout() {
 
 // ── SKILLS ──
 function renderSkills() {
+  // Toggle de exibição do dashboard de skills no site
+  const sdToggle = document.getElementById('skillsdash-toggle');
+  const sdDot    = document.getElementById('skillsdash-dot');
+  if (data.skillsDashOn === undefined) data.skillsDashOn = true;
+  if (sdToggle) {
+    const syncSd = () => {
+      sdToggle.className = 'toggle-switch' + (data.skillsDashOn ? ' on' : '');
+      if (sdDot) sdDot.style.opacity = data.skillsDashOn ? '1' : '0.2';
+    };
+    syncSd();
+    sdToggle.onclick = () => { data.skillsDashOn = !data.skillsDashOn; syncSd(); markDirty(); };
+  }
+
   const list = document.getElementById('skills-list');
   list.innerHTML = '';
   data.skills.forEach((s, i) => {
