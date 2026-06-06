@@ -1329,24 +1329,22 @@
     }
     .footer-socials a:hover { color: var(--lime); }
     /* link admin discreto */
+    /* link do admin: sempre visível, pequeno e discreto, clicável */
     #admin-link {
       color: var(--dim);
       text-decoration: none;
       padding: 0 4px;
       transition: color 0.2s;
-      cursor: default;
-    }
-    #admin-link:hover { color: var(--muted); }
-    /* quando logado nesse navegador, fica visível como "ADMIN" */
-    body.is-admin #admin-link {
-      color: var(--lime);
       cursor: pointer;
     }
-    body.is-admin #admin-link::after {
+    #admin-link::after {
       content: ' ADMIN';
       font-size: 0.85em;
       letter-spacing: 0.15em;
     }
+    #admin-link:hover { color: var(--muted); }
+    /* quando logado nesse navegador, destaca em verde */
+    body.is-admin #admin-link { color: var(--lime); }
 
     /* ── PARALLAX LAYERS ── */
     .parallax-slow  { will-change: transform; }
