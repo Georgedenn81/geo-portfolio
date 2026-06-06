@@ -382,6 +382,25 @@
 
 
 <script>
+// Armazenamento seguro: usa localStorage quando disponível; se estiver bloqueado
+// (ex.: iframe sandbox do preview, modo privado), cai para memória — assim o
+// painel sempre abre, em vez de quebrar silenciosamente no login.
+const LS = (function () {
+  try {
+    const k = '__ls_test__';
+    window.localStorage.setItem(k, '1');
+    window.localStorage.removeItem(k);
+    return window.localStorage;
+  } catch (e) {
+    const mem = {};
+    return {
+      getItem: k => (k in mem ? mem[k] : null),
+      setItem: (k, v) => { mem[k] = String(v); },
+      removeItem: k => { delete mem[k]; }
+    };
+  }
+})();
+
 const DEFAULT_PASS = 'geo@2025';
 const STORAGE_KEY  = 'geo_portfolio_data';
 const AUTH_KEY     = 'geo_admin_auth';
@@ -439,10 +458,10 @@ let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
 const gate  = document.getElementById('gate');
 const panel = document.getElementById('panel');
 
-function getPass() { return localStorage.getItem(PASS_KEY) || DEFAULT_PASS; }
+function getPass() { return LS.getItem(PASS_KEY) || DEFAULT_PASS; }
 
 function checkAuth() {
-  if (localStorage.getItem(AUTH_KEY) === '1') showPanel();
+  if (LS.getItem(AUTH_KEY) === '1') showPanel();
 }
 
 function showPanel() {
@@ -463,7 +482,7 @@ function login() {
   const val = document.getElementById('gate-pass').value;
   const err = document.getElementById('gate-err');
   if (val === getPass()) {
-    localStorage.setItem(AUTH_KEY, '1');
+    LS.setItem(AUTH_KEY, '1');
     err.textContent = '';
     showPanel();
   } else {
@@ -474,23 +493,23 @@ function login() {
 }
 
 document.getElementById('logout-btn').addEventListener('click', () => {
-  localStorage.removeItem(AUTH_KEY);
+  LS.removeItem(AUTH_KEY);
   location.reload();
 });
 
 document.getElementById('clear-cache-btn').addEventListener('click', () => {
   if (!confirm('Limpar todos os dados base64 do cache? As alterações não publicadas serão perdidas.')) return;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = LS.getItem(STORAGE_KEY);
     if (raw) {
       const clean = stripBase64FromData(JSON.parse(raw));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+      LS.setItem(STORAGE_KEY, JSON.stringify(clean));
     }
     showToast('✓ CACHE LIMPO — pode salvar agora');
     loadData();
     renderAll();
   } catch(e) {
-    localStorage.removeItem(STORAGE_KEY);
+    LS.removeItem(STORAGE_KEY);
     showToast('✓ CACHE RESETADO');
     location.reload();
   }
@@ -516,18 +535,18 @@ function stripBase64FromData(d) {
 
 function loadData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = LS.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       // Remove base64 automaticamente ao carregar (evita quota exceeded)
       const clean = stripBase64FromData(parsed);
       data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), clean);
       // Re-salva sem base64
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
+      try { LS.setItem(STORAGE_KEY, JSON.stringify(clean)); } catch(e) {}
     }
   } catch(e) {
     // Se localStorage corrompido, limpa tudo
-    try { localStorage.removeItem(STORAGE_KEY); } catch(ex) {}
+    try { LS.removeItem(STORAGE_KEY); } catch(ex) {}
   }
 }
 
@@ -541,8 +560,8 @@ function markDirty() {
   _autoSaveTimer = setTimeout(saveData, 800); // auto-salva local 800ms após editar
 
   // Auto-publica no Vercel 6s após a última edição (se auto-publish ligado e token configurado)
-  const autoOn = localStorage.getItem('geo_autopublish') !== 'off';
-  if (autoOn && localStorage.getItem('geo_gh_token')) {
+  const autoOn = LS.getItem('geo_autopublish') !== 'off';
+  if (autoOn && LS.getItem('geo_gh_token')) {
     const headEl = document.getElementById('publish-head-status');
     if (headEl) { headEl.style.color = 'var(--muted)'; headEl.textContent = '○ alterado — publicando em breve...'; }
     clearTimeout(_autoPublishTimer);
@@ -563,13 +582,13 @@ function saveData() {
     }
     // Tenta salvar; se falhar por quota, limpa e tenta de novo
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(clean));
+      LS.setItem(STORAGE_KEY, JSON.stringify(clean));
     } catch(quotaErr) {
       // Limpa completamente e salva só os dados essenciais (sem galeria)
-      localStorage.removeItem(STORAGE_KEY);
+      LS.removeItem(STORAGE_KEY);
       const minimal = JSON.parse(JSON.stringify(clean));
       if (minimal.projects?.more) minimal.projects.more = minimal.projects.more.map(p => ({...p, gallery: []}));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(minimal));
+      LS.setItem(STORAGE_KEY, JSON.stringify(minimal));
       showToast('⚠ GALERIA REMOVIDA DO CACHE — use URLs externas para imagens');
     }
     return true;
@@ -859,7 +878,7 @@ function renderFeatured() {
 const GH_IMG_REPO = 'Georgedenn81/geo-portfolio';
 
 async function uploadImageToVercel(file, statusCb) {
-  const token = localStorage.getItem('geo_gh_token');
+  const token = LS.getItem('geo_gh_token');
   if (!token) {
     alert('Configure o GitHub Token na aba Contato primeiro.');
     return null;
@@ -911,7 +930,7 @@ async function uploadMediaToVercel(file, statusCb) {
   if (file.type.startsWith('image/')) return uploadImageToVercel(file, statusCb);
 
   // vídeo: upload bruto
-  const token = localStorage.getItem('geo_gh_token');
+  const token = LS.getItem('geo_gh_token');
   if (!token) { alert('Configure o GitHub Token na aba Contato primeiro.'); return null; }
   if (file.size > 15 * 1024 * 1024) { throw new Error('Vídeo muito grande (máx ~15MB). Comprima antes.'); }
   statusCb('⏳ Subindo vídeo para o Vercel...');
@@ -1352,7 +1371,7 @@ document.getElementById('change-pass-btn').addEventListener('click', () => {
   const msg = document.getElementById('pass-msg');
   if (!np) { msg.textContent = '// INFORME A NOVA SENHA'; msg.style.color = ''; return; }
   if (np !== cp) { msg.textContent = '// SENHAS NÃO CONFEREM'; msg.style.color = ''; return; }
-  localStorage.setItem(PASS_KEY, np);
+  LS.setItem(PASS_KEY, np);
   msg.style.color = '#C8F135';
   msg.textContent = '// SENHA ALTERADA COM SUCESSO';
   document.getElementById('new-pass').value = '';
@@ -1375,7 +1394,7 @@ const GH_FILE  = 'portfolio-data.json';
 
 // Carrega token salvo no campo ao iniciar
 function loadGhTokenField() {
-  const saved = localStorage.getItem('geo_gh_token');
+  const saved = LS.getItem('geo_gh_token');
   const input = document.getElementById('gh-token-input');
   const wrap  = document.getElementById('gh-token-wrap');
   if (saved) {
@@ -1388,7 +1407,7 @@ function loadGhTokenField() {
 document.getElementById('gh-token-save').addEventListener('click', () => {
   const val = document.getElementById('gh-token-input').value.trim();
   if (!val) return;
-  localStorage.setItem('geo_gh_token', val);
+  LS.setItem('geo_gh_token', val);
   document.getElementById('gh-token-wrap').style.opacity = '0.5';
   showToast('✓ TOKEN SALVO');
 });
@@ -1418,7 +1437,7 @@ async function publishToVercel(silent) {
   const statusEl = document.getElementById('publish-status');
   const btn      = document.getElementById('one-click-publish');
   const headEl   = document.getElementById('publish-head-status');
-  const token    = localStorage.getItem('geo_gh_token') || document.getElementById('gh-token-input')?.value.trim();
+  const token    = LS.getItem('geo_gh_token') || document.getElementById('gh-token-input')?.value.trim();
 
   const setStatus = (msg, color) => {
     if (statusEl) { statusEl.style.color = color || 'var(--muted)'; statusEl.textContent = msg; }
@@ -1486,7 +1505,7 @@ async function publishToVercel(silent) {
   } catch(e) {
     setStatus('⚠ ' + e.message, 'var(--red)');
     if (String(e.message).match(/Bad credentials|401/)) {
-      localStorage.removeItem('geo_gh_token');
+      LS.removeItem('geo_gh_token');
     }
     if (!silent && btn) { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }
     return false;
