@@ -1942,7 +1942,14 @@
       }
     };
 
-    let currentLang = 'en';
+    // Idioma inicial: preferência salva > idioma do navegador (pt-* → pt) > en
+    let currentLang = (function () {
+      try {
+        const saved = localStorage.getItem('geo_lang');
+        if (saved === 'pt' || saved === 'en') return saved;
+      } catch (e) {}
+      return (navigator.language || '').toLowerCase().startsWith('pt') ? 'pt' : 'en';
+    })();
     const langToggle = document.getElementById('lang-toggle');
     const langLabel  = document.getElementById('lang-label');
 
@@ -1961,9 +1968,17 @@
       document.documentElement.lang = lang;
     }
 
+    // Troca idioma: atualiza textos fixos (applyLang) E o conteúdo dinâmico do
+    // admin (re-render com tv()), além de persistir a escolha.
+    function setLang(lang) {
+      currentLang = lang;
+      try { localStorage.setItem('geo_lang', lang); } catch (e) {}
+      applyLang(lang);
+      if (window.__adminData) applyAdminData(window.__adminData);
+    }
+
     langToggle.addEventListener('click', () => {
-      currentLang = currentLang === 'en' ? 'pt' : 'en';
-      applyLang(currentLang);
+      setLang(currentLang === 'en' ? 'pt' : 'en');
     });
 
     // ── More projects toggle ──
@@ -2070,18 +2085,29 @@
         `background:linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.60) 100%), url('${src}') center/cover no-repeat;position:absolute;inset:0;`;
     }
 
+    // Valor traduzido: em EN usa o sibling `<key>_en` quando existir; senão cai no PT.
+    function tv(obj, key) {
+      if (!obj) return '';
+      if (currentLang === 'en') {
+        const en = obj[key + '_en'];
+        if (en !== undefined && en !== null && en !== '') return en;
+      }
+      return obj[key] != null ? obj[key] : '';
+    }
+
     function applyAdminData(d) {
       try {
         if (!d) return;
+        window.__adminData = d; // guarda para re-render ao trocar idioma
 
         // Hero
         if (d.hero) {
           const introEl  = document.querySelector('.hero-intro');
           const statusEl = document.querySelector('[data-i18n="hero-status-val"]');
           const locCells = document.querySelectorAll('.hero-bottom-cell');
-          if (introEl  && d.hero.intro)      introEl.textContent  = d.hero.intro;
-          if (statusEl && d.hero.statusText) statusEl.textContent = d.hero.statusText.replace(/^[●•\s]+/, '');
-          if (locCells[1] && d.hero.location) locCells[1].querySelector('.value').textContent = d.hero.location;
+          if (introEl  && d.hero.intro)      introEl.textContent  = tv(d.hero, 'intro');
+          if (statusEl && d.hero.statusText) statusEl.textContent = tv(d.hero, 'statusText').replace(/^[●•\s]+/, '');
+          if (locCells[1] && d.hero.location) locCells[1].querySelector('.value').textContent = tv(d.hero, 'location');
           // Faixa de mídia (topo, largura total) — imagem ou vídeo + posição vertical
           const hl = document.getElementById('hero-highlight');
           if (hl) hl.style.display = d.hero.highlightOn ? '' : 'none';
@@ -2136,7 +2162,7 @@
           const hud = document.getElementById('hero-hud-label');
           if (hud) {
             const yr = d.hero.highlightYear || new Date().getFullYear();
-            const lbl = (d.hero.highlightLabel || '').trim();
+            const lbl = (tv(d.hero, 'highlightLabel') || '').trim();
             hud.textContent = lbl ? `FEATURED / ${yr} · ${lbl}` : `FEATURED REEL / ${yr}`;
           }
           // Foto de perfil (NICE TO MEET YOU)
@@ -2153,7 +2179,7 @@
             const nEl = cell.querySelector('.n');
             const lEl = cell.querySelector('.l');
             if (nEl) nEl.textContent = d.stats[i].n;
-            if (lEl) lEl.textContent = d.stats[i].l;
+            if (lEl) lEl.textContent = tv(d.stats[i], 'l');
           });
         }
 
@@ -2164,16 +2190,16 @@
           if (bento) {
             bento.innerHTML = d.projects.featured.map((p, i) => {
               const accent = String(i + 1).padStart(2, '0');
-              const tags = (p.tags || '').split(',').filter(Boolean).map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
+              const tags = (tv(p, 'tags') || '').split(',').filter(Boolean).map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
               return `
                 <div class="bento-card reveal in"${p.videoUrl ? ` data-video-url="${p.videoUrl}"` : ''}>
                   <div class="bento-inner">
                     <div class="bento-bg" data-bg="${i}"></div>
                     <div class="bento-accent-num">${accent}</div>
                     <div class="bento-content">
-                      <div class="bento-num">${p.num || ''}</div>
-                      <div class="bento-title">${(p.title || '').replace(/\n/g, '<br>')}</div>
-                      <p class="bento-desc">${p.desc || ''}</p>
+                      <div class="bento-num">${tv(p, 'num') || ''}</div>
+                      <div class="bento-title">${(tv(p, 'title') || '').replace(/\n/g, '<br>')}</div>
+                      <p class="bento-desc">${tv(p, 'desc') || ''}</p>
                     </div>
                     <div class="bento-foot">
                       <div class="bento-tags">${tags}</div>
@@ -2203,10 +2229,10 @@
           if (moreListEl) {
             moreListEl.innerHTML = d.projects.more.map(p => `
               <div class="project-item" style="${p.thumbnailSrc ? `background:linear-gradient(to right, rgba(26,23,20,0.92) 50%, rgba(26,23,20,0.5)), url('${p.thumbnailSrc}') right center/cover no-repeat` : ''}">
-                <div class="project-num">${p.num}</div>
+                <div class="project-num">${tv(p, 'num')}</div>
                 <div class="project-info">
-                  <h3>${p.title}</h3>
-                  <div class="project-tags">${(p.tags||'').split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('')}</div>
+                  <h3>${tv(p, 'title')}</h3>
+                  <div class="project-tags">${(tv(p, 'tags')||'').split(',').map(t => `<span class="project-tag">${t.trim()}</span>`).join('')}</div>
                 </div>
                 <div class="project-arrow">${p.videoUrl ? '▶' : '↗'}</div>
               </div>
@@ -2221,7 +2247,7 @@
           if (container) {
             container.innerHTML = d.skills.map(s => `
               <div class="skill-row">
-                <span class="skill-name">${s.name}</span>
+                <span class="skill-name">${tv(s, 'name')}</span>
                 <div class="skill-bar-wrap"><div class="skill-bar" data-width="${s.pct}" style="width:0"></div></div>
                 <span class="skill-pct">${s.pct}%</span>
               </div>
@@ -2242,7 +2268,7 @@
             phoneEl.textContent = d.contact.phone;
           }
           const locEl = document.querySelector('[data-i18n="contact-location"]');
-          if (locEl && d.contact.location) locEl.textContent = d.contact.location;
+          if (locEl && d.contact.location) locEl.textContent = tv(d.contact, 'location');
         }
 
         bindLightboxCards();
@@ -2597,8 +2623,8 @@
         card.style.cursor = 'pointer';
         card.onclick = () => {
           const p     = __projects.featured[i] || {};
-          const title = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
-          const desc  = p.desc || card.querySelector('.bento-desc')?.textContent || '';
+          const title = tv(p, 'title')?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
+          const desc  = tv(p, 'desc') || card.querySelector('.bento-desc')?.textContent || '';
           if (p.videoUrl || (p.gallery && p.gallery.length)) {
             openLightbox(title, desc, p);
           } else {
@@ -2612,7 +2638,7 @@
         item.onclick = (e) => {
           if (e.target.closest('a')) return;
           const p     = __projects.more[i] || {};
-          const title = p.title || item.querySelector('h3')?.textContent || '';
+          const title = tv(p, 'title') || item.querySelector('h3')?.textContent || '';
           if (p.videoUrl || (p.gallery && p.gallery.length) || (p.link && p.link !== '#')) {
             openLightbox(title, '', p);
           }
@@ -2634,6 +2660,7 @@
     } catch(e) {}
 
     loadPortfolioData();
+    applyLang(currentLang); // sincroniza textos fixos + visual do toggle no 1º paint
 
     // ── Contact form ──
     const form   = document.getElementById('contact-form');

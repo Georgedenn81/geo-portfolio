@@ -1429,6 +1429,65 @@ function buildPublishData() {
   return o;
 }
 
+// ── Tradução automática PT→EN ao publicar ──────────────────────────────
+// Coleta todos os campos de texto, traduz via /api/translate (serverless) e
+// grava os siblings `<campo>_en` no objeto publicado. Usa cache em LS para não
+// re-traduzir o que não mudou. Falhas nunca bloqueiam a publicação (cai p/ PT).
+const TX_CACHE_KEY = 'geo_tx_cache';
+
+function txCollectTargets(d) {
+  const targets = []; // { obj, key }
+  const push = (obj, key) => {
+    if (obj && typeof obj[key] === 'string' && obj[key].trim()) targets.push({ obj, key });
+  };
+  if (d.hero) ['intro', 'statusText', 'location', 'highlightLabel'].forEach(k => push(d.hero, k));
+  (d.stats || []).forEach(s => push(s, 'l'));
+  (d.projects?.featured || []).forEach(p => ['title', 'desc', 'tags', 'num'].forEach(k => push(p, k)));
+  (d.projects?.more || []).forEach(p => ['title', 'tags', 'num'].forEach(k => push(p, k)));
+  (d.skills || []).forEach(s => push(s, 'name'));
+  if (d.contact) push(d.contact, 'location');
+  return targets;
+}
+
+async function addTranslations(d) {
+  try {
+    const targets = txCollectTargets(d);
+    if (!targets.length) return;
+
+    let cache = {};
+    try { cache = JSON.parse(LS.getItem(TX_CACHE_KEY) || '{}'); } catch (e) { cache = {}; }
+
+    // strings únicas ainda não cacheadas
+    const missing = [...new Set(targets.map(t => t.obj[t.key]).filter(s => !(s in cache)))];
+
+    if (missing.length) {
+      const res = await fetch('/api/translate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ texts: missing, target: 'EN' })
+      });
+      if (!res.ok) throw new Error('translate ' + res.status);
+      const { translations } = await res.json();
+      missing.forEach((src, i) => {
+        const en = translations && translations[i];
+        if (en) cache[src] = en;
+      });
+      try { LS.setItem(TX_CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+    }
+
+    // aplica os siblings *_en (só quando há tradução)
+    let count = 0;
+    targets.forEach(({ obj, key }) => {
+      const en = cache[obj[key]];
+      if (en && en !== obj[key]) { obj[key + '_en'] = en; count++; }
+    });
+    return count;
+  } catch (e) {
+    console.warn('[admin] tradução pulada:', e.message); // publica só PT
+    return 0;
+  }
+}
+
 let __publishing = false;
 let __publishQueued = false;
 
@@ -1468,7 +1527,9 @@ async function publishToVercel(silent) {
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
     const currentHtml = new TextDecoder('utf-8').decode(bytes);
 
-    const dataJson = JSON.stringify(buildPublishData());
+    const publishData = buildPublishData();
+    const txCount = await addTranslations(publishData); // gera campos *_en (PT→EN); nunca bloqueia o publish
+    const dataJson = JSON.stringify(publishData);
     const startTag = '<script id="__geo_admin_data__" type="application/json">';
     const endTag   = '<\/script>';
     const si = currentHtml.indexOf(startTag);
@@ -1495,7 +1556,7 @@ async function publishToVercel(silent) {
     let cleaned = 0;
     try { cleaned = await cleanupOrphanImages(token, updatedHtml); } catch(e) { /* não bloqueia a publicação */ }
 
-    setStatus(`✓ Publicado — site ao vivo em ~40s${cleaned ? ` · ${cleaned} img órfã(s) removida(s)` : ''}`, 'var(--lime)');
+    setStatus(`✓ Publicado — site ao vivo em ~40s${txCount ? ` · EN traduzido` : ''}${cleaned ? ` · ${cleaned} img órfã(s) removida(s)` : ''}`, 'var(--lime)');
     if (!silent && btn) {
       btn.textContent = '✓ PUBLICADO';
       setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 5000);
