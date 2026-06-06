@@ -1806,7 +1806,7 @@
         LET'S<br /><span class="accent">BUILD</span><br />SOME<br />THING
       </div>
       <div class="contact-detail">
-        <div>GEORGE DENISON // ©2025</div>
+        <div>GEORGE DENISON // ©<span class="year"></span></div>
         <div data-i18n="contact-location">BASED IN SÃO PAULO &nbsp;·&nbsp; GMT-3</div>
         <div style="margin-top:12px;">
           <a href="tel:+5511976386601">+55 11 9 7638 6601</a>
@@ -1912,7 +1912,7 @@
         'form-msg-label': 'Message', 'form-msg-ph': 'TELL ME ABOUT YOUR PROJECT...',
         'form-submit': 'SEND MESSAGE',
         'form-success': "• MESSAGE SENT — I'LL RESPOND WITHIN 24H.",
-        'footer-copy': '© 2025 ALL RIGHTS RESERVED',
+        'footer-copy': '© <span class="year"></span> ALL RIGHTS RESERVED',
         'more-projects': 'MORE PROJECTS',
       },
       pt: {
@@ -1945,7 +1945,7 @@
         'form-msg-label': 'Mensagem', 'form-msg-ph': 'FALE SOBRE O SEU PROJETO...',
         'form-submit': 'ENVIAR MENSAGEM',
         'form-success': '• MENSAGEM ENVIADA — RESPONDEREI EM ATÉ 24H.',
-        'footer-copy': '© 2025 TODOS OS DIREITOS RESERVADOS',
+        'footer-copy': '© <span class="year"></span> TODOS OS DIREITOS RESERVADOS',
         'more-projects': 'MAIS PROJETOS',
       }
     };
@@ -1974,6 +1974,9 @@
       langLabel.textContent = lang === 'en' ? 'PT' : 'EN';
       langToggle.classList.toggle('active', lang === 'pt');
       document.documentElement.lang = lang;
+      // ano dinâmico no rodapé (preenche após aplicar os textos)
+      const yr = new Date().getFullYear();
+      document.querySelectorAll('.year').forEach(el => el.textContent = yr);
     }
 
     // Troca idioma: atualiza textos fixos (applyLang) E o conteúdo dinâmico do
