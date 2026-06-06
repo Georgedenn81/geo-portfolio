@@ -709,20 +709,6 @@
       transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
     }
     .bento-card:hover .bento-bg { transform: scale(1.04); }
-    /* vídeo de fundo em loop (cobre o card, sem UI) */
-    .bento-bg-video {
-      position: absolute;
-      top: 50%; left: 50%;
-      width: 100vw; height: 56.25vw;       /* 16:9 dimensionado para cobrir */
-      min-width: 177.78%; min-height: 100%;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      border: 0;
-    }
-    .bento-bg-scrim {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.60) 100%);
-    }
     .bento-bg-1 { background: linear-gradient(135deg, #2A2520 0%, #1E1B18 100%); }
     .bento-bg-2 { background: linear-gradient(135deg, #1E2318 0%, #1A1714 100%); }
     .bento-content { position: relative; z-index: 1; }
@@ -2084,27 +2070,6 @@
         `background:linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.60) 100%), url('${src}') center/cover no-repeat;position:absolute;inset:0;`;
     }
 
-    // Vídeo em loop de fundo, sem nenhuma UI/perfil (Vimeo background mode / YouTube)
-    function videoBgEmbed(url) {
-      url = (url || '').trim();
-      const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
-      if (vm) {
-        const hash = vm[2] ? `&h=${vm[2]}` : '';
-        return `https://player.vimeo.com/video/${vm[1]}?background=1&autoplay=1&loop=1&muted=1&autopause=0${hash}`;
-      }
-      const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
-      if (yt) return `https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=1&loop=1&playlist=${yt[1]}&controls=0&showinfo=0&modestbranding=1&playsinline=1&rel=0`;
-      return '';
-    }
-    function applyCardVideo(bg, url) {
-      const embed = videoBgEmbed(url);
-      if (!embed) return false;
-      bg.style.cssText = 'position:absolute;inset:0;background:#000;overflow:hidden;';
-      bg.innerHTML = `<iframe class="bento-bg-video" src="${embed}" frameborder="0" allow="autoplay; fullscreen" tabindex="-1" aria-hidden="true"></iframe>
-                      <div class="bento-bg-scrim"></div>`;
-      return true;
-    }
-
     function applyAdminData(d) {
       try {
         if (!d) return;
@@ -2223,10 +2188,6 @@
               if (p.mediaType === 'video' && p.mediaSrc) {
                 bg.style.cssText = 'background:none;position:absolute;inset:0;';
                 bg.innerHTML = `<video src="${p.mediaSrc}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
-              } else if (p.videoUrl && applyCardVideo(bg, p.videoUrl)) {
-                // vídeo do Vimeo/YouTube em loop de fundo (sem perfil); card não abre lightbox
-                const card = bg.closest('.bento-card');
-                if (card) { card.dataset.noLightbox = '1'; card.style.cursor = 'default'; }
               } else {
                 const src = (p.mediaType === 'image' && p.mediaSrc) ? p.mediaSrc : p.thumbnailSrc;
                 if (src) applyCardBg(bg, src);
@@ -2633,17 +2594,15 @@
 
     function bindLightboxCards() {
       document.querySelectorAll('.bento-card').forEach((card, i) => {
-        if (card.dataset.noLightbox === '1') { card.onclick = null; card.style.cursor = 'default'; return; }
         card.style.cursor = 'pointer';
         card.onclick = () => {
           const p     = __projects.featured[i] || {};
           const title = p.title?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
           const desc  = p.desc || card.querySelector('.bento-desc')?.textContent || '';
-          if (p.gallery && p.gallery.length) {
-            openLightbox(title, desc, p);
-          } else if (p.videoUrl) {
+          if (p.videoUrl || (p.gallery && p.gallery.length)) {
             openLightbox(title, desc, p);
           } else {
+            // sem conteúdo configurado, abre lightbox vazio
             openLightbox(title, desc, {});
           }
         };
