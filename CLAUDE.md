@@ -15,7 +15,9 @@ Vercel. Idioma de trabalho com o George: **português**.
 1. No `admin.html` o George edita os dados (objeto `data`) — **só em português**.
 2. Ao **PUBLICAR**, o admin lê o `portfolio.html` do GitHub, injeta os dados no
    bloco `<script id="__geo_admin_data__" type="application/json">` e dá commit.
-3. A Vercel faz deploy automático no push (`portfolio-seven-ashen-18.vercel.app`).
+3. A Vercel faz deploy automático no push. Domínio: **georgedenison.com**
+   (DNS na Namecheap: A `@`→`216.198.79.1`, CNAME `www`→`cname.vercel-dns.com`).
+   URL Vercel: `portfolio-seven-ashen-18.vercel.app`.
 4. No site, `loadPortfolioData()` lê esse bloco e `applyAdminData()` renderiza.
 
 Repositório: `Georgedenn81/geo-portfolio` (branch `main`). **O admin commita
