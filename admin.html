@@ -728,7 +728,15 @@ function renderFeatured() {
     card.className = 'card';
     card.style.marginBottom = '20px';
     card.innerHTML = `
-      <div class="card-header"><span class="card-label">Destaque ${i + 1}</span><button class="btn-remove feat-remove" data-i="${i}">✕ REMOVER</button></div>
+      <div class="card-header">
+        <span class="card-label">Destaque ${i + 1}${p.hidden ? ' · OCULTO' : ''}</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-remove feat-move-up" data-i="${i}" title="Mover para cima"${i === 0 ? ' disabled style="opacity:.3;cursor:default"' : ''}>↑</button>
+          <button class="btn-remove feat-move-down" data-i="${i}" title="Mover para baixo"${i === data.projects.featured.length - 1 ? ' disabled style="opacity:.3;cursor:default"' : ''}>↓</button>
+          <button class="toggle-switch feat-enabled${p.hidden ? '' : ' on'}" data-i="${i}" title="Exibir/ocultar no site"><span class="toggle-thumb"></span></button>
+          <button class="btn-remove feat-remove" data-i="${i}">✕ REMOVER</button>
+        </div>
+      </div>
       <div class="card-grid">
         <div class="field">
           <label class="field-label">Etiqueta</label>
@@ -805,6 +813,22 @@ function renderFeatured() {
     `;
     grid.appendChild(card);
   });
+
+  // Reordenar / ocultar cards
+  const F = data.projects.featured;
+  grid.querySelectorAll('.feat-move-up').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    if (i > 0) { [F[i-1], F[i]] = [F[i], F[i-1]]; markDirty(); renderFeatured(); }
+  }));
+  grid.querySelectorAll('.feat-move-down').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    if (i < F.length - 1) { [F[i+1], F[i]] = [F[i], F[i+1]]; markDirty(); renderFeatured(); }
+  }));
+  grid.querySelectorAll('.feat-enabled').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    F[i].hidden = !F[i].hidden;
+    markDirty(); renderFeatured();
+  }));
 
   grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
     data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();

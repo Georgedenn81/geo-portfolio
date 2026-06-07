@@ -2323,10 +2323,11 @@
 
         // Featured projects
         if (d.projects && d.projects.featured) {
-          __projects.featured = d.projects.featured; // atualiza variável global
+          // só os cards ativos (não ocultos); índices alinham com bindLightboxCards
+          __projects.featured = d.projects.featured.filter(p => !p.hidden);
           const bento = document.querySelector('.project-bento');
           if (bento) {
-            bento.innerHTML = d.projects.featured.map((p, i) => {
+            bento.innerHTML = __projects.featured.map((p, i) => {
               const accent = String(i + 1).padStart(2, '0');
               const tags = (tv(p, 'tags') || '').split(',').filter(Boolean).map(t => `<span class="project-tag">${t.trim()}</span>`).join('');
               return `
@@ -2346,7 +2347,7 @@
                   </div>
                 </div>`;
             }).join('');
-            d.projects.featured.forEach((p, i) => {
+            __projects.featured.forEach((p, i) => {
               const bg = bento.querySelector(`.bento-bg[data-bg="${i}"]`);
               if (!bg) return;
               if (p.mediaType === 'video' && p.mediaSrc) {
