@@ -2853,6 +2853,37 @@
     applyLang(currentLang); // textos fixos + visual do toggle no 1º paint
     loadPortfolioData();    // aplica dados do admin por último (sobrescreve o dicionário)
 
+    // ── Stats: números "girando" (count-up) ao entrar na tela ──
+    function animateStatsCountUp() {
+      const row = document.querySelector('.stat-row');
+      if (!row) return;
+      const cells = row.querySelectorAll('.stat-cell .n');
+      const run = () => {
+        cells.forEach(el => {
+          const raw = el.dataset.target || el.textContent;
+          el.dataset.target = raw;
+          const m = raw.match(/(\D*)(\d+)(\D*)/);
+          if (!m) return;
+          const pre = m[1], target = parseInt(m[2], 10), suf = m[3];
+          const dur = 1200, start = performance.now();
+          const ease = t => 1 - Math.pow(1 - t, 3); // desacelera no fim
+          const tick = now => {
+            const t = Math.min(1, (now - start) / dur);
+            el.textContent = pre + Math.round(target * ease(t)) + suf;
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      };
+      if ('IntersectionObserver' in window) {
+        const ob = new IntersectionObserver(es => {
+          es.forEach(e => { if (e.isIntersecting) { run(); ob.unobserve(e.target); } });
+        }, { threshold: 0.5 });
+        ob.observe(row);
+      } else { run(); }
+    }
+    animateStatsCountUp();
+
     // ── Contact form ──
     const form   = document.getElementById('contact-form');
     const errBox = document.getElementById('form-error');
