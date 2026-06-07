@@ -1115,8 +1115,11 @@ function renderMore() {
     item.dataset.idx = i;
     item.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="drag-handle" title="Arrastar para reordenar" style="font-size:1.2rem">⠿⠿</div>
-        <button class="btn-remove more-remove" data-i="${i}">✕ REMOVER</button>
+        <div class="drag-handle" title="Arrastar para reordenar" style="font-size:1.2rem">⠿⠿ ${p.hidden ? '<span style="font-size:0.7rem;letter-spacing:0.1em;color:var(--muted)">· OCULTO</span>' : ''}</div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="toggle-switch more-enabled${p.hidden ? '' : ' on'}" data-i="${i}" title="Exibir/ocultar no site"><span class="toggle-thumb"></span></button>
+          <button class="btn-remove more-remove" data-i="${i}">✕ REMOVER</button>
+        </div>
       </div>
       <div class="card-grid">
         <div class="field" style="margin:0">
@@ -1213,6 +1216,12 @@ function renderMore() {
   list.querySelectorAll('.more-video-url').forEach(el => el.addEventListener('input', e => { data.projects.more[+e.target.dataset.i].videoUrl = e.target.value; markDirty(); }));
   list.querySelectorAll('.more-remove').forEach(el => el.addEventListener('click', e => {
     data.projects.more.splice(+e.target.dataset.i, 1);
+    markDirty();
+    renderMore();
+  }));
+  list.querySelectorAll('.more-enabled').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    data.projects.more[i].hidden = !data.projects.more[i].hidden;
     markDirty();
     renderMore();
   }));

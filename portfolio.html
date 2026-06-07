@@ -2363,10 +2363,10 @@
 
         // More projects
         if (d.projects && d.projects.more) {
-          __projects.more = d.projects.more; // atualiza variável global
+          __projects.more = d.projects.more.filter(p => !p.hidden); // só os ativos
           const moreListEl = document.getElementById('more-projects-list');
           if (moreListEl) {
-            moreListEl.innerHTML = d.projects.more.map(p => `
+            moreListEl.innerHTML = __projects.more.map(p => `
               <div class="project-item" style="${p.thumbnailSrc ? `background:linear-gradient(to right, rgba(26,23,20,0.92) 50%, rgba(26,23,20,0.5)), url('${p.thumbnailSrc}') right center/cover no-repeat` : ''}">
                 <div class="project-num">${tv(p, 'num')}</div>
                 <div class="project-info">
