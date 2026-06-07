@@ -2473,22 +2473,45 @@
     const lbDesc    = document.getElementById('lb-desc');
     const lbClose   = document.getElementById('lb-close');
 
+    // Vídeo "lazy": o iframe começa vazio (about:blank) e só carrega quando o slide
+    // fica ativo (startSlideMedia). Isso evita vários vídeos tocando ao mesmo tempo
+    // e o áudio do slide anterior continuar tocando.
     function videoEmbedHTML(url) {
       if (!url) return '';
       url = url.trim();
-      // YouTube
+      let embed = '';
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
-      if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0&controls=0&modestbranding=1&playsinline=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
-      // Vimeo — suporta /ID e /ID/HASH (vídeos privados)
+      if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0&controls=0&modestbranding=1&playsinline=1&enablejsapi=1`;
       const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
       if (vm) {
         const hash = vm[2] ? `&h=${vm[2]}` : '';
-        return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=0${hash}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+        embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=0${hash}`;
       }
+      if (embed) return `<iframe data-vsrc="${embed}" src="about:blank" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
       // MP4 / direto
-      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video src="${url}" autoplay controls playsinline style="background:#000"></video>`;
+      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video data-vsrc="${url}" src="${url}" controls playsinline preload="none" style="background:#000"></video>`;
       // Fallback: link externo
       return `<div class="lb-no-video">Clique para abrir: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
+    }
+
+    // Carrega o vídeo do slide ativo
+    function startSlideMedia(slideEl) {
+      if (!slideEl) return;
+      const ifr = slideEl.querySelector('iframe[data-vsrc]');
+      if (ifr && ifr.getAttribute('src') !== ifr.dataset.vsrc) ifr.src = ifr.dataset.vsrc;
+      const vid = slideEl.querySelector('video[data-vsrc]');
+      if (vid) { try { vid.currentTime = 0; vid.play().catch(()=>{}); } catch(e){} }
+    }
+    // Para/descarrega o vídeo de um slide (corta o áudio)
+    function stopSlideMedia(slideEl) {
+      if (!slideEl) return;
+      const ifr = slideEl.querySelector('iframe[data-vsrc]');
+      if (ifr && ifr.getAttribute('src') !== 'about:blank') ifr.src = 'about:blank';
+      const vid = slideEl.querySelector('video[data-vsrc]');
+      if (vid) { try { vid.pause(); } catch(e){} }
+    }
+    function stopAllSlideMedia() {
+      lbWrap.querySelectorAll('.lb-slide').forEach(stopSlideMedia);
     }
 
     // ── Carrossel ──
@@ -2623,10 +2646,10 @@
       const slides  = lbWrap.querySelectorAll('.lb-slide');
       const dots    = box.querySelectorAll('.lb-dot');
       const counter = box.querySelector('.lb-counter');
-      if (slides[__slideIdx]) slides[__slideIdx].classList.remove('active');
+      if (slides[__slideIdx]) { slides[__slideIdx].classList.remove('active'); stopSlideMedia(slides[__slideIdx]); }
       if (dots[__slideIdx])   dots[__slideIdx].classList.remove('active');
       __slideIdx = idx;
-      if (slides[__slideIdx]) slides[__slideIdx].classList.add('active');
+      if (slides[__slideIdx]) { slides[__slideIdx].classList.add('active'); startSlideMedia(slides[__slideIdx]); }
       if (dots[__slideIdx])   dots[__slideIdx].classList.add('active');
       if (counter) counter.textContent = `${__slideIdx + 1} / ${__slides.length}`;
       lbWrap.scrollTop = 0; // volta ao topo ao trocar de slide
@@ -2642,6 +2665,7 @@
       lbDesc.textContent  = desc  || '';
       __slides = buildSlides(typeof p === 'object' ? p : { videoUrl: p });
       renderCarousel();
+      startSlideMedia(lbWrap.querySelector('.lb-slide.active')); // carrega o 1º vídeo
       setWrapAspect(__slides[0]);
       showZoomControls(__slides[0]?.type === 'image');
       resetZoom();
@@ -2652,6 +2676,7 @@
     }
 
     function closeLightbox() {
+      stopAllSlideMedia(); // corta o áudio imediatamente
       lb.classList.remove('visible');
       setTimeout(() => {
         lb.classList.remove('open');
