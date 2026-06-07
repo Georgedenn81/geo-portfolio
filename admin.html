@@ -190,6 +190,7 @@
     <div class="admin-actions">
       <span id="publish-head-status" style="font-size:0.55rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis"></span>
       <span id="save-status" class="saved">● SALVO</span>
+      <button id="import-site-btn" class="btn-logout" title="Recarregar o conteúdo a partir do site publicado">↻ IMPORTAR DO SITE</button>
       <button id="preview-btn" class="btn-preview">PREVIEW ↗</button>
       <button id="publish-now-btn" class="btn-save" title="Publicar agora no Vercel">↑ PUBLICAR</button>
       <button id="clear-cache-btn" class="btn-logout" title="Limpar cache do navegador">🗑</button>
@@ -569,6 +570,12 @@ function login() {
 document.getElementById('logout-btn').addEventListener('click', () => {
   LS.removeItem(AUTH_KEY);
   location.reload();
+});
+
+document.getElementById('import-site-btn').addEventListener('click', async () => {
+  if (!confirm('Recarregar o conteúdo a partir do site publicado? As alterações locais não publicadas serão substituídas.')) return;
+  await hydrateFromLiveSite();
+  renderAll();
 });
 
 document.getElementById('clear-cache-btn').addEventListener('click', () => {
