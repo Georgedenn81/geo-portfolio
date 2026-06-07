@@ -2497,9 +2497,11 @@
     function buildSlides(p) {
       const slides = [];
       if (p.videoUrl) slides.push({ type: 'video', src: p.videoUrl });
+      (p.videos || []).forEach(src => { if (src) slides.push({ type: 'video', src }); });
       (p.gallery || []).forEach(src => slides.push({ type: 'image', src }));
       // Link externo como último slide (se não for # e não houver vídeo)
-      if (!p.videoUrl && p.link && p.link !== '#' && !p.link.startsWith('#')) {
+      const hasVideo = p.videoUrl || (p.videos && p.videos.length);
+      if (!hasVideo && p.link && p.link !== '#' && !p.link.startsWith('#')) {
         slides.push({ type: 'link', src: p.link, title: p.title || '' });
       }
       return slides;
@@ -2816,7 +2818,7 @@
           const p     = __projects.featured[i] || {};
           const title = tv(p, 'title')?.replace(/\n/g,'  ') || card.querySelector('.bento-title')?.textContent || '';
           const desc  = tv(p, 'desc') || card.querySelector('.bento-desc')?.textContent || '';
-          if (p.videoUrl || (p.gallery && p.gallery.length)) {
+          if (p.videoUrl || (p.videos && p.videos.length) || (p.gallery && p.gallery.length)) {
             openLightbox(title, desc, p);
           } else {
             // sem conteúdo configurado, abre lightbox vazio

@@ -757,6 +757,20 @@ function renderFeatured() {
             <button class="btn-add fetch-thumb-btn" data-i="${i}" style="white-space:nowrap;padding:10px 14px;flex-shrink:0">🖼 AUTO</button>
           </div>
           <div class="field card-full" style="margin-top:10px">
+            <label class="field-label">🎬 Vídeos adicionais (viram slides no lightbox)</label>
+            <div style="display:flex;gap:8px;margin-bottom:8px">
+              <input type="text" class="field-input feat-video-extra-url" data-i="${i}" placeholder="Cole URL (Vimeo/YouTube) e pressione Enter" style="flex:1;font-size:0.7rem"/>
+              <button class="btn-add feat-video-extra-add" data-i="${i}" style="white-space:nowrap;padding:8px 12px">+ VÍDEO</button>
+            </div>
+            <div id="videos-${i}" style="display:flex;flex-direction:column;gap:6px">
+              ${(p.videos||[]).map((src,vi) => `
+                <div style="display:flex;align-items:center;gap:8px;font-size:0.68rem;color:var(--muted);background:var(--bg);border:1px solid var(--border);padding:6px 10px">
+                  <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎬 ${esc(src)}</span>
+                  <button class="video-extra-remove" data-i="${i}" data-vi="${vi}" style="background:rgba(0,0,0,0.7);border:none;color:var(--white);width:20px;height:20px;font-size:11px;cursor:pointer;flex-shrink:0">✕</button>
+                </div>`).join('')}
+            </div>
+          </div>
+          <div class="field card-full" style="margin-top:10px">
             <label class="field-label">🖼 Thumbnail do card</label>
             <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
               <input type="text" class="field-input feat-thumb-src" data-i="${i}" value="${esc(p.thumbnailSrc&&!p.thumbnailSrc.startsWith('data:')?p.thumbnailSrc:'')}" placeholder="URL ou faça upload →" style="flex:1"/>
@@ -795,6 +809,30 @@ function renderFeatured() {
   grid.querySelectorAll('.feat-video-url').forEach(el => el.addEventListener('input', e => {
     data.projects.featured[+e.target.dataset.i].videoUrl = e.target.value.trim();
     markDirty();
+  }));
+
+  // Vídeos adicionais (featured)
+  const addExtraVideo = (i, url) => {
+    url = (url || '').trim();
+    if (!url) return;
+    const p = data.projects.featured[i];
+    p.videos = p.videos || [];
+    p.videos.push(url);
+    markDirty();
+    renderFeatured();
+  };
+  grid.querySelectorAll('.feat-video-extra-add').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i;
+    addExtraVideo(i, grid.querySelector(`.feat-video-extra-url[data-i="${i}"]`)?.value);
+  }));
+  grid.querySelectorAll('.feat-video-extra-url').forEach(el => el.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); addExtraVideo(+e.target.dataset.i, e.target.value); }
+  }));
+  grid.querySelectorAll('.video-extra-remove').forEach(el => el.addEventListener('click', e => {
+    const i = +e.currentTarget.dataset.i, vi = +e.currentTarget.dataset.vi;
+    (data.projects.featured[i].videos || []).splice(vi, 1);
+    markDirty();
+    renderFeatured();
   }));
 
   // URL externa de thumbnail (featured)
@@ -1260,7 +1298,7 @@ document.getElementById('add-more-btn').addEventListener('click', () => {
 
 document.getElementById('add-featured-btn').addEventListener('click', () => {
   const n = data.projects.featured.length + 1;
-  data.projects.featured.push({ num: `Nº 00${n} // FEATURED`, title: 'NOVO PROJETO', desc: '', tags: 'TAG1, TAG2', link: '', mediaType: 'none', mediaSrc: '', videoUrl: '', thumbnailSrc: '', gallery: [] });
+  data.projects.featured.push({ num: `Nº 00${n} // FEATURED`, title: 'NOVO PROJETO', desc: '', tags: 'TAG1, TAG2', link: '', mediaType: 'none', mediaSrc: '', videoUrl: '', videos: [], thumbnailSrc: '', gallery: [] });
   markDirty();
   renderFeatured();
 });
