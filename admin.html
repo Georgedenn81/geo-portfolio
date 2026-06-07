@@ -516,14 +516,36 @@ function checkAuth() {
   if (LS.getItem(AUTH_KEY) === '1') showPanel();
 }
 
-function showPanel() {
+async function showPanel() {
   gate.classList.add('hidden');
   panel.classList.add('visible');
   loadData();
+  // Se não há dados salvos localmente (ex.: cache/limpeza de site-data),
+  // recupera o conteúdo do site publicado em vez de cair no padrão —
+  // evita publicar conteúdo padrão por cima do real.
+  if (!LS.getItem(STORAGE_KEY)) {
+    await hydrateFromLiveSite();
+  }
   try {
     renderAll();
   } catch(err) {
     alert('ERRO AO CARREGAR PAINEL:\n' + err.message + '\n\n' + err.stack);
+  }
+}
+
+async function hydrateFromLiveSite() {
+  try {
+    const res = await fetch('/portfolio.html?cb=' + Date.now(), { cache: 'no-store' });
+    if (!res.ok) return;
+    const html = await res.text();
+    const m = html.match(/id="__geo_admin_data__"[^>]*>([\s\S]*?)<\/script>/);
+    if (!m) return;
+    const live = JSON.parse(m[1]);
+    data = deepMerge(JSON.parse(JSON.stringify(DEFAULT_DATA)), stripBase64FromData(live));
+    saveData();
+    showToast('✓ Conteúdo carregado do site publicado');
+  } catch (e) {
+    // se falhar, mantém o que já tem (não sobrescreve nada)
   }
 }
 
