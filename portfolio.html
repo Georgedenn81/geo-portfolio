@@ -460,17 +460,6 @@
       text-transform: uppercase;
     }
     .hero-meet-bio:empty { display: none; margin: 0; }
-    /* foto de perfil dentro da seção Sobre */
-    .about-photo {
-      width: 100%;
-      max-width: 380px;
-      aspect-ratio: 4 / 5;
-      object-fit: cover;
-      object-position: center 18%;
-      filter: grayscale(15%) contrast(1.05);
-      display: block;
-      margin-bottom: 28px;
-    }
 
     /* ── MARQUEE ── */
     .marquee-wrap {
@@ -1629,8 +1618,9 @@
         <div class="hero-headline parallax-slow hl-anim hl-top" data-speed="-0.08" id="hero-meet-title">
           NICE TO<br /><span class="accent">MEET</span><br />– YOU
         </div>
+        <p class="hero-meet-bio hero-intro" data-i18n="hero-intro"></p>
       </div>
-      <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.04" src="img/profile-edited.png" alt="George — Art Director" style="display:none" />
+      <img class="hero-meet-photo parallax-slow" id="hero-photo" data-speed="-0.04" src="img/profile-edited.png" alt="George — Art Director" />
     </div>
 
     <!-- bottom meta strip -->
@@ -1681,8 +1671,12 @@
     <div class="about-left reveal glass-panel">
       <div>
         <div class="section-num" data-i18n="about-num">Nº 002 &nbsp; ABOUT</div>
-        <div class="about-big hl-anim hl-left">GEORGE<br /><span class="accent">DENISON</span></div>
-        <img class="about-photo" src="img/profile-edited.png" alt="George Denison" />
+        <div class="about-big hl-anim hl-left" data-i18n="about-big">
+          CREATING<br />HUMAN<span class="accent">-</span><br />CENTERED<br />DESIGNS
+        </div>
+        <p class="about-sub" data-i18n="about-sub">
+          THAT DRIVE ENGAGEMENT &amp; CONVERSIONS. MY WORK BRIDGES THE GAP BETWEEN BRAND STRATEGY AND PIXEL-LEVEL CRAFT — ALWAYS ROOTED IN USER EMPATHY AND BUSINESS CLARITY.
+        </p>
       </div>
       <div class="stat-row">
         <div class="stat-cell">
@@ -1696,7 +1690,13 @@
       </div>
     </div>
     <div class="about-right reveal reveal-delay-2 glass-panel">
-      <p class="hero-meet-bio hero-intro" data-i18n="hero-intro" style="margin:0;max-width:none"></p>
+<div class="about-quote hl-anim hl-right">
+        SIMPLICITY IS<br />THE ULTIMATE<br /><span class="accent">SOPHISTICATION</span>
+      </div>
+      <p style="font-size:0.7rem;line-height:1.8;color:var(--muted);max-width:400px;" data-i18n="quote-body">
+        THIS QUOTE IS WIDELY EMBRACED IN UX/UI DESIGN: MINIMALISM AND PROBLEM-SOLVING. IT BECOMES TRUE SOPHISTICATION IN DESIGN BY UNDERSTANDING COMPLEX NEEDS AND SIMPLIFYING THINGS TO THEIR PUREST, MOST EFFECTIVE FORM.
+      </p>
+      <p id="quote-author" style="font-size:0.55rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim);margin-top:16px;">— LEONARDO DA VINCI</p>
     </div>
   </section>
 
@@ -2441,8 +2441,21 @@
           if (locEl && d.contact.location) locEl.textContent = tv(d.contact, 'location');
         }
 
-        // (seção Sobre agora é: nome GEORGE DENISON + foto à esquerda e bio à direita —
-        //  título "CRIANDO…", subtítulo e frase do Da Vinci foram removidos)
+        // Textos editáveis das seções (sobrescrevem o template quando definidos no admin)
+        if (d.about) {
+          const ab = document.querySelector('.about-big');
+          const as = document.querySelector('.about-sub');
+          if (ab && tv(d.about, 'headline')) ab.innerHTML = fmtHeadline(tv(d.about, 'headline'));
+          if (as && tv(d.about, 'sub'))      as.textContent = tv(d.about, 'sub');
+        }
+        if (d.quote) {
+          const qh = document.querySelector('.about-quote');
+          const qb = document.querySelector('[data-i18n="quote-body"]');
+          const qa = document.getElementById('quote-author');
+          if (qh && tv(d.quote, 'headline')) qh.innerHTML = fmtHeadline(tv(d.quote, 'headline'));
+          if (qb && tv(d.quote, 'body'))     qb.textContent = tv(d.quote, 'body');
+          if (qa && tv(d.quote, 'author'))   qa.textContent = tv(d.quote, 'author');
+        }
         if (d.meet) {
           const mt = document.getElementById('hero-meet-title');
           if (mt && tv(d.meet, 'headline')) mt.innerHTML = fmtHeadline(tv(d.meet, 'headline'));
