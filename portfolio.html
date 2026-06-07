@@ -2478,12 +2478,12 @@
       url = url.trim();
       // YouTube
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
-      if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+      if (yt) return `<iframe src="https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0&controls=0&modestbranding=1&playsinline=1" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
       // Vimeo — suporta /ID e /ID/HASH (vídeos privados)
       const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
       if (vm) {
         const hash = vm[2] ? `&h=${vm[2]}` : '';
-        return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0${hash}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+        return `<iframe src="https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=0${hash}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
       }
       // MP4 / direto
       if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video src="${url}" autoplay controls playsinline style="background:#000"></video>`;
