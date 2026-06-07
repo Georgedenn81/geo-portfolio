@@ -760,18 +760,23 @@
         }
       }
     }
-    /* Título de topo (hero): cascata de entrada UMA vez no load (não depende de scroll) */
+    /* Título de topo (hero): nítido à vista, desfoca ao rolar pra fora (e volta ao subir).
+       Sem fase de "entrada" porque ele já nasce visível no topo da página. */
     @media (prefers-reduced-motion: no-preference) {
-      .hl-anim.hl-split.hl-once .hl-word {
-        display: inline-block;
-        animation: hlIntro 0.85s cubic-bezier(0.16, 0.8, 0.28, 1) calc(var(--i, 0) * 75ms) both;
-        animation-timeline: auto;
-        animation-range: normal;
+      @supports (animation-timeline: view()) {
+        .hl-anim.hl-split.hl-top .hl-word {
+          display: inline-block;
+          animation: hlWordTop linear both;
+          animation-timeline: view();
+          animation-range: exit calc(var(--i, 0) * 4%) exit calc(72% + var(--i, 0) * 4%);
+          will-change: transform, opacity, filter;
+        }
       }
     }
-    @keyframes hlIntro {
-      from { opacity: 0; transform: translateY(0.6em) scale(0.84); filter: blur(12px); }
-      to   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+    @keyframes hlWordTop {
+      0%   { opacity: 1; transform: translateY(0) scale(1); filter: blur(0);
+             animation-timing-function: cubic-bezier(0.45, 0, 0.2, 1); }
+      100% { opacity: 0; transform: translateY(-0.42em) scale(0.95); filter: blur(8px); }
     }
     /* palavra: entra de baixo desfocada, sai pra cima — pontas com easing suave */
     @keyframes hlWord {
@@ -1610,7 +1615,7 @@
     <!-- GIANT headline (esquerda) + foto (direita) -->
     <div class="hero-headline-wrap">
       <div class="hero-headline-col">
-        <div class="hero-headline parallax-slow hl-anim hl-once" data-speed="-0.08" id="hero-meet-title">
+        <div class="hero-headline hl-anim hl-top" id="hero-meet-title">
           NICE TO<br /><span class="accent">MEET</span><br />– YOU
         </div>
         <p class="hero-meet-bio hero-intro" data-i18n="hero-intro"></p>
