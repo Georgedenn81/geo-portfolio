@@ -1681,12 +1681,8 @@
     <div class="about-left reveal glass-panel">
       <div>
         <div class="section-num" data-i18n="about-num">Nº 002 &nbsp; ABOUT</div>
-        <div class="about-big hl-anim hl-left" data-i18n="about-big">
-          CREATING<br />HUMAN<span class="accent">-</span><br />CENTERED<br />DESIGNS
-        </div>
-        <p class="about-sub" data-i18n="about-sub">
-          THAT DRIVE ENGAGEMENT &amp; CONVERSIONS. MY WORK BRIDGES THE GAP BETWEEN BRAND STRATEGY AND PIXEL-LEVEL CRAFT — ALWAYS ROOTED IN USER EMPATHY AND BUSINESS CLARITY.
-        </p>
+        <div class="about-big hl-anim hl-left">GEORGE<br /><span class="accent">DENISON</span></div>
+        <img class="about-photo" src="img/profile-edited.png" alt="George Denison" />
       </div>
       <div class="stat-row">
         <div class="stat-cell">
@@ -1700,9 +1696,7 @@
       </div>
     </div>
     <div class="about-right reveal reveal-delay-2 glass-panel">
-      <img class="about-photo" src="img/profile-edited.png" alt="George Denison" />
-      <div class="about-quote hl-anim hl-right">GEORGE<br /><span class="accent">DENISON</span></div>
-      <p class="hero-meet-bio hero-intro" data-i18n="hero-intro" style="margin:18px 0 0;max-width:none"></p>
+      <p class="hero-meet-bio hero-intro" data-i18n="hero-intro" style="margin:0;max-width:none"></p>
     </div>
   </section>
 
@@ -2447,14 +2441,8 @@
           if (locEl && d.contact.location) locEl.textContent = tv(d.contact, 'location');
         }
 
-        // Textos editáveis das seções (sobrescrevem o template quando definidos no admin)
-        if (d.about) {
-          const ab = document.querySelector('.about-big');
-          const as = document.querySelector('.about-sub');
-          if (ab && tv(d.about, 'headline')) ab.innerHTML = fmtHeadline(tv(d.about, 'headline'));
-          if (as && tv(d.about, 'sub'))      as.textContent = tv(d.about, 'sub');
-        }
-        // (frase do Da Vinci removida — a coluna direita do Sobre agora é foto + nome + bio)
+        // (seção Sobre agora é: nome GEORGE DENISON + foto à esquerda e bio à direita —
+        //  título "CRIANDO…", subtítulo e frase do Da Vinci foram removidos)
         if (d.meet) {
           const mt = document.getElementById('hero-meet-title');
           if (mt && tv(d.meet, 'headline')) mt.innerHTML = fmtHeadline(tv(d.meet, 'headline'));
