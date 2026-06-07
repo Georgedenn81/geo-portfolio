@@ -719,8 +719,6 @@
     .bento-bg-1 { background: linear-gradient(135deg, #2A2520 0%, #1E1B18 100%); }
     .bento-bg-2 { background: linear-gradient(135deg, #1E2318 0%, #1A1714 100%); }
     .bento-content { position: relative; z-index: 1; }
-    /* sombra de leitura quando há imagem de fundo */
-    .bento-content, .bento-foot { text-shadow: 0 1px 12px rgba(0,0,0,0.7); }
     .bento-num {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 0.65rem;
@@ -731,13 +729,47 @@
     }
     .bento-title {
       font-family: 'Barlow Condensed', sans-serif;
-      font-size: clamp(36px, 4.5vw, 64px);
+      font-size: clamp(52px, 7vw, 104px);
       font-weight: 900;
       text-transform: uppercase;
-      line-height: 0.9;
+      line-height: 0.86;
+      letter-spacing: -0.01em;
       transition: color 0.2s;
     }
     .bento-card:hover .bento-title { color: var(--lime); }
+
+    /* ── TÍTULOS GRANDES: animação ligada ao scroll (entram e saem) ── */
+    @media (prefers-reduced-motion: no-preference) {
+      @supports (animation-timeline: view()) {
+        .hl-anim {
+          animation: hlInOut linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+          will-change: transform, opacity, filter;
+          transform-origin: left center;
+        }
+        .hl-anim.hl-left  { animation-name: hlInOutL; }
+        .hl-anim.hl-right { animation-name: hlInOutR; transform-origin: right center; }
+      }
+    }
+    @keyframes hlInOut {
+      0%   { opacity: 0; transform: translate3d(0, 80px, 0) scale(0.9);   filter: blur(14px); }
+      24%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1);        filter: blur(0); }
+      76%  { opacity: 1; transform: translate3d(0, 0, 0) scale(1);        filter: blur(0); }
+      100% { opacity: 0; transform: translate3d(0, -80px, 0) scale(0.9);  filter: blur(14px); }
+    }
+    @keyframes hlInOutL {
+      0%   { opacity: 0; transform: translate3d(-7vw, 48px, 0) scale(0.92) rotate(-1.2deg); filter: blur(13px); }
+      26%  { opacity: 1; transform: none; filter: blur(0); }
+      74%  { opacity: 1; transform: none; filter: blur(0); }
+      100% { opacity: 0; transform: translate3d(5vw, -56px, 0) scale(0.92) rotate(1deg); filter: blur(13px); }
+    }
+    @keyframes hlInOutR {
+      0%   { opacity: 0; transform: translate3d(7vw, 48px, 0) scale(0.92) rotate(1.2deg); filter: blur(13px); }
+      26%  { opacity: 1; transform: none; filter: blur(0); }
+      74%  { opacity: 1; transform: none; filter: blur(0); }
+      100% { opacity: 0; transform: translate3d(-5vw, -56px, 0) scale(0.92) rotate(-1deg); filter: blur(13px); }
+    }
     .bento-desc {
       font-size: 0.68rem;
       line-height: 1.7;
@@ -1614,7 +1646,7 @@
     <div class="about-left reveal glass-panel">
       <div>
         <div class="section-num" data-i18n="about-num">Nº 002 &nbsp; ABOUT</div>
-        <div class="about-big" data-i18n="about-big">
+        <div class="about-big hl-anim hl-left" data-i18n="about-big">
           CREATING<br />HUMAN<span class="accent">-</span><br />CENTERED<br />DESIGNS
         </div>
         <p class="about-sub" data-i18n="about-sub">
@@ -1633,7 +1665,7 @@
       </div>
     </div>
     <div class="about-right reveal reveal-delay-2 glass-panel">
-<div class="about-quote">
+<div class="about-quote hl-anim hl-right">
         SIMPLICITY IS<br />THE ULTIMATE<br /><span class="accent">SOPHISTICATION</span>
       </div>
       <p style="font-size:0.7rem;line-height:1.8;color:var(--muted);max-width:400px;" data-i18n="quote-body">
@@ -1836,7 +1868,7 @@
   <section id="contact">
     <div class="contact-left reveal glass-panel">
       <div class="section-num" data-i18n="contact-num">Nº 005 &nbsp; CONTACT</div>
-      <div class="contact-big" data-i18n="contact-big">
+      <div class="contact-big hl-anim hl-left" data-i18n="contact-big">
         LET'S<br /><span class="accent">BUILD</span><br />SOME<br />THING
       </div>
       <div class="contact-detail">
