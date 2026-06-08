@@ -1515,7 +1515,17 @@
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       #hero { grid-template-columns: 1fr; }
-      .hero-meta-top { flex-wrap: wrap; gap: 8px; }
+      .hero-meta-top {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px 12px;
+        font-size: 0.5rem;
+        letter-spacing: 0.12em;
+        padding: 16px 18px;
+        text-align: center;
+      }
+      /* esconde os separadores decorativos no mobile p/ não encavalar */
+      .hero-meta-top > span:not([data-i18n]):not(.num) { display: none; }
       .hero-media-band { min-height: 38vh; }
       .hero-bottom { grid-template-columns: 1fr; }
       .hero-bottom-cell { border-right: none; border-bottom: 1px solid var(--border); }
