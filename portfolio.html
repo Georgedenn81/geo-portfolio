@@ -2271,12 +2271,15 @@
               hl.style.setProperty('--hero-pos', posY);
               const isVideo = d.hero.highlightType === 'video' || /\.(mp4|webm|mov)(\?|$)/i.test(d.hero.highlightSrc);
               if (isVideo) {
-                hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline preload="auto"></video>`);
+                hl.insertAdjacentHTML('afterbegin', `<video src="${d.hero.highlightSrc}" autoplay muted loop playsinline webkit-playsinline preload="auto" disableRemotePlayback x-webkit-airplay="deny"></video>`);
                 // Força o autoplay assim que a página abre (com fallback no 1º gesto)
                 const heroVid = hl.querySelector('video');
                 if (heroVid) {
                   heroVid.muted = true;
+                  heroVid.defaultMuted = true;
                   heroVid.setAttribute('muted', '');
+                  heroVid.setAttribute('playsinline', '');
+                  heroVid.setAttribute('webkit-playsinline', '');
                   const tryPlay = () => heroVid.play().catch(()=>{});
                   tryPlay();
                   heroVid.addEventListener('canplay', tryPlay, { once: true });
@@ -2365,7 +2368,15 @@
               if (!bg) return;
               if (p.mediaType === 'video' && p.mediaSrc) {
                 bg.style.cssText = 'background:none;position:absolute;inset:0;';
-                bg.innerHTML = `<video src="${p.mediaSrc}" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover;"></video>`;
+                bg.innerHTML = `<video src="${p.mediaSrc}" autoplay muted loop playsinline webkit-playsinline preload="metadata" style="width:100%;height:100%;object-fit:cover;"></video>`;
+                const cardVid = bg.querySelector('video');
+                if (cardVid) {
+                  cardVid.muted = true;
+                  cardVid.defaultMuted = true;
+                  const tryPlay = () => cardVid.play().catch(()=>{});
+                  tryPlay();
+                  cardVid.addEventListener('loadeddata', tryPlay, { once: true });
+                }
               } else {
                 const src = (p.mediaType === 'image' && p.mediaSrc) ? p.mediaSrc : p.thumbnailSrc;
                 if (src) applyCardBg(bg, src);
@@ -2495,15 +2506,16 @@
       url = url.trim();
       let embed = '';
       const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]+)/);
-      if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1&rel=0&controls=0&modestbranding=1&playsinline=1&enablejsapi=1&loop=1&playlist=${yt[1]}`;
+      if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=1&rel=0&controls=0&modestbranding=1&playsinline=1&enablejsapi=1&loop=1&playlist=${yt[1]}`;
       const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
       if (vm) {
         const hash = vm[2] ? `&h=${vm[2]}` : '';
-        embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=0&loop=1${hash}`;
+        // muted=1 é necessário para autoplay em iOS/iPad (Safari bloqueia autoplay com som)
+        embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&playsinline=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=0&loop=1${hash}`;
       }
-      if (embed) return `<iframe data-vsrc="${embed}" src="about:blank" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
-      // MP4 / direto
-      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video data-vsrc="${url}" src="${url}" controls playsinline preload="none" loop style="background:#000"></video>`;
+      if (embed) return `<iframe data-vsrc="${embed}" src="about:blank" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen webkit-playsinline playsinline></iframe>`;
+      // MP4 / direto — autoplay muted + playsinline para iOS; usuário pode dar unmute pelos controles
+      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video data-vsrc="${url}" src="${url}" controls autoplay muted loop playsinline webkit-playsinline preload="none" style="background:#000"></video>`;
       // Fallback: link externo
       return `<div class="lb-no-video">Clique para abrir: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
     }
