@@ -1706,7 +1706,11 @@ async function publishToVercel(silent) {
     const fileRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/portfolio.html`, {
       headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
     });
-    if (!fileRes.ok) throw new Error('Não foi possível buscar portfolio.html');
+    if (!fileRes.ok) {
+      if (fileRes.status === 401) throw new Error('Token do GitHub inválido ou expirado — gere um novo na aba Contato');
+      if (fileRes.status === 403) throw new Error('Acesso negado pelo GitHub (403) — confira as permissões do token');
+      throw new Error(`Não foi possível buscar portfolio.html (HTTP ${fileRes.status})`);
+    }
     const fileJson = await fileRes.json();
     const b64 = fileJson.content.replace(/\n/g, '');
     const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
