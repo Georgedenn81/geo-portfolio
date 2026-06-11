@@ -1586,6 +1586,25 @@ function loadGhTokenField() {
   }
 }
 
+// Testa o token ao abrir o admin — avisa logo se expirou (não espera o publish)
+async function checkGhToken() {
+  const token = LS.getItem('geo_gh_token');
+  if (!token) return;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GH_REPO}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (res.status === 401) {
+      const headEl = document.getElementById('publish-head-status');
+      if (headEl) { headEl.style.color = 'var(--red)'; headEl.textContent = '⚠ Token do GitHub expirou — gere um novo na aba Contato'; }
+      const input = document.getElementById('gh-token-input');
+      if (input) input.placeholder = '⚠ TOKEN EXPIRADO — COLE UM NOVO';
+      showToast('⚠ TOKEN DO GITHUB EXPIROU');
+    }
+  } catch(e) { /* sem rede — ignora, o publish reporta */ }
+}
+checkGhToken();
+
 document.getElementById('gh-token-save').addEventListener('click', () => {
   const val = document.getElementById('gh-token-input').value.trim();
   if (!val) return;
