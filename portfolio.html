@@ -2522,16 +2522,16 @@
       // ver só uma tela preta.
       const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
       const ctrls = isTouch ? 1 : 0;
-      if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=1&rel=0&controls=${ctrls}&modestbranding=1&playsinline=1&enablejsapi=1&loop=1&playlist=${yt[1]}`;
+      if (yt) embed = `https://www.youtube.com/embed/${yt[1]}?autoplay=1&mute=0&rel=0&controls=1&modestbranding=1&playsinline=1&enablejsapi=1&loop=1&playlist=${yt[1]}`;
       const vm = url.match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/([a-f0-9]+))?/);
       if (vm) {
         const hash = vm[2] ? `&h=${vm[2]}` : '';
-        // muted=1 é necessário para autoplay em iOS/iPad (Safari bloqueia autoplay com som)
-        embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=1&playsinline=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=${ctrls}&loop=1${hash}`;
+        // autoplay com som — no lightbox o usuário clicou para assistir
+        embed = `https://player.vimeo.com/video/${vm[1]}?autoplay=1&muted=0&playsinline=1&badge=0&autopause=0&title=0&byline=0&portrait=0&controls=1&loop=1${hash}`;
       }
       if (embed) return `<iframe data-vsrc="${embed}" src="about:blank" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen webkit-playsinline playsinline></iframe>`;
       // MP4 / direto — autoplay muted + playsinline para iOS; usuário pode dar unmute pelos controles
-      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video data-vsrc="${url}" src="${url}" controls autoplay muted loop playsinline webkit-playsinline preload="none" style="background:#000"></video>`;
+      if (url.match(/\.(mp4|webm|mov)(\?|$)/i)) return `<video data-vsrc="${url}" src="${url}" controls autoplay loop playsinline webkit-playsinline preload="none" style="background:#000"></video>`;
       // Fallback: link externo
       return `<div class="lb-no-video">Clique para abrir: <a href="${url}" target="_blank" style="color:var(--lime)">${url}</a></div>`;
     }
