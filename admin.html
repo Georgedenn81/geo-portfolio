@@ -1020,6 +1020,18 @@ function renderFeatured() {
 // ── Upload imagem para GitHub/Vercel ──
 const GH_IMG_REPO = 'Georgedenn81/geo-portfolio';
 
+async function contentHash(b64str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(b64str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('').slice(0, 10);
+}
+
+async function ghFileExists(token, filepath) {
+  const r = await fetch(`https://api.github.com/repos/${GH_IMG_REPO}/contents/${filepath}`, {
+    headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  return r.ok;
+}
+
 async function uploadImageToVercel(file, statusCb) {
   const token = LS.getItem('geo_gh_token');
   if (!token) {
@@ -1027,7 +1039,6 @@ async function uploadImageToVercel(file, statusCb) {
     return null;
   }
   statusCb('⏳ Comprimindo imagem...');
-  // Comprime
   const compressed = await new Promise(resolve => {
     const reader = new FileReader();
     reader.onload = ev => {
@@ -1045,15 +1056,19 @@ async function uploadImageToVercel(file, statusCb) {
     reader.readAsDataURL(file);
   });
 
-  statusCb('⏳ Subindo para o Vercel...');
-  const filename = 'img/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
   const b64 = compressed.split(',')[1];
-  // Encode para GitHub
-  const encBytes = new TextEncoder().encode(atob(b64));
-  let binary = '';
-  for (let i = 0; i < encBytes.length; i++) binary += String.fromCharCode(encBytes[i]);
-  const content = btoa(binary);
+  const hash = await contentHash(b64);
+  const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const filename = `img/${safeName}_${hash}.jpg`;
 
+  statusCb('⏳ Verificando se já existe...');
+  if (await ghFileExists(token, filename)) {
+    const vercelUrl = `https://portfolio-seven-ashen-18.vercel.app/${filename}`;
+    statusCb('✓ Imagem já existe — reusando');
+    return vercelUrl;
+  }
+
+  statusCb('⏳ Subindo para o Vercel...');
   const res = await fetch(`https://api.github.com/repos/${GH_IMG_REPO}/contents/${filename}`, {
     method: 'PUT',
     headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
@@ -1072,18 +1087,30 @@ async function uploadImageToVercel(file, statusCb) {
 async function uploadMediaToVercel(file, statusCb) {
   if (file.type.startsWith('image/')) return uploadImageToVercel(file, statusCb);
 
-  // vídeo: upload bruto
   const token = LS.getItem('geo_gh_token');
   if (!token) { alert('Configure o GitHub Token na aba Contato primeiro.'); return null; }
   if (file.size > 15 * 1024 * 1024) { throw new Error('Vídeo muito grande (máx ~15MB). Comprima antes.'); }
-  statusCb('⏳ Subindo vídeo para o Vercel...');
+  statusCb('⏳ Preparando vídeo...');
   const buf = await file.arrayBuffer();
   const bytes = new Uint8Array(buf);
   let binary = '';
   const chunk = 0x8000;
   for (let i = 0; i < bytes.length; i += chunk) binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
   const content = btoa(binary);
-  const filename = 'img/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+  const hash = await contentHash(content);
+  const safeName = file.name.replace(/\.[^.]+$/, '').replace(/[^a-zA-Z0-9._-]/g, '_');
+  const ext = file.name.split('.').pop().toLowerCase().replace(/[^a-z0-9]/g, '') || 'mp4';
+  const filename = `img/${safeName}_${hash}.${ext}`;
+
+  statusCb('⏳ Verificando se já existe...');
+  if (await ghFileExists(token, filename)) {
+    const vercelUrl = `https://portfolio-seven-ashen-18.vercel.app/${filename}`;
+    statusCb('✓ Vídeo já existe — reusando');
+    return vercelUrl;
+  }
+
+  statusCb('⏳ Subindo vídeo para o Vercel...');
   const res = await fetch(`https://api.github.com/repos/${GH_IMG_REPO}/contents/${filename}`, {
     method: 'PUT',
     headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json', Accept: 'application/vnd.github.v3+json' },
