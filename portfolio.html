@@ -26,10 +26,18 @@
       --bg:       #1A1714;
       --surface:  #211E1A;
       --border:   #2E2A25;
-      --lime:     #C8F135;
+      --lime:     #FF4520;
       --white:    #F0EDE8;
       --muted:    #7A7368;
       --dim:      #3A3530;
+    }
+
+    @font-face {
+      font-family: 'Greater Theory';
+      src: url('fonts/GreaterTheory.otf') format('opentype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -78,19 +86,19 @@
     }
     .morph-blob-1 {
       width: 600px; height: 600px;
-      background: radial-gradient(circle, #C8F135 0%, #6abe00 50%, transparent 75%);
+      background: radial-gradient(circle, #FF4520 0%, #c42d05 50%, transparent 75%);
       top: 8%; left: -8%;
       animation: morphShape1 26s ease-in-out infinite, blobPulse1 11s ease-in-out infinite;
     }
     .morph-blob-2 {
       width: 500px; height: 500px;
-      background: radial-gradient(circle, #C8F135 0%, #3a7a00 60%, transparent 80%);
+      background: radial-gradient(circle, #FF4520 0%, #8a1e00 60%, transparent 80%);
       top: 45%; right: -6%;
       animation: morphShape2 32s ease-in-out infinite, blobPulse2 14s ease-in-out infinite;
     }
     .morph-blob-3 {
       width: 400px; height: 400px;
-      background: radial-gradient(circle, #a8d400 0%, #C8F135 40%, transparent 70%);
+      background: radial-gradient(circle, #ff6a3d 0%, #FF4520 40%, transparent 70%);
       bottom: 8%; left: 28%;
       animation: morphShape3 38s ease-in-out infinite, blobPulse3 9s ease-in-out infinite;
     }
@@ -335,7 +343,7 @@
       text-transform: uppercase;
     }
     .hero-headline {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-weight: 900;
       font-size: clamp(90px, 13vw, 180px);
       line-height: 0.8;
@@ -541,7 +549,7 @@
       background: var(--border);
     }
     .about-big {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(60px, 8vw, 110px);
       font-weight: 900;
       line-height: 0.8;
@@ -611,7 +619,7 @@
       border-bottom: 1px solid var(--border);
     }
     .projects-title {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(56px, 7vw, 96px);
       font-weight: 900;
       text-transform: uppercase;
@@ -658,7 +666,7 @@
       transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
     }
     .project-item:hover::before { width: 4px; }
-    .project-item:hover { background: rgba(200,241,53,0.03); }
+    .project-item:hover { background: rgba(255,69,32,0.03); }
     .project-num {
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 0.7rem;
@@ -667,7 +675,7 @@
       color: var(--muted);
     }
     .project-info h3 {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(24px, 3.5vw, 42px);
       font-weight: 900;
       text-transform: uppercase;
@@ -739,7 +747,7 @@
       margin-bottom: 12px;
     }
     .bento-title {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(52px, 7vw, 104px);
       font-weight: 900;
       text-transform: uppercase;
@@ -865,7 +873,7 @@
       0%, 100% { opacity: 0.55; }
       50%      { opacity: 1; }
     }
-    .more-projects-toggle:hover { background: rgba(200,241,53,0.06); animation: none; opacity: 1; }
+    .more-projects-toggle:hover { background: rgba(255,69,32,0.06); animation: none; opacity: 1; }
     .more-projects-toggle.open { animation: none; opacity: 1; }
     .toggle-arrow {
       display: inline-flex;
@@ -895,7 +903,7 @@
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 140px;
       font-weight: 900;
-      color: rgba(200,241,53,0.05);
+      color: rgba(255,69,32,0.05);
       line-height: 1;
       pointer-events: none;
       user-select: none;
@@ -914,7 +922,7 @@
       padding: 64px 32px;
     }
     .skills-big {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(56px, 8vw, 110px);
       font-weight: 900;
       text-transform: uppercase;
@@ -1005,7 +1013,7 @@
       transition: background 0.2s;
       cursor: default;
     }
-    .tool-cell:hover { background: rgba(200,241,53,0.04); }
+    .tool-cell:hover { background: rgba(255,69,32,0.04); }
     .tool-icon { color: var(--lime); }
     .tool-name {
       font-size: 0.575rem;
@@ -1037,7 +1045,7 @@
       font-family: 'Barlow Condensed', sans-serif;
       font-size: 120px;
       font-weight: 900;
-      color: rgba(200,241,53,0.04);
+      color: rgba(255,69,32,0.04);
       text-transform: uppercase;
       pointer-events: none;
       user-select: none;
@@ -1135,7 +1143,7 @@
       justify-content: space-between;
     }
     .contact-big {
-      font-family: 'Barlow Condensed', sans-serif;
+      font-family: 'Greater Theory', 'Barlow Condensed', sans-serif;
       font-size: clamp(56px, 9vw, 130px);
       font-weight: 900;
       text-transform: uppercase;
