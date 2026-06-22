@@ -1663,6 +1663,13 @@ function buildPublishData() {
 // re-traduzir o que não mudou. Falhas nunca bloqueiam a publicação (cai p/ PT).
 const TX_CACHE_KEY = 'geo_tx_cache';
 
+// Traduções manuais (PT → EN): têm PRIORIDADE sobre o tradutor automático.
+// Use para frases que o tradutor automático erra (ex.: trocadilhos, palavras
+// que ele traduz literal demais). A chave é o texto PT exato (incl. \n e *...*).
+const TX_OVERRIDES = {
+  '*BEM*\n– VINDOS': '*WEL*\n– COME',
+};
+
 function txCollectTargets(d) {
   const targets = []; // { obj, key }
   const push = (obj, key) => {
@@ -1688,8 +1695,8 @@ async function addTranslations(d) {
     let cache = {};
     try { cache = JSON.parse(LS.getItem(TX_CACHE_KEY) || '{}'); } catch (e) { cache = {}; }
 
-    // strings únicas ainda não cacheadas
-    const missing = [...new Set(targets.map(t => t.obj[t.key]).filter(s => !(s in cache)))];
+    // strings únicas ainda não cacheadas (ignora as que têm override manual)
+    const missing = [...new Set(targets.map(t => t.obj[t.key]).filter(s => !(s in cache) && !(s in TX_OVERRIDES)))];
 
     if (missing.length) {
       const res = await fetch('/api/translate', {
@@ -1709,7 +1716,7 @@ async function addTranslations(d) {
     // aplica os siblings *_en (só quando há tradução)
     let count = 0;
     targets.forEach(({ obj, key }) => {
-      const en = cache[obj[key]];
+      const en = TX_OVERRIDES[obj[key]] || cache[obj[key]];
       if (en && en !== obj[key]) { obj[key + '_en'] = en; count++; }
     });
     return count;
