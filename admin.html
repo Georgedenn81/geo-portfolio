@@ -1770,6 +1770,23 @@ async function publishToVercel(silent) {
     const currentHtml = new TextDecoder('utf-8').decode(bytes);
 
     const publishData = buildPublishData();
+
+    // Valida as imagens/vídeos antes de publicar: evita gravar URLs quebradas
+    // (que viram caixa preta no site). Galerias mortas são removidas; thumbs
+    // mortos são zerados (o site cai pro fallback). Avisa antes de publicar.
+    const dead = await validateMediaUrls(publishData);
+    if (dead.length) {
+      const lista = dead.map(d => `• ${d.where}: ${d.url.split('/').pop()}`).join('\n');
+      const msg = `⚠ ${dead.length} imagem(ns)/vídeo(s) quebrado(s) (404):\n\n${lista}\n\n`
+        + `As galerias mortas serão removidas e os thumbnails zerados (o site usa fallback). Publicar assim mesmo?`;
+      if (!silent && !confirm(msg)) {
+        setStatus('Publicação cancelada — corrija as imagens quebradas.', 'var(--red)');
+        if (btn) { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }
+        return false;
+      }
+      pruneDeadMedia(publishData, dead);
+    }
+
     const txCount = await addTranslations(publishData); // gera campos *_en (PT→EN); nunca bloqueia o publish
     const dataJson = JSON.stringify(publishData);
     const startTag = '<script id="__geo_admin_data__" type="application/json">';
@@ -1817,6 +1834,49 @@ async function publishToVercel(silent) {
     // Se houve mudança durante a publicação, republica
     if (__publishQueued) { __publishQueued = false; setTimeout(() => publishToVercel(true), 1000); }
   }
+}
+
+// Lista todas as referências de mídia dos dados, com onde estão e como removê-las.
+// Só inclui URLs de assets nossos (contêm "/img/") — ignora vazios, data:, vimeo, etc.
+function collectMediaRefs(d) {
+  const refs = []; // { url, where, kind: 'gallery'|'thumb'|'media', remove() }
+  const isAsset = u => typeof u === 'string' && /\/img\//.test(u);
+  const pushThumb = (obj, label) => { if (isAsset(obj.thumbnailSrc)) refs.push({ url: obj.thumbnailSrc, where: label, kind: 'thumb', remove: () => { obj.thumbnailSrc = ''; } }); };
+  const pushMedia = (obj, label) => { if (isAsset(obj.mediaSrc)) refs.push({ url: obj.mediaSrc, where: label, kind: 'media', remove: () => { obj.mediaSrc = ''; obj.mediaType = 'none'; } }); };
+  const pushGallery = (obj, label) => {
+    if (Array.isArray(obj.gallery)) obj.gallery.forEach(u => { if (isAsset(u)) refs.push({ url: u, where: label, kind: 'gallery', remove: () => { obj.gallery = obj.gallery.filter(x => x !== u); } }); });
+  };
+  if (d.hero) {
+    if (isAsset(d.hero.highlightSrc)) refs.push({ url: d.hero.highlightSrc, where: 'Destaque (hero)', kind: 'media', remove: () => { d.hero.highlightSrc = ''; } });
+    if (isAsset(d.hero.photoSrc))     refs.push({ url: d.hero.photoSrc, where: 'Foto (hero)', kind: 'thumb', remove: () => { d.hero.photoSrc = ''; } });
+  }
+  (d.projects?.featured || []).forEach((p, i) => { const l = `Destaque #${i+1} (${p.title||'—'})`; pushThumb(p, l); pushMedia(p, l); pushGallery(p, l); });
+  (d.projects?.more || []).forEach((p, i) => { const l = `Projeto #${i+1} (${p.title||'—'})`; pushThumb(p, l); pushGallery(p, l); });
+  return refs;
+}
+
+// HEAD em cada asset; retorna a lista dos que estão 404 (ou seja, quebrados).
+// Erro de rede NÃO conta como quebrado (evita falso positivo que apagaria dados bons).
+async function validateMediaUrls(d) {
+  try {
+    const refs = collectMediaRefs(d);
+    const unique = [...new Map(refs.map(r => [r.url, r])).values()];
+    const results = await Promise.all(unique.map(async r => {
+      try { const res = await fetch(r.url, { method: 'HEAD', cache: 'no-store' }); return res.status === 404 ? r : null; }
+      catch (e) { return null; }
+    }));
+    const deadUrls = new Set(results.filter(Boolean).map(r => r.url));
+    // devolve TODAS as refs com URL morta (uma URL pode aparecer em vários lugares)
+    return refs.filter(r => deadUrls.has(r.url));
+  } catch (e) {
+    console.warn('[admin] validação de mídia pulada:', e.message);
+    return [];
+  }
+}
+
+// Aplica a remoção das refs mortas (galerias filtradas, thumbs/mídia zerados).
+function pruneDeadMedia(d, deadRefs) {
+  deadRefs.forEach(r => { try { r.remove(); } catch (e) {} });
 }
 
 // Remove do img/ as imagens que não são mais referenciadas no HTML publicado.
