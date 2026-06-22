@@ -1811,11 +1811,12 @@ async function publishToVercel(silent) {
       throw new Error(err.message || commitRes.status);
     }
 
-    // Limpa imagens órfãs (não referenciadas no HTML publicado)
-    let cleaned = 0;
-    try { cleaned = await cleanupOrphanImages(token, updatedHtml); } catch(e) { /* não bloqueia a publicação */ }
+    // Só LISTA imagens órfãs (não apaga) — limpeza é manual pra nunca perder asset
+    let orphans = [];
+    try { orphans = await findOrphanImages(token, updatedHtml); } catch(e) { /* não bloqueia a publicação */ }
+    if (orphans.length) console.info(`[admin] ${orphans.length} imagem(ns) órfã(s) (não apagadas):`, orphans);
 
-    setStatus(`✓ Publicado — site ao vivo em ~40s${txCount ? ` · EN traduzido` : ''}${cleaned ? ` · ${cleaned} img órfã(s) removida(s)` : ''}`, 'var(--lime)');
+    setStatus(`✓ Publicado — site ao vivo em ~40s${txCount ? ` · EN traduzido` : ''}${orphans.length ? ` · ${orphans.length} img órfã(s) (ver console)` : ''}`, 'var(--lime)');
     if (!silent && btn) {
       btn.textContent = '✓ PUBLICADO';
       setTimeout(() => { btn.disabled = false; btn.textContent = '↑ PUBLICAR AGORA'; }, 5000);
@@ -1879,39 +1880,28 @@ function pruneDeadMedia(d, deadRefs) {
   deadRefs.forEach(r => { try { r.remove(); } catch (e) {} });
 }
 
-// Remove do img/ as imagens que não são mais referenciadas no HTML publicado.
-// Usa o próprio HTML que acabou de ir ao ar como fonte da verdade do que está em uso.
-async function cleanupOrphanImages(token, publishedHtml) {
+// APENAS LISTA as imagens do img/ não referenciadas no HTML publicado — NÃO apaga.
+// A auto-deleção foi desativada de propósito: já apagou imagens recém-subidas
+// (que ainda não estavam na galeria salva), deixando projetos com 404. Limpeza
+// agora é manual: esta função só devolve os nomes das órfãs pra você revisar.
+async function findOrphanImages(token, publishedHtml) {
   // Nomes de arquivo em uso (decodificados, minúsculos) — ignora o prefixo "img/"
   const used = new Set(
     (publishedHtml.match(/img\/[A-Za-z0-9._%\-]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|webm)/gi) || [])
       .map(s => { try { return decodeURIComponent(s.slice(4)).toLowerCase(); } catch(e) { return s.slice(4).toLowerCase(); } })
   );
-
-  // Salvaguarda: se não detectou nenhuma imagem em uso, algo deu errado — não apaga nada.
-  if (used.size === 0) return 0;
+  if (used.size === 0) return [];
 
   const listRes = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/img`, {
     headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
   });
-  if (!listRes.ok) return 0;
+  if (!listRes.ok) return [];
   const files = await listRes.json();
-  if (!Array.isArray(files)) return 0;
+  if (!Array.isArray(files)) return [];
 
-  const orphans = files.filter(f =>
-    f.type === 'file' && f.name !== '.DS_Store' && !used.has(f.name.toLowerCase())
-  );
-
-  let removed = 0;
-  for (const f of orphans) {
-    const del = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${encodeURIComponent(f.path).replace(/%2F/g,'/')}`, {
-      method: 'DELETE',
-      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: `Cleanup orphan image: ${f.name}`, sha: f.sha })
-    });
-    if (del.ok) removed++;
-  }
-  return removed;
+  return files
+    .filter(f => f.type === 'file' && f.name !== '.DS_Store' && !used.has(f.name.toLowerCase()))
+    .map(f => f.name);
 }
 
 function oneClickPublish() { return publishToVercel(false); }
