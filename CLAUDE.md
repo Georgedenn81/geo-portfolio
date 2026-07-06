@@ -53,7 +53,6 @@ de linha, `*palavra*` = destaque verde. `fmtHeadline()` (site) converte em HTML.
 ## Deploy / verificação
 - Deploy = push para `main` (auto-deploy Vercel). George autorizou publicar
   sempre, sem perguntar a cada vez.
-- O preview local do Claude serve outro projeto (Next.js em
-  `/Users/george/portfolio-site`), então **não renderiza** estes arquivos
-  estáticos. Para verificar: checar dados/recursos via `curl` na URL da Vercel,
-  ou pedir ao George para abrir e dar `Cmd+Shift+R`.
+- Este projeto é estático e sem servidor local configurado. Para verificar
+  mudanças publicadas: checar dados/recursos via `curl` na URL da Vercel, ou
+  pedir ao George para abrir e dar `Cmd+Shift+R`.
