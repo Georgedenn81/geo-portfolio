@@ -1838,10 +1838,10 @@ async function publishToVercel(silent) {
 }
 
 // Lista todas as referências de mídia dos dados, com onde estão e como removê-las.
-// Só inclui URLs de assets nossos (contêm "/img/") — ignora vazios, data:, vimeo, etc.
+// Só inclui URLs de assets nossos (contêm "/img/" ou "/video/") — ignora vazios, data:, vimeo, etc.
 function collectMediaRefs(d) {
   const refs = []; // { url, where, kind: 'gallery'|'thumb'|'media', remove() }
-  const isAsset = u => typeof u === 'string' && /\/img\//.test(u);
+  const isAsset = u => typeof u === 'string' && /\/(?:img|video)\//.test(u);
   const pushThumb = (obj, label) => { if (isAsset(obj.thumbnailSrc)) refs.push({ url: obj.thumbnailSrc, where: label, kind: 'thumb', remove: () => { obj.thumbnailSrc = ''; } }); };
   const pushMedia = (obj, label) => { if (isAsset(obj.mediaSrc)) refs.push({ url: obj.mediaSrc, where: label, kind: 'media', remove: () => { obj.mediaSrc = ''; obj.mediaType = 'none'; } }); };
   const pushGallery = (obj, label) => {

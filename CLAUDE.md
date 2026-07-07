@@ -49,6 +49,20 @@ de linha, `*palavra*` = destaque verde. `fmtHeadline()` (site) converte em HTML.
   que não está mais referenciado (salvaguarda: não apaga se a lista vier vazia).
 - Uploads no admin prefixam timestamp ao nome (pode empilhar prefixos); a
   limpeza ao publicar evita acúmulo.
+- **`.vercelignore` NÃO pode excluir `img/` nem `video/`** — o que estiver lá
+  fica fora do deploy e dá 404 no ar mesmo estando no git (foi a causa do
+  vídeo do hero sumir em 2026-07). Hoje só exclui `monteirodacosta/`.
+- **Guarda automática:** o workflow `.github/workflows/checa-midia.yml` roda
+  `scripts/checa_midia.py` a cada push e falha (GitHub avisa por e-mail) se
+  alguma mídia referenciada no `portfolio.html` não existir no repo ou estiver
+  no `.vercelignore`. Rode local antes de mexer em mídia:
+  `python3 scripts/checa_midia.py`.
+- A validação do publish (`collectMediaRefs` no admin) cobre URLs com `/img/`
+  **e** `/video/`.
+- **Aba do admin aberta = dado velho.** O admin publica o que está no estado
+  local dele; uma aba antiga pode republicar caminhos/dados desatualizados por
+  cima de correções. Depois de qualquer mudança via git, recarregar o admin
+  (Cmd+Shift+R) antes de publicar.
 
 ## Deploy / verificação
 - Deploy = push para `main` (auto-deploy Vercel). George autorizou publicar
