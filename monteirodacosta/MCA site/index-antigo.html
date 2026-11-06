@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monteiro da Costa Advogados</title>
+  <meta name="description" content="Ética, Relacionamento e Excelência. Escritório de advocacia em São Paulo.">
+  <style>
+    /* Gesta — typeface da marca MCA */
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Light.otf') format('opentype'); font-weight: 300; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Light_Italic.otf') format('opentype'); font-weight: 300; font-style: italic; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Italic.otf') format('opentype'); font-weight: 400; font-style: italic; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Medium.otf') format('opentype'); font-weight: 500; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Medium_Italic.otf') format('opentype'); font-weight: 500; font-style: italic; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Bold.otf') format('opentype'); font-weight: 700; font-style: normal; font-display: swap; }
+    @font-face { font-family: 'Gesta'; src: url('fonts/Gesta_Bold_Italic.otf') format('opentype'); font-weight: 700; font-style: italic; font-display: swap; }
+  </style>
+  <style>
+    /* ── Palette & Tokens ─────────────────────────────────── */
+    :root {
+      --gold:      #B5935A;
+      --gold-lt:   #CCA96E;
+      --gold-dk:   #876B3D;
+      --gold-sub:  rgba(181,147,90,0.10);
+      --navy:      #1A2B4A;
+      --navy-dk:   #0E1C30;
+      --cream:     #EFE9D8;
+      --cream-lt:  #F6F2E9;
+      --off:       #FAF9F6;
+      --text:      #1A2B4A;
+      --soft:      #4D5A72;
+      --dim:       #8C96A8;
+      --border:    rgba(26,43,74,0.09);
+      --border-g:  rgba(181,147,90,0.20);
+      --radius:    4px;
+      --ease:      cubic-bezier(0.22,1,0.36,1);
+      --f-body:    'Gesta', 'Barlow', system-ui, sans-serif;
+    }
+
+    /* ── Reset ────────────────────────────────────────────── */
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body {
+      background: var(--off);
+      color: var(--text);
+      font-family: var(--f-body);
+      font-size: 19px;
+      font-weight: 400;
+      line-height: 1.68;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { text-decoration:none; color:inherit; }
+    img { display:block; max-width:100%; }
+    button { font-family:inherit; cursor:pointer; border:none; background:none; }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: 100;
+      height: 90px;
+      transition: background .45s, box-shadow .45s;
+    }
+    nav.scrolled {
+      background: rgba(250,249,246,.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    /* Logo */
+    .nav-logo { display:flex; align-items:center; }
+    .nav-logo-img-wrap { display:flex; align-items:center; }
+    #nav-logo-img {
+      height: 48px;
+      width: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    /* Links */
+    .nav-links { display:flex; gap:34px; list-style:none; align-items:center; }
+    .nav-links a {
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .15em;
+      text-transform: uppercase;
+      color: var(--soft);
+      position: relative;
+      transition: color .2s;
+    }
+    nav:not(.scrolled) .nav-links a { color: rgba(250,249,246,.55); }
+    .nav-links a::after {
+      content:'';
+      position:absolute; bottom:-3px; left:0; right:0;
+      height:1px; background:var(--gold);
+      transform:scaleX(0); transform-origin:left;
+      transition:transform .3s var(--ease);
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color:var(--navy); }
+    nav:not(.scrolled) .nav-links a:hover,
+    nav:not(.scrolled) .nav-links a.active { color:var(--off); }
+    .nav-links a:hover::after,
+    .nav-links a.active::after { transform:scaleX(1); }
+
+    /* CTA nav — maior e mais destacado */
+    .nav-cta {
+      padding: 13px 30px !important;
+      border: 1.5px solid var(--gold) !important;
+      border-radius: var(--radius) !important;
+      font-size: .7rem !important;
+      font-weight: 600 !important;
+      letter-spacing: .14em !important;
+      color: var(--gold) !important;
+      transition: background .25s, color .25s, transform .3s var(--ease) !important;
+    }
+    .nav-cta::after { display:none !important; }
+    .nav-cta:hover {
+      background: var(--gold) !important;
+      color: var(--off) !important;
+      transform: translateY(-1px) !important;
+    }
+    nav:not(.scrolled) .nav-cta { border-color:rgba(181,147,90,.6) !important; }
+
+    /* ── Banner / Carrossel ───────────────────────────────── */
+    .banner {
+      padding-top: 90px;
+      background: var(--navy-dk);
+      position: relative;
+      overflow: hidden;
+      height: 52vh;
+      min-height: 500px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle glow */
+    .banner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 70% 80% at 80% 20%, rgba(181,147,90,.06) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 60% at 5% 90%,  rgba(14,28,48,.8)   0%, transparent 55%);
+      pointer-events: none;
+    }
+
+    /* Slides */
+    .slides-wrap { flex: 1; position: relative; overflow: hidden; min-height: 0; }
+
+    .slide {
+      display: none;
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+    }
+    .slide.active { display: block; }
+
+    /* Slide direction animations */
+    @keyframes enterRight {
+      from { opacity: 0; transform: translateX(56px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes enterLeft {
+      from { opacity: 0; transform: translateX(-56px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes exitLeft {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(-48px); }
+    }
+    @keyframes exitRight {
+      from { opacity: 1; transform: translateX(0); }
+      to   { opacity: 0; transform: translateX(48px); }
+    }
+    .slide-enter-right { animation: enterRight .6s var(--ease) forwards; }
+    .slide-enter-left  { animation: enterLeft  .6s var(--ease) forwards; }
+    .slide-exit-left {
+      display: block !important;
+      position: absolute !important; inset: 0; z-index: 2;
+      animation: exitLeft .55s var(--ease) forwards;
+    }
+    .slide-exit-right {
+      display: block !important;
+      position: absolute !important; inset: 0; z-index: 2;
+      animation: exitRight .55s var(--ease) forwards;
+    }
+
+    /* Full-bleed background image */
+    .slide-bg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 0;
+      display: block;
+    }
+
+    /* Translucent overlay — left-heavy gradient for text readability */
+    .slide-overlay {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(105deg,
+          rgba(14,28,48,.90) 0%,
+          rgba(14,28,48,.68) 42%,
+          rgba(14,28,48,.28) 72%,
+          rgba(14,28,48,.10) 100%),
+        linear-gradient(to top,
+          rgba(14,28,48,.55) 0%,
+          transparent 50%);
+      z-index: 1;
+    }
+
+    /* Content container — fills slide height, content anchored to bottom */
+    .slide-inner {
+      position: relative;
+      z-index: 2;
+      max-width: 1380px;
+      width: 100%;
+      margin: 0 auto;
+      padding: clamp(32px, 6vh, 72px) clamp(20px, 3.5vw, 48px) clamp(28px, 4vh, 56px);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .slide-text {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(8px, 1.4vh, 18px);
+      max-width: 600px;
+      overflow: hidden;
+    }
+
+    .slide-eyebrow {
+      font-size: clamp(.52rem, .9vw, .6rem);
+      font-weight: 500;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--gold-lt);
+    }
+
+    .slide-title {
+      font-size: clamp(1.35rem, min(2.8vw, 4.8vh), 3.2rem);
+      font-weight: 300;
+      line-height: 1.1;
+      letter-spacing: -.01em;
+      color: var(--off);
+    }
+    .slide-title em {
+      font-style: normal;
+      font-weight: 600;
+      color: var(--gold-lt);
+    }
+
+    .slide-sub {
+      font-size: clamp(.78rem, 1.1vw, .95rem);
+      font-weight: 300;
+      color: rgba(250,249,246,.55);
+      line-height: 1.65;
+      max-width: 460px;
+    }
+
+    .slide-actions { display:flex; align-items:center; gap:20px; margin-top:8px; }
+
+    .btn-gold {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 13px 30px;
+      background: var(--gold);
+      border-radius: var(--radius);
+      font-size: .68rem;
+      font-weight: 600;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+      color: var(--off);
+      white-space: nowrap;
+      transition: background .3s, transform .35s var(--ease), box-shadow .3s;
+    }
+    .btn-gold:hover {
+      background: var(--gold-lt);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(181,147,90,.28);
+    }
+    .btn-ghost-slide {
+      font-size: .6rem;
+      font-weight: 400;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: rgba(250,249,246,.42);
+      transition: color .2s;
+    }
+    .btn-ghost-slide:hover { color: rgba(250,249,246,.75); }
+
+    /* Decorative lines — shown when no image */
+    .deco-lines {
+      position: absolute; right: 48px; top: 50%; transform: translateY(-50%);
+      display: flex; flex-direction: column;
+      gap: 14px; align-items: flex-end; width: 260px;
+      pointer-events: none;
+    }
+    .deco-line {
+      height: 1px;
+      background: linear-gradient(to left, rgba(181,147,90,.4), transparent);
+    }
+
+    /* Carousel dots */
+    .carousel-foot {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      padding: 18px 48px 26px;
+    }
+    .c-dots { display:flex; gap:7px; }
+    .c-dot {
+      width: 7px; height: 7px;
+      border-radius: 4px;
+      background: rgba(255,255,255,.22);
+      cursor: pointer;
+      transition: background .3s, width .35s var(--ease);
+    }
+    .c-dot.active { background: var(--gold); width: 26px; }
+    .c-counter {
+      font-size: .58rem;
+      letter-spacing: .16em;
+      color: rgba(255,255,255,.22);
+      margin-left: 4px;
+    }
+    .c-nav { display:flex; gap:10px; }
+    .c-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      border: 1.5px solid rgba(255,255,255,.28);
+      display: flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,.7);
+      cursor: pointer;
+      transition: border-color .25s, color .25s, background .25s, transform .25s;
+    }
+    .c-btn:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+      background: rgba(181,147,90,.12);
+      transform: scale(1.08);
+    }
+
+    /* ── Layout ───────────────────────────────────────────── */
+    .nav-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 48px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .wrap {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* Section header */
+    .sh {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 88px 0 44px;
+    }
+    .sh-label {
+      font-size: .58rem;
+      font-weight: 600;
+      letter-spacing: .28em;
+      text-transform: uppercase;
+      color: var(--gold);
+      flex-shrink: 0;
+    }
+    .sh-title {
+      font-size: clamp(1.6rem,2.8vw,2.6rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      line-height: 1;
+      color: var(--navy);
+    }
+    .sh-title .muted { color:var(--dim); font-weight:400; }
+
+    /* Thin gold rule */
+    hr.rule {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Sobre ────────────────────────────────────────────── */
+    #sobre .sh { padding-top: 52px; padding-bottom: 28px; }
+    .section-title {
+      font-family: 'Gesta', sans-serif;
+      font-size: 30pt;
+      font-weight: 100;
+      text-transform: uppercase;
+      letter-spacing: 0.375em;
+      color: var(--gold);
+      line-height: 1;
+      padding: 52px 0 28px;
+    }
+    #sobre .about-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 40px;
+      align-items: start;
+      padding-bottom: 52px;
+    }
+
+    .logo-card-wrap {
+      position: static;
+    }
+    .logo-card {
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 32px;
+    }
+    .logo-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+
+    .about-text {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      padding-top: 6px;
+    }
+    .about-lede {
+      font-size: 1.22rem;
+      font-weight: 400;
+      line-height: 1.65;
+      color: var(--navy);
+    }
+    .about-lede strong { font-weight:600; }
+    .about-body {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.75;
+    }
+    .about-rule { width: 32px; height: 1px; background: var(--gold); }
+
+    .pillars {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+    .pillar {
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-g);
+      font-size: .68rem;
+      font-weight: 500;
+      letter-spacing: .08em;
+      color: var(--gold-dk);
+    }
+
+    .about-meta {
+      font-size: .78rem;
+      color: var(--dim);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .about-meta a { color:var(--gold); transition:color .2s; }
+    .about-meta a:hover { color:var(--gold-dk); }
+
+    /* ── Áreas ────────────────────────────────────────────── */
+    #areas { background: var(--cream); padding: 2px 0 80px; }
+    #areas .sh { padding-top: 56px; }
+
+    .areas-featured {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .feat-card {
+      background: var(--navy);
+      border-radius: var(--radius);
+      padding: 36px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .feat-label {
+      font-size: .56rem;
+      font-weight: 600;
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+    }
+    .feat-rule { width:24px; height:1px; background:rgba(181,147,90,.5); }
+    .feat-title {
+      font-size: clamp(1.4rem,2.5vw,2.2rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      line-height: 1.1;
+      color: var(--off);
+      text-transform: uppercase;
+    }
+    .feat-desc {
+      font-size: .88rem;
+      font-weight: 300;
+      color: rgba(250,249,246,.45);
+      line-height: 1.7;
+    }
+
+    /* Areas icon grid */
+    .areas-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 0;
+      box-shadow:
+        0 10px 40px rgba(14,28,48,.13),
+        0 2px 8px rgba(14,28,48,.08);
+    }
+    .area-item {
+      background: var(--cream-lt);
+      padding: 26px 22px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      transition: background .25s;
+      cursor: default;
+    }
+    .area-item:hover { background: #fff; }
+    .area-icon {
+      width: 38px; height: 38px;
+      flex-shrink: 0;
+      border-radius: var(--radius);
+      background: var(--gold-sub);
+      display: flex; align-items:center; justify-content:center;
+    }
+    .area-icon svg { color: var(--gold-dk); }
+    .area-info { display:flex; flex-direction:column; gap:4px; }
+    .area-name {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.2;
+    }
+    .area-desc {
+      font-size: 1rem;
+      font-weight: 300;
+      color: var(--soft);
+      line-height: 1.55;
+    }
+
+    /* ── Profissional ─────────────────────────────────────── */
+    #profissional .sh { padding-top: 52px; padding-bottom: 32px; }
+    #profissional .prof-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 40px 56px;
+      align-items: center;
+      padding-top: 80px;
+      padding-bottom: 80px;
+    }
+
+    .prof-photo-card {
+      border-radius: 50%;
+      border: 1.5px solid var(--gold);
+      background: var(--cream);
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      position: relative;
+      margin-bottom: 16px;
+      box-shadow:
+        0 16px 56px rgba(181,147,90,.34),
+        0 6px 20px rgba(181,147,90,.22),
+        0 0 0 1px rgba(181,147,90,.18);
+    }
+    .prof-photo-card::after {
+      content: '';
+      position: absolute; inset: 0;
+      border-radius: 50%;
+      background: linear-gradient(
+        160deg,
+        rgba(181,147,90,.10) 0%,
+        transparent 40%,
+        transparent 65%,
+        rgba(181,147,90,.13) 100%
+      );
+      pointer-events: none;
+      z-index: 2;
+    }
+    .prof-photo-card img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: contain;
+      transform: translate(0, 0) scale(1);
+      transform-origin: 50% 50%;
+      border-radius: 0;
+    }
+    .prof-photo-hint {
+      font-size: .6rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--dim);
+      text-align: center;
+      line-height: 1.6;
+      pointer-events: none;
+    }
+
+    .prof-text {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding-top: 6px;
+    }
+    .prof-name {
+      font-size: clamp(1.3rem,2.2vw,1.9rem);
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--navy);
+      text-transform: uppercase;
+    }
+    .prof-role {
+      font-size: .7rem;
+      font-weight: 500;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+    .prof-bio {
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--soft);
+      line-height: 1.75;
+    }
+    .prof-bio + .prof-bio { margin-top:-4px; }
+
+    .cred-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+    .cred {
+      padding: 5px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-g);
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--gold-dk);
+    }
+    .cred--dim {
+      border-color: var(--border);
+      color: var(--dim);
+    }
+
+    /* ── Footer / Contato ─────────────────────────────────── */
+    footer {
+      background: var(--navy-dk);
+      margin-top: 88px;
+    }
+    .foot-inner {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+    .foot-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 80px 0 52px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .foot-logo img {
+      height: 52px;
+      width: auto;
+      display: block;
+      opacity: .92;
+    }
+
+    .foot-right {
+      display: flex; flex-direction:column;
+      align-items: flex-end; gap:13px;
+    }
+    .foot-link {
+      font-size: .88rem; font-weight:400;
+      color: rgba(250,249,246,.72);
+      letter-spacing: .04em;
+      transition: color .2s;
+      position: relative;
+    }
+    .foot-link::after {
+      content:'';
+      position:absolute; bottom:-1px; left:0; right:0;
+      height:1px; background:var(--gold);
+      transform:scaleX(0); transform-origin:right;
+      transition:transform .3s var(--ease);
+    }
+    .foot-link:hover { color:var(--gold-lt); }
+    .foot-link:hover::after { transform:scaleX(1); }
+    .foot-link--lg { font-size: 18px; }
+    #foot-phone { font-size: 25px; }
+    .foot-link--icon { display:flex; align-items:center; gap:9px; }
+    .foot-link--icon::after { display:none; }
+    .foot-sep { width:1px; height:14px; background:rgba(255,255,255,.15); }
+
+    .foot-bot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 22px 0 32px;
+    }
+    .foot-copy { font-size:.72rem; color:rgba(250,249,246,.45); letter-spacing:.06em; }
+    .foot-addr { font-size:.72rem; color:rgba(181,147,90,.65); letter-spacing:.06em; }
+
+    /* ── Instagram Reels ─────────────────────────────────────── */
+    #instagram {
+      background: var(--navy);
+      padding: 0 0 88px;
+    }
+    #instagram .wrap { padding-top: 0; }
+    #instagram .sh-label { color: rgba(181,147,90,.8); }
+    #instagram .sh-title { color: var(--off); }
+    #instagram .sh-title .muted { color: rgba(250,249,246,.35); }
+
+    .ig-reel-track-wrap {
+      overflow: hidden;
+      position: relative;
+    }
+    .ig-reel-track {
+      display: flex;
+      gap: 16px;
+      transition: transform .65s var(--ease);
+      will-change: transform;
+    }
+    .ig-reel-card {
+      flex: 0 0 calc(20% - 13px);
+      border-radius: var(--radius);
+      overflow: hidden;
+      aspect-ratio: 9/16;
+      background: rgba(255,255,255,.05);
+      position: relative;
+      cursor: pointer;
+      transition: transform .35s var(--ease), box-shadow .35s;
+      box-shadow: 0 6px 24px rgba(0,0,0,.32), 0 1px 4px rgba(0,0,0,.20);
+    }
+    .ig-reel-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 22px 52px rgba(0,0,0,.55), 0 4px 12px rgba(0,0,0,.30);
+    }
+    .ig-reel-card img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      opacity: .82;
+      transition: opacity .3s;
+    }
+    .ig-reel-card:hover img { opacity: 1; }
+    .ig-reel-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(14,28,48,.82) 0%, transparent 52%);
+      display: flex; flex-direction: column;
+      justify-content: flex-end;
+      padding: 16px 14px;
+    }
+    .ig-reel-label {
+      font-size: .58rem;
+      font-weight: 500;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: rgba(250,249,246,.55);
+    }
+
+    .ig-placeholder {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 20px;
+      padding: 80px 48px;
+      border: 1px dashed rgba(181,147,90,.25);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .ig-placeholder svg { color: rgba(181,147,90,.4); }
+    .ig-placeholder p {
+      font-size: .88rem; font-weight: 300;
+      color: rgba(250,249,246,.45);
+      max-width: 380px; line-height: 1.75;
+    }
+    .ig-placeholder a {
+      font-size: .65rem; font-weight: 500;
+      letter-spacing: .12em; text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid rgba(181,147,90,.35);
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      transition: background .25s, color .25s;
+    }
+    .ig-placeholder a:hover { background: var(--gold); color: var(--off); }
+
+    .ig-nav { display:flex; gap:8px; justify-content:center; margin-top:28px; }
+    .ig-btn {
+      width: 36px; height: 36px;
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+      display: flex; align-items:center; justify-content:center;
+      color: rgba(255,255,255,.45);
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .ig-btn:hover { border-color:var(--gold); color:var(--gold); background:rgba(181,147,90,.08); }
+
+    @media (max-width:1024px) { .ig-reel-card { flex: 0 0 calc(25% - 12px); } }
+    @media (max-width:768px)  { .ig-reel-card { flex: 0 0 calc(40% - 10px); } }
+    @media (max-width:540px)  { .ig-reel-card { flex: 0 0 calc(72% - 8px); } }
+
+    /* ── Edit button ──────────────────────────────────────── */
+    #edit-btn {
+      display: none;
+      position: fixed;
+      bottom: 28px; right: 28px;
+      z-index: 200;
+      align-items: center; gap:7px;
+      padding: 9px 18px;
+      border-radius: 40px;
+      background: rgba(26,43,74,.08);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      font-size: .65rem; font-weight:400;
+      letter-spacing: .08em; text-transform:uppercase;
+      color: var(--soft);
+      cursor: pointer;
+      transition: background .2s, color .2s, transform .3s var(--ease);
+      text-decoration: none;
+    }
+    #edit-btn:hover { background:rgba(26,43,74,.14); color:var(--text); transform:translateY(-2px); }
+
+    /* ── Animations ───────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .8s var(--ease), transform .8s var(--ease);
+    }
+    .reveal.visible { opacity:1; transform:translateY(0); }
+    .reveal-left {
+      opacity: 0;
+      transform: translateX(-36px);
+      transition: opacity .75s var(--ease), transform .75s var(--ease);
+    }
+    .reveal-left.visible { opacity:1; transform:translateX(0); }
+    .rd1 { transition-delay:.08s; }
+    .rd2 { transition-delay:.16s; }
+    .rd3 { transition-delay:.24s; }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width:1024px) {
+      .nav-inner, .wrap, .foot-inner { padding-left:28px; padding-right:28px; }
+      .carousel-foot { padding:14px 28px 22px; }
+      .deco-lines { right: 28px; width: 180px; }
+      #sobre .about-layout { grid-template-columns:1fr; }
+      .photo-wrap { position:static; }
+      .photo-card { aspect-ratio:16/9; }
+      #profissional .prof-layout { grid-template-columns:1fr; }
+    }
+    @media (max-width:768px) {
+      .nav-links { display:none; }
+      .areas-featured { grid-template-columns:1fr; }
+      .areas-grid { grid-template-columns:1fr 1fr; }
+      .slide-text { max-width: 100%; }
+      .deco-lines { display: none; }
+      .foot-top { flex-direction:column; align-items:flex-start; gap:36px; }
+      .foot-right { align-items:flex-start; }
+    }
+    @media (max-width:540px) {
+      .areas-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Baked seed data for external sharing (loaded before main script).
+     Visitors with empty localStorage see the customizations defined here. -->
+<script src="./seed-data.js"></script>
+
+<!-- ── Nav ───────────────────────────────────────────────────── -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-img-wrap" id="nav-logo-wrap">
+        <img id="nav-logo-img" src="./img/logo%20branco.png" alt="Monteiro da Costa Advogados">
+      </div>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="#areas">Áreas</a></li>
+      <li><a href="#profissional">Profissional</a></li>
+      <li><a href="#contato" class="nav-cta" style="font-size: 20px">Contato</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Banner / Carrossel ────────────────────────────────────── -->
+<section class="banner" id="top">
+  <div class="slides-wrap" id="slides-wrap">
+    <!-- Slides injetados pelo JS -->
+  </div>
+  <div class="carousel-foot">
+    <div class="c-dots" id="c-dots"></div>
+    <span class="c-counter" id="c-counter"></span>
+    <div class="c-nav">
+      <button class="c-btn" id="c-prev" aria-label="Anterior">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="c-btn" id="c-next" aria-label="Próximo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Sobre ──────────────────────────────────────────────────── -->
+<section id="sobre">
+  <div class="wrap">
+    <h2 class="section-title" id="title-sobre" style="padding: 52px 0px 43px; letter-spacing: 10px">Sobre</h2>
+    <div class="about-layout">
+      <div class="logo-card-wrap reveal">
+        <div class="logo-card" style="gap: 0px; padding: 48px 32px 48px 3px">
+          <img src="./img/logo%20vertical.png" alt="Monteiro da Costa Advogados" style="margin: 10px; border-width: 0px; border-style: solid; width: 315px">
+        </div>
+      </div>
+      <div class="about-text reveal rd1" style="width: 759px; padding: 6px 0px 0px; margin: 0px; border-width: 0px; border-style: solid">
+        <p class="about-lede" id="sobre-lede" style="font-size: 22px; width: 896px">
+          Fundado e conduzido pela <strong>Dra. Renata Monteiro da Costa</strong>, o escritório atua há mais de 15 anos com rigor técnico, ética e comprometimento na defesa dos interesses de seus clientes.
+        </p>
+        <div class="about-rule"></div>
+        <p class="about-body" id="sobre-body" style="font-size: 18px; width: 860px">
+          Com sede em São Paulo, o escritório oferece atendimento personalizado, combinando excelência jurídica com a proximidade que cada caso merece.
+        </p>
+        <div class="pillars" id="sobre-pillars">
+          <span class="pillar" style="font-size: 15px">Ética</span>
+          <span class="pillar" style="font-size: 15px">Relacionamento</span>
+          <span class="pillar" style="font-size: 15px">Excelência</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Áreas de Atuação ───────────────────────────────────────── -->
+<section id="areas">
+  <div class="wrap">
+    <h2 class="section-title" id="title-areas" style="padding: 52px 0px 48px; letter-spacing: 10px">Áreas de Atuação</h2>
+    <!-- Featured (2 destaques) -->
+    <div class="areas-featured reveal" id="areas-featured"></div>
+    <!-- Grid geral -->
+    <div class="areas-grid reveal rd1" id="areas-grid"></div>
+  </div>
+</section>
+
+<!-- ── Profissional ───────────────────────────────────────────── -->
+<section id="profissional">
+  <div class="wrap">
+    <div class="prof-layout" style="padding: 84px 0px 13px">
+      <div class="reveal">
+        <div class="prof-photo-card" id="prof-photo-card">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color:var(--dim)" aria-hidden="true">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+          </svg>
+          <p class="prof-photo-hint">Foto carregada<br>via painel admin</p>
+        </div>
+      </div>
+      <div class="prof-text reveal rd1">
+        <div>
+          <h3 class="prof-name" id="prof-name" style="font-weight: 500; letter-spacing: 10px">Renata Monteiro da Costa</h3>
+          <p class="prof-role" id="prof-role">Fundadora · OAB/SP</p>
+        </div>
+        <div class="about-rule"></div>
+        <p class="prof-bio" id="prof-bio" style="font-size: 22px; line-height: 1.3">
+          Advogada fundadora do escritório, Renata Monteiro da Costa construiu sua carreira sobre pilares de excelência técnica e relacionamento próximo com seus clientes, atuando em casos de alta complexidade com rigor e dedicação.
+        </p>
+        <p class="prof-bio" id="prof-bio2" style="font-size: 22px; line-height: 1.3">
+          Sua prática abrange desde a consultoria preventiva até o contencioso judicial, sempre orientada pelo comprometimento com resultados concretos e éticos.
+        </p>
+        <div class="cred-row" id="prof-creds">
+          <span class="cred">OAB/SP</span>
+          <span class="cred cred--dim">São Paulo, SP</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Instagram Reels ───────────────────────────────────────────── -->
+<section id="instagram">
+  <div class="wrap">
+    <header class="sh reveal-left">
+      <span class="sh-label">Instagram</span>
+      <h2 class="sh-title">Reels <span class="muted">/ Conteúdo</span></h2>
+    </header>
+  </div>
+  <div id="ig-content" class="wrap" style="padding-top:0"></div>
+</section>
+
+<!-- ── Footer / Contato ───────────────────────────────────────── -->
+<footer id="contato">
+  <div class="foot-inner">
+    <div class="foot-top reveal">
+      <div class="foot-logo">
+        <img src="./img/logo%20branco.png" alt="Monteiro da Costa Advogados">
+      </div>
+      <div class="foot-right">
+        <a href="mailto:contato@monteirodacostaadv.com.br" class="foot-link foot-link--lg" id="foot-email">contato@monteirodacostaadv.com.br</a>
+        <a href="https://wa.me/5511982752430" class="foot-link foot-link--lg foot-link--icon" id="foot-phone">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.858L.057 23.572a.5.5 0 0 0 .614.637l5.939-1.556A11.946 11.946 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.89 0-3.659-.523-5.17-1.432l-.37-.222-3.527.924.939-3.427-.242-.386A9.958 9.958 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+          <span id="foot-phone-text">(11) 9 8275-2430</span>
+        </a>
+        <div class="foot-sep"></div>
+        <a href="#" class="foot-link foot-link--lg foot-link--icon" id="foot-ig">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+          Instagram
+        </a>
+      </div>
+    </div>
+    <div class="foot-bot">
+      <span class="foot-copy" id="foot-copy">© 2025 Monteiro da Costa Advogados · Todos os direitos reservados</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Edit button (admin only) -->
+<a href="./admin.html" id="edit-btn" title="Painel Admin">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  Admin
+</a>
+
+<script>
+/* ── Icon Library ─────────────────────────────────────────── */
+const ICONS = {
+  book:       `<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>`,
+  briefcase:  `<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>`,
+  contract:   `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
+  home:       `<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>`,
+  users:      `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  inherit:    `<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>`,
+  bag:        `<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>`,
+  health:     `<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>`,
+  scale:      `<path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><line x1="12" x2="12" y1="3" y2="21"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/>`,
+  building:   `<rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M16 10h.01M8 10h.01M8 14h.01M16 14h.01M12 14h.01"/>`,
+  counsel:    `<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+};
+
+function icon(name, size=18) {
+  const d = ICONS[name] || ICONS.counsel;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+}
+
+/* ── Default Content ──────────────────────────────────────── */
+const DEFAULT = {
+  slides: [
+    {
+      eyebrow: 'Advocacia · São Paulo, SP',
+      title: 'Ética,\nRelacionamento\ne Excelência.',
+      subtitle: 'Soluções jurídicas precisas com comprometimento, proximidade e dedicação singular a cada caso.',
+      cta: 'Fale Conosco',
+      ctaHref: '#contato',
+      ctaSecondary: 'Ver áreas de atuação',
+      ctaSecondaryHref: '#areas',
+      image: './img/slide-1.jpg',
+    },
+    {
+      eyebrow: 'Direito Educacional',
+      title: 'Educação com\nsegurança jurídica.',
+      subtitle: 'Assessoria preventiva e estratégica para instituições de ensino, mantenedoras e famílias.',
+      cta: 'Fale Conosco',
+      ctaHref: '#contato',
+      ctaSecondary: 'Ver áreas de atuação',
+      ctaSecondaryHref: '#areas',
+      image: './img/slide-2.jpg',
+    }
+  ],
+  sobre: {
+    lede: 'Fundado e conduzido pela <strong>Dra. Renata Monteiro da Costa</strong>, o escritório atua há mais de 15 anos com rigor técnico, ética e comprometimento na defesa dos interesses de seus clientes.',
+    body: 'Com sede em São Paulo, o escritório oferece atendimento personalizado, combinando excelência jurídica com a proximidade que cada caso merece.',
+    address: 'Av. Eng. Luis Carlos Berrini, 550 — 4º andar · Itaim Bibi · São Paulo, SP',
+    email: 'contato@monteirodacostaadv.com.br',
+    photoName: 'Renata Monteiro da Costa',
+    photoRole: 'Fundadora · OAB/SP',
+  },
+  areas: [
+    { title:'DIREITO EDUCACIONAL', desc:'Assessoria a instituições de ensino, alunos e mantenedoras em questões regulatórias, contratuais e judiciais.', icon:'book', featured:true },
+    { title:'DIREITO TRABALHISTA', desc:'Defesa de empregadores e empregados em negociações, rescisões e litígios trabalhistas.', icon:'briefcase', featured:true },
+    { title:'Direito Contratual', desc:'Elaboração, revisão e análise de contratos.', icon:'contract', featured:false },
+    { title:'Direito Imobiliário', desc:'Compra, venda, locação e regularização de imóveis.', icon:'home', featured:false },
+    { title:'Direito de Família', desc:'Divórcio, guarda, alimentos e filiação.', icon:'users', featured:false },
+    { title:'Direito Sucessório', desc:'Inventário, testamentos e partilha de bens.', icon:'inherit', featured:false },
+    { title:'Direito do Consumidor', desc:'Defesa de direitos em relações de consumo.', icon:'bag', featured:false },
+    { title:'Direito à Saúde', desc:'Planos de saúde, tratamentos\ne responsabilidade médica.', icon:'health', featured:false },
+    { title:'Direito Civil', desc:'Reparação de danos, obrigações\ne responsabilidade civil.', icon:'scale', featured:false },
+    { title:'Direito Empresarial', desc:'Constituição, contratos e reestruturação societária.', icon:'building', featured:false },
+    { title:'Assessoria Jurídica', desc:'Consultoria preventiva e estratégica contínua.', icon:'counsel', featured:false },
+  ],
+  profissional: {
+    name: 'Renata Monteiro da Costa',
+    role: 'Fundadora · OAB/SP',
+    years: '15+',
+    bio: 'Advogada fundadora do escritório, Renata Monteiro da Costa construiu sua carreira sobre pilares de excelência técnica e relacionamento próximo com seus clientes, atuando em casos de alta complexidade com rigor e dedicação.',
+    bio2: 'Sua prática abrange desde a consultoria preventiva até o contencioso judicial, sempre orientada pelo comprometimento com resultados concretos e éticos.',
+    credentials: 'OAB/SP',
+  },
+  contato: {
+    email: 'contato@monteirodacostaadv.com.br',
+    phone: '(11) 9 8275-2430',
+    whatsapp: '5511982752430',
+    instagram: '#',
+    linkedin: '#',
+    address: 'Av. Eng. Luis Carlos Berrini, 550 — 4º andar · Itaim Bibi · São Paulo',
+  },
+  titles: {
+    sobre: 'Sobre',
+    areas: 'Áreas de Atuação',
+  }
+};
+
+/* ── Load content from localStorage ──────────────────────── */
+// Priority: localStorage (this browser's admin edits) → SEED_DATA (baked for sharing) → DEFAULT
+let D = (typeof window.MDC_SEED_DATA === 'object' && window.MDC_SEED_DATA)
+  ? Object.assign({}, DEFAULT, window.MDC_SEED_DATA)
+  : DEFAULT;
+try {
+  const raw = localStorage.getItem('mdc_content');
+  if (raw) D = Object.assign({}, DEFAULT, JSON.parse(raw));
+} catch(e) {}
+
+/* ── Render Carousel ──────────────────────────────────────── */
+const slidesWrap = document.getElementById('slides-wrap');
+const dotsWrap   = document.getElementById('c-dots');
+const counter    = document.getElementById('c-counter');
+const slides     = D.slides || DEFAULT.slides;
+let current = 0, timer;
+
+function renderSlides() {
+  slidesWrap.innerHTML = '';
+  dotsWrap.innerHTML   = '';
+
+  slides.forEach((s, i) => {
+    const el = document.createElement('div');
+    el.className = 'slide' + (i === 0 ? ' active' : '');
+
+    // Format title: replace \n with <br>
+    const titleHtml = (s.title || '').replace(/\n/g, '<br>');
+
+    el.innerHTML = `
+      ${s.image ? `<img class="slide-bg" src="${s.image}" alt=""><div class="slide-overlay"></div>` : ''}
+      <div class="slide-inner">
+        <div class="slide-text">
+          <p class="slide-eyebrow">${s.eyebrow || ''}</p>
+          <h2 class="slide-title">${titleHtml}</h2>
+          <p class="slide-sub">${s.subtitle || ''}</p>
+        </div>
+        ${!s.image ? `<div class="deco-lines">${[100,80,60,40,55,75,90,50,35,65].map(w=>`<div class="deco-line" style="width:${w}%"></div>`).join('')}</div>` : ''}
+      </div>`;
+
+    slidesWrap.appendChild(el);
+
+    const dot = document.createElement('button');
+    dot.className = 'c-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `Slide ${i+1}`);
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+
+  updateCounter();
+}
+
+let animating = false;
+function goTo(n, dir) {
+  if (animating) return;
+  const allSlides = slidesWrap.querySelectorAll('.slide');
+  const allDots   = dotsWrap.querySelectorAll('.c-dot');
+  const prev = current;
+  current = (n + slides.length) % slides.length;
+  if (prev === current) return;
+  if (!dir) dir = current > prev ? 'next' : 'prev';
+
+  animating = true;
+  const outEl = allSlides[prev];
+  const inEl  = allSlides[current];
+
+  outEl.classList.add(dir === 'next' ? 'slide-exit-left' : 'slide-exit-right');
+  inEl.classList.add('active', dir === 'next' ? 'slide-enter-right' : 'slide-enter-left');
+
+  allDots[prev].classList.remove('active');
+  allDots[current].classList.add('active');
+  updateCounter();
+  resetTimer();
+
+  setTimeout(() => {
+    outEl.classList.remove('active', 'slide-exit-left', 'slide-exit-right');
+    inEl.classList.remove('slide-enter-right', 'slide-enter-left');
+    animating = false;
+  }, 640);
+}
+
+function updateCounter() {
+  counter.textContent = slides.length > 1 ? `${current+1} / ${slides.length}` : '';
+}
+
+function resetTimer() {
+  clearInterval(timer);
+  if (slides.length > 1) timer = setInterval(() => goTo(current + 1, 'next'), 6000);
+}
+
+document.getElementById('c-prev').addEventListener('click', () => goTo(current - 1, 'prev'));
+document.getElementById('c-next').addEventListener('click', () => goTo(current + 1, 'next'));
+
+// Touch swipe
+let tx = 0;
+slidesWrap.addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, {passive:true});
+slidesWrap.addEventListener('touchend',   e => {
+  const dx = tx - e.changedTouches[0].clientX;
+  if (Math.abs(dx) > 44) goTo(current + (dx > 0 ? 1 : -1), dx > 0 ? 'next' : 'prev');
+}, {passive:true});
+
+renderSlides();
+resetTimer();
+
+/* ── Render Areas ─────────────────────────────────────────── */
+function renderAreas() {
+  const featured = (D.areas||DEFAULT.areas).filter(a => a.featured);
+  const rest     = (D.areas||DEFAULT.areas).filter(a => !a.featured);
+
+  const featEl = document.getElementById('areas-featured');
+  featEl.innerHTML = featured.map(a => `
+    <div class="feat-card">
+      <span class="feat-label">Destaque</span>
+      <div class="feat-rule"></div>
+      <h3 class="feat-title">${a.title}</h3>
+      <p class="feat-desc">${a.desc}</p>
+    </div>`).join('');
+
+  const gridEl = document.getElementById('areas-grid');
+  gridEl.innerHTML = rest.map(a => `
+    <div class="area-item">
+      <div class="area-icon">${icon(a.icon)}</div>
+      <div class="area-info">
+        <p class="area-name">${a.title}</p>
+        <p class="area-desc">${a.desc}</p>
+      </div>
+    </div>`).join('');
+}
+renderAreas();
+
+/* ── Populate Static Sections ─────────────────────────────── */
+function setText(id, val, html=false) {
+  const el = document.getElementById(id);
+  if (!el || !val) return;
+  if (html) el.innerHTML = val; else el.textContent = val;
+}
+
+const s  = D.sobre        || DEFAULT.sobre;
+const p  = D.profissional || DEFAULT.profissional;
+const c  = D.contato      || DEFAULT.contato;
+const tt = D.titles       || DEFAULT.titles;
+
+// Section titles
+const elTitSobre = document.getElementById('title-sobre');
+const elTitAreas = document.getElementById('title-areas');
+if (elTitSobre) elTitSobre.textContent = tt.sobre || DEFAULT.titles.sobre;
+if (elTitAreas) elTitAreas.textContent = tt.areas || DEFAULT.titles.areas;
+
+setText('sobre-lede',      s.lede,       true);
+setText('sobre-body',      s.body);
+
+setText('sobre-photo-name', s.photoName);
+setText('sobre-photo-role', s.photoRole);
+
+setText('prof-name',   p.name);
+setText('prof-role',   p.role);
+setText('prof-years',  p.years);
+setText('prof-bio',    p.bio);
+setText('prof-bio2',   p.bio2);
+
+// Profissional section title
+const profSh = document.getElementById('prof-sh-title');
+if (profSh && p.name) {
+  const parts = p.name.split(' ');
+  profSh.innerHTML = `${parts[0]} <span class="muted">${parts.slice(1).join(' ')}</span>`;
+}
+
+// Credentials
+const credEl = document.getElementById('prof-creds');
+if (credEl && p.credentials) {
+  credEl.innerHTML = p.credentials.split(',').map(c => `<span class="cred">${c.trim()}</span>`).join('') +
+    `<span class="cred cred--dim">São Paulo, SP</span>`;
+}
+
+// Footer
+const footEmail = document.getElementById('foot-email');
+if (footEmail) { footEmail.textContent = c.email; footEmail.href = 'mailto:' + c.email; }
+const footPhone = document.getElementById('foot-phone');
+if (footPhone) { footPhone.textContent = c.phone; footPhone.href = 'https://wa.me/' + c.whatsapp; }
+const footIg = document.getElementById('foot-ig');
+if (footIg && c.instagram) { footIg.href = c.instagram; }
+const footLi = document.getElementById('foot-li');
+if (footLi && c.linkedin) { footLi.href = c.linkedin; }
+setText('foot-copy', `© ${new Date().getFullYear()} Monteiro da Costa Advogados · Todos os direitos reservados`);
+
+
+/* ── Logo: troca src conforme fundo claro/escuro ──────────── */
+const navLogoImg      = document.getElementById('nav-logo-img');
+const LOGO_LIGHT      = './img/logo%20original.png';
+const LOGO_DARK       = './img/logo%20branco.png';
+const adminLogoData   = localStorage.getItem('mdc_logo');
+
+function updateNavLogo() {
+  if (!navLogoImg) return;
+  if (window.scrollY > 50) {
+    // Fundo claro — usa logo colorido (admin ou padrão)
+    navLogoImg.src = adminLogoData || LOGO_LIGHT;
+  } else {
+    // Fundo escuro (banner) — sempre logo branco
+    navLogoImg.src = LOGO_DARK;
+  }
+}
+updateNavLogo();
+
+/* ── Profile Photo (seção Profissional) ───────────────────── */
+const photoData = localStorage.getItem('mdc_photo') || './img/foto-renata.jpg';
+let photoTransform = { x: 0, y: 0, scale: 1 };
+if (typeof window.MDC_SEED_PHOTO_TRANSFORM === 'object' && window.MDC_SEED_PHOTO_TRANSFORM) {
+  photoTransform = Object.assign(photoTransform, window.MDC_SEED_PHOTO_TRANSFORM);
+}
+try {
+  const raw = localStorage.getItem('mdc_photo_transform');
+  if (raw) photoTransform = Object.assign(photoTransform, JSON.parse(raw));
+} catch(e) {}
+if (photoData) {
+  const profCard = document.getElementById('prof-photo-card');
+  profCard.querySelector('svg').style.display = 'none';
+  profCard.querySelector('.prof-photo-hint').style.display = 'none';
+  const profImg = document.createElement('img');
+  profImg.src = photoData;
+  profImg.alt = p.name || 'Foto';
+  profImg.style.top = '';
+  profImg.style.left = '';
+  profImg.style.transform = `translate(${photoTransform.x}%, ${photoTransform.y}%) scale(${photoTransform.scale})`;
+  profCard.insertBefore(profImg, profCard.firstChild);
+}
+
+/* ── Edit button ──────────────────────────────────────────── */
+if (localStorage.getItem('mdc_admin') === 'true') {
+  document.getElementById('edit-btn').style.display = 'flex';
+}
+
+/* ── Nav scroll + active link ─────────────────────────────── */
+const nav      = document.getElementById('nav');
+const navLinks = document.querySelectorAll('.nav-links a:not(.nav-cta)');
+const navSecs  = document.querySelectorAll('section[id], footer[id]');
+
+function onScroll() {
+  nav.classList.toggle('scrolled', window.scrollY > 50);
+  updateNavLogo();
+  let active = '';
+  navSecs.forEach(s => { if (window.scrollY >= s.offsetTop - 180) active = s.id; });
+  navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === `#${active}`));
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+/* ── Scroll Reveal ────────────────────────────────────────── */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+  });
+}, { threshold:.06, rootMargin:'0px 0px -24px 0px' });
+document.querySelectorAll('.reveal, .reveal-left').forEach(el => io.observe(el));
+
+/* ── Instagram Reels ──────────────────────────────────────── */
+(function renderInstagram() {
+  const section = document.getElementById('instagram');
+  const igContent = document.getElementById('ig-content');
+  if (!section || !igContent) return;
+
+  // Hide entire section if disabled in admin
+  if (localStorage.getItem('mdc_ig_visible') !== 'true') {
+    section.style.display = 'none';
+    return;
+  }
+
+  const beholdId = localStorage.getItem('mdc_behold_id') || (D.instagram && D.instagram.beholdId) || '';
+
+  if (beholdId) {
+    igContent.innerHTML = `<behold-widget feed-id="${beholdId}"></behold-widget>`;
+    if (!document.querySelector('script[src*="behold.so"]')) {
+      const sc = document.createElement('script');
+      sc.src = 'https://w.behold.so/widget.js';
+      sc.type = 'module';
+      document.head.appendChild(sc);
+    }
+    return;
+  }
+
+  igContent.innerHTML = `
+    <div class="ig-placeholder reveal">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+      </svg>
+      <p>Configure sua conta do Instagram para exibir seus Reels aqui automaticamente, sincronizados em tempo real com seu perfil.</p>
+      <a href="./admin.html#instagram">Configurar no painel admin</a>
+    </div>`;
+  igContent.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>
+
+<style id="__om-edit-overrides">
+#areas-featured >div:nth-child(1) >.feat-desc { font-size: 18px !important }
+#areas-featured >div:nth-child(2) >.feat-desc { font-size: 18px !important }
+#areas-featured >div:nth-child(1) >.feat-label { font-size: 12px !important }
+#areas-featured >div:nth-child(2) >.feat-label { font-size: 12px !important }
+#areas-grid >div:nth-child(5) { padding: 26px 22px 20px !important }
+#areas-grid >div:nth-child(5) .area-desc { width: 247px !important }
+#areas-grid >div:nth-child(5) .area-desc { width: 295px !important }
+#areas-grid >div:nth-child(5) { padding: 26px 22px 0px !important }
+#areas-grid >div:nth-child(5) { padding: 26px 22px !important }
+#areas-grid >div:nth-child(5) { height: 109px !important }
+#areas-grid >div:nth-child(6) { height: 108px !important }
+#areas-grid >div:nth-child(6) { height: 109px !important }
+#areas-grid >div:nth-child(7) .area-desc { font-size: 14px !important }
+#areas-grid >div:nth-child(4) .area-desc { font-size: 14px !important }
+#areas-grid > div:nth-child(1) > div:nth-child(2) > p:nth-child(2) { font-size: 14px !important }
+#areas-grid >div:nth-child(9) .area-desc { font-size: 14px !important }
+#areas-grid >div:nth-child(6) .area-desc { font-size: 14px !important }
+#areas-grid > div:nth-child(3) > div:nth-child(2) > p:nth-child(2) { font-size: 14px !important }
+#areas-grid > div:nth-child(2) > div:nth-child(2) > p:nth-child(2) { font-size: 14px !important }
+#areas-grid >div:nth-child(5) .area-desc { font-size: 14px !important }
+#areas-grid >div:nth-child(8) .area-desc { font-size: 14px !important }
+#areas-featured >div:nth-child(2) >:is(h1,h2,h3,h4,h5,h6) { font-family: Gesta !important }
+#areas-featured >div:nth-child(2) >:is(h1,h2,h3,h4,h5,h6) { font-weight: 200 !important }
+#areas-featured >div:nth-child(1) >.feat-title { font-weight: 200 !important }
+#areas-featured >div:nth-child(1) >.feat-title { letter-spacing: 1.9px !important }
+#areas-featured >div:nth-child(1) >.feat-title { letter-spacing: 2px !important }
+#areas-featured >div:nth-child(1) >.feat-title { letter-spacing: 15px !important }
+#areas-featured >div:nth-child(2) >:is(h1,h2,h3,h4,h5,h6) { letter-spacing: 15px !important }
+#areas-featured >div:nth-child(1) >.feat-title { letter-spacing: 10px !important }
+#areas-featured >div:nth-child(2) >:is(h1,h2,h3,h4,h5,h6) { letter-spacing: 10px !important }
+</style>
